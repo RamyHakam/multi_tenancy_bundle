@@ -1,0 +1,36 @@
+{
+    "name": "hakam/doctrine-db-switcher-bundle",
+    "description": "Symfony bundle to extend doctrine to support db switcher and multi tenants",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ramy hakam",
+            "email": "pencilsoft1@gmail.com"
+        }
+    ],
+
+    "require": {
+        "php": "^7.2.5",
+        "symfony/config": "^5.1.1",
+        "symfony/dependency-injection": "^5.1.1",
+        "symfony/http-kernel": "^5.1.1",
+        "doctrine/doctrine-bundle": "^2.1",
+        "doctrine/doctrine-migrations-bundle": "^3.0",
+        "symfony/orm-pack": "^2.0",
+        "doctrine/annotations": "^1.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "Hakam\\DoctrineDbSwitcherBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Hakam\\DoctrineDbSwitcherBundle\\Tests\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "symfony/phpunit-bridge": "^5.2@dev"
+    }
+}
