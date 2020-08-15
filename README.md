@@ -10,7 +10,7 @@ Doctrine db switcher bundle os an easy way to support multi-tenant databases in 
   - Provide custom extended doctrine commands to manage tenant databases independently. 
   - Generate and run migrations independently of your main database.
   - Execute bulk migrations for all tenants dbs with one command (soon).
-  - Create and prepare tenant database of not exist
+  - Create and prepare tenant database if not exist
 
   
 
@@ -28,7 +28,7 @@ Install using Composer
 $ composer require hakam/doctrine-db-switcher-bundle
 ``` 
  ### Using the Bundle
- ######The idea behind this bundle is simple,You have a main database and  multi-tenant databases So: 
+ ###### The idea behind this bundle is simple,You have a main database and  multi-tenant databases So: 
  1. Create specific entity witch should implement `TenantDbConfigurationInterface`. In your main database to save all tenant databases configurations. 
  2. Add `TenantEntityManager` to your service or controller arguments.  
  3. Dispatch `SwitchDbEvent` with a custom value for your tenant db Identifier.
