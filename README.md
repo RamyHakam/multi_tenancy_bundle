@@ -38,9 +38,9 @@ $ composer require hakam/doctrine-db-switcher-bundle
  6. Its recommended having your tenant entities in a different directory from your Main entities.
  7. You can execute doctrine migration commands using our proxy commands for tenant database.
  
-        php bin/console tenant:migration:diff 1 or t:m:d 1      ## generate Migraiton for tenant db  => 1
+        php bin/console tenant:migration:diff 1   # t:m:d 1 for short , To generate migraiton for tenant db  => 1
         
-        php bin/console tenant:migration:migrate 1 or t:m:m 1    ## run migraitons for tenant db  => 1
+        php bin/console tenant:migration:migrate 1  # t:m:m 1, To run migraitons for tenant db  => 1
         
         # Pass tenant identifier is optional and if it null the command will be executed on the defualt tenant db. 
         # You can use the same options here for the same doctrine commands.
