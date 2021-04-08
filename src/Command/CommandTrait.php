@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Hakam\DoctrineDbSwitcherBundle\Command;
+namespace Hakam\MultiTenancyBundle\Command;
 
 
 use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;

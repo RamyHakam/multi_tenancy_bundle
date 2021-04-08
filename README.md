@@ -1,14 +1,14 @@
-# Doctrine Db Switcher Bundle  
+# Symfony Multi-Tenancy Bundle  
 
 
-Doctrine db switcher bundle is an easy way to support multi-tenant databases in your symfony application, Which is a very helpful to extend doctrine to manage multiple databases with one doctrine entity manager where you can switch between all of them in the Runtime
+Multi tenancy bundle is an easy way to support multi-tenant databases in your symfony application, Which is a very helpful to extend doctrine to manage multiple databases with one doctrine entity manager where you can switch between all of them in the Runtime
  
  ##### This bundle provides this list of features :  
  
   - Switch between the tenant databases on  the runtime easily by dispatch an event.
   - Supporting different entities mapping for  the main and tenant entities.
   - Provide custom extended doctrine commands to manage tenant databases independently. 
-  - Generate and run migrations independently from your main database.
+  - Generate and run migrations independently of your main database.
   - Execute bulk migrations for all tenants dbs with one command (soon).
   - Create and prepare tenant database if not exist
 
@@ -25,7 +25,7 @@ This bundle requires
 Install using Composer
 
 ```sh
-$ composer require hakam/doctrine-db-switcher-bundle
+$ composer require hakam/multi-tenancy-bundle
 ``` 
  ### Using the Bundle
  ###### The idea behind this bundle is simple,You have a main database and  multi-tenant databases So: 
@@ -35,7 +35,7 @@ $ composer require hakam/doctrine-db-switcher-bundle
     `Example new SwitchDbEvent(1)`
  4. You can switch between all tenants dbs just by dispatch the same event with different db identifier.
  5. Now your instance from `TenantEntityManager` is connected to the tenant db with Identifier = 1.
- 6. Its recommended to have your tenant entities in a different directory from your Main entities.
+ 6. Its recommended having your tenant entities in a different directory from your Main entities.
  7. You can execute doctrine migration commands using our proxy commands for tenant database.
  
         php bin/console tenant:migration:diff 1   # t:m:d 1 for short , To generate migraiton for tenant db  => 1
@@ -57,8 +57,8 @@ $ composer require hakam/doctrine-db-switcher-bundle
     
     
       use Symfony\Component\EventDispatcher\EventDispatcherInterface;  
-      use Hakam\DoctrineDbSwitcherBundle\Event\SwitchDbEvent;
-      use Hakam\DoctrineDbSwitcherBundle\Doctrine\ORM\TenantEntityManager;
+      use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
+      use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
       use Doctrine\ORM\EntityManagerInterface;
       use App\Entity\Tenant\TenantEntityExample;
       use App\Entity\Main\MainLog;
@@ -116,9 +116,9 @@ $ composer require hakam/doctrine-db-switcher-bundle
  ### Configuration
  
  In this example below you can find the list of all configuration parameters required witch you should create in
-   `config/packages/hakam_doctrine_db_switch_bundle.yaml` with this configuration:
+   `config/packages/hakam_multi_tenancy_bundle.yaml` with this configuration:
  ``` yaml 
-hakam_doctrine_db_switcher:
+hakam_multi_tenancy_bundle:
   tenant_database_className:  App\Entity\Main\TenantDbConfig     # tenant dbs configuration Class Name
   tenant_database_identifier: id                                 # tenant db column name to get db configuration
   tenant_connection:                                             # tenant entity manager connection configuration

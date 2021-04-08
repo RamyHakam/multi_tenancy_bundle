@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Hakam\DoctrineDbSwitcherBundle\Doctrine\DBAL;
+namespace Hakam\MultiTenancyBundle\Doctrine\DBAL;
 
 use Doctrine\Common\EventManager;
 use Doctrine\DBAL\Configuration;

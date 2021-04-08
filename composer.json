@@ -1,5 +1,5 @@
 {
-    "name": "hakam/doctrine-db-switcher-bundle",
+    "name": "hakam/multi-tenancy-bundle",
     "description": "Symfony bundle to extend doctrine to support db switcher and multi tenants",
     "type": "symfony-bundle",
     "license": "MIT",
@@ -22,12 +22,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Hakam\\DoctrineDbSwitcherBundle\\": "src/"
+            "Hakam\\MultiTenancyBundle\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Hakam\\DoctrineDbSwitcherBundle\\Tests\\": "tests/"
+            "Hakam\\MultiTenancyBundle\\Tests\\": "tests/"
         }
     },
     "require-dev": {

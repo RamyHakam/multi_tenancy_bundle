@@ -1,11 +1,11 @@
 <?php
 
 
-namespace Hakam\DoctrineDbSwitcherBundle\Tests\FunctionalTest;
+namespace Hakam\MultiTenancyBundle\Tests\FunctionalTest;
 
 
 
-use Hakam\DoctrineDbSwitcherBundle\Services\DbConfigService;
+use Hakam\MultiTenancyBundle\Services\DbConfigService;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -26,7 +26,7 @@ class ServiceWiringTest extends TestCase
 
     protected function setUp(): void
     {
-        $hakamDoctrineDbSwitcherConfig = [
+        $config = [
             'tenant_database_repository' => 'test',
             'tenant_database_identifier' => 'id',
             'tenant_connection' => [
@@ -53,7 +53,7 @@ class ServiceWiringTest extends TestCase
                         ]
                 ]
         ];
-        $kernel = new DoctrineDbSwitcherBundleTestingKernel($hakamDoctrineDbSwitcherConfig);
+        $kernel = new MultiTenancyBundleTestingKernel($config);
         $kernel->boot();
         $this->container = $kernel->getContainer();
     }

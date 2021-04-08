@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Hakam\DoctrineDbSwitcherBundle\EventListener;
+namespace Hakam\MultiTenancyBundle\EventListener;
 
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Hakam\DoctrineDbSwitcherBundle;
+namespace Hakam\MultiTenancyBundle;
 
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
@@ -9,7 +9,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
  */
-class HakamDoctrineDbSwitcherBundle extends Bundle
+class HakamMultiTenancyBundle extends Bundle
 {
 
 }

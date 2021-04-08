@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Hakam\DoctrineDbSwitcherBundle\DependencyInjection;
+namespace Hakam\MultiTenancyBundle\DependencyInjection;
 
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
@@ -15,7 +15,7 @@ class Configuration implements ConfigurationInterface
 {
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder('hakam_doctrine_db_switcher');
+        $treeBuilder = new TreeBuilder('hakam_multi_tenancy_bundle');
         $rootNode = $treeBuilder->getRootNode();
 
         $rootNode

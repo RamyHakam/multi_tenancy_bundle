@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Hakam\DoctrineDbSwitcherBundle\DependencyInjection;
+namespace Hakam\MultiTenancyBundle\DependencyInjection;
 
 
 use Hakam\DoctrineDbSwitcherBundle\Doctrine\DBAL\TenantConnection;
@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
  */
-class HakamDoctrineDbSwitcherExtension extends Extension implements PrependExtensionInterface
+class HakamMultiTenancyExtension extends Extension implements PrependExtensionInterface
 {
     public function load(array $configs, ContainerBuilder $container)
     {

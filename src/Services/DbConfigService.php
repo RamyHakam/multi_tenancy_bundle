@@ -1,12 +1,10 @@
 <?php
 
 
-namespace Hakam\DoctrineDbSwitcherBundle\Services;
+namespace Hakam\MultiTenancyBundle\Services;
 
 
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use RuntimeException;

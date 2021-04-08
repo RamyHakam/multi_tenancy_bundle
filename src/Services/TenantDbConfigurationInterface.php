@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Hakam\DoctrineDbSwitcherBundle\Services;
+namespace Hakam\MultiTenancyBundle\Services;
 
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>

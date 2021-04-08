@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Hakam\DoctrineDbSwitcherBundle\Doctrine\ORM;
+namespace Hakam\MultiTenancyBundle\Doctrine\ORM;
 
 
 use Doctrine\ORM\Decorator\EntityManagerDecorator;

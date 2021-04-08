@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Hakam\DoctrineDbSwitcherBundle\Command;
+namespace Hakam\MultiTenancyBundle\Command;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Psr\EventDispatcher\EventDispatcherInterface;

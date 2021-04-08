@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Hakam\DoctrineDbSwitcherBundle\Event;
+namespace Hakam\MultiTenancyBundle\Event;
 
 
 use Symfony\Contracts\EventDispatcher\Event;
