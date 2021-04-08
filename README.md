@@ -1,14 +1,14 @@
 # Doctrine Db Switcher Bundle  
 
 
-Doctrine db switcher bundle os an easy way to support multi-tenant databases in your symfony application, Which is very helpful to extend doctrine to manage multiple databases with one doctrine entity manager where you can switch between all of them in Runtime
+Doctrine db switcher bundle is an easy way to support multi-tenant databases in your symfony application, Which is a very helpful to extend doctrine to manage multiple databases with one doctrine entity manager where you can switch between all of them in the Runtime
  
  ##### This bundle provides this list of features :  
  
-  - Switch between tenant databases on runtime easily by dispatch  an event.
-  - Supporting different entities mapping for main and tenant entities.
+  - Switch between the tenant databases on  the runtime easily by dispatch an event.
+  - Supporting different entities mapping for  the main and tenant entities.
   - Provide custom extended doctrine commands to manage tenant databases independently. 
-  - Generate and run migrations independently of your main database.
+  - Generate and run migrations independently from your main database.
   - Execute bulk migrations for all tenants dbs with one command (soon).
   - Create and prepare tenant database if not exist
 
@@ -35,7 +35,7 @@ $ composer require hakam/doctrine-db-switcher-bundle
     `Example new SwitchDbEvent(1)`
  4. You can switch between all tenants dbs just by dispatch the same event with different db identifier.
  5. Now your instance from `TenantEntityManager` is connected to the tenant db with Identifier = 1.
- 6. Its recommended having your tenant entities in a different directory from your Main entities.
+ 6. Its recommended to have your tenant entities in a different directory from your Main entities.
  7. You can execute doctrine migration commands using our proxy commands for tenant database.
  
         php bin/console tenant:migration:diff 1   # t:m:d 1 for short , To generate migraiton for tenant db  => 1
@@ -46,11 +46,11 @@ $ composer require hakam/doctrine-db-switcher-bundle
         # You can use the same options here for the same doctrine commands.
         
 ### Note:
-  All the doctrine migration commands and files is generated and executed especially for tenant databases independent of main db migrations, 
+  All the doctrine migration commands and files is generated and executed especially for tenant databases independent from the main db migrations, 
    Thanks for Doctrine migration bundle v3+ .
    
 ### Usage Example 
- You can dispatch the event where ever you want to switch to custom db
+ You can dispatch the event where ever you want to switch to a custom db
    
    ```php
       namespace App\Controller;
