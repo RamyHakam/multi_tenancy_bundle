@@ -116,9 +116,9 @@ $ composer require hakam/multi-tenancy-bundle
  ### Configuration
  
  In this example below you can find the list of all configuration parameters required witch you should create in
-   `config/packages/hakam_multi_tenancy_bundle.yaml` with this configuration:
+   `config/packages/hakam_multi_tenancy.yaml` with this configuration:
  ``` yaml 
-hakam_multi_tenancy_bundle:
+hakam_multi_tenancy:
   tenant_database_className:  App\Entity\Main\TenantDbConfig     # tenant dbs configuration Class Name
   tenant_database_identifier: id                                 # tenant db column name to get db configuration
   tenant_connection:                                             # tenant entity manager connection configuration
