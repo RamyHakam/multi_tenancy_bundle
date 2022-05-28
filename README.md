@@ -131,7 +131,7 @@ hakam_multi_tenancy:
     dbname:   tanent1                                           # default tenant database to init the tenant connection
     user:     root                                              # default tenant database username
     password: null                                              # default tenant database password
-    server_version: 5.7                                              # mysql server version
+    server_version: 5.7                                         # mysql server version
 
   tenant_migration:                                             # tenant db migration configurations, Its recommended to have a different migration for tenants dbs than you main migration config
     tenant_migration_namespace: Application\Migrations\Tenant
