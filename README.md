@@ -30,13 +30,16 @@ $ composer require hakam/multi-tenancy-bundle
  ### Using the Bundle
  ###### The idea behind this bundle is simple,You have a main database and  multi-tenant databases So: 
  1. Create specific entity witch should implement `TenantDbConfigurationInterface`. In your main database to save all tenant databases configurations. 
- 2. Add `TenantEntityManager` to your service or controller arguments.  
- 3. Dispatch `SwitchDbEvent` with a custom value for your tenant db Identifier.
+ 2. You can use the `TenantDbConfigTrait` to implement the full required  db config entity fields .
+ 3. Split your entities in two directories, one for the main database and one for the tenant databases.
+          For example  `Main and Tenant `.
+ 4. Add  the `TenantEntityManager` to your service or controller arguments.  
+ 5. Dispatch `SwitchDbEvent` with a custom value for your tenant db Identifier.
     `Example new SwitchDbEvent(1)`
- 4. You can switch between all tenants dbs just by dispatch the same event with different db identifier.
- 5. Now your instance from `TenantEntityManager` is connected to the tenant db with Identifier = 1.
- 6. Its recommended having your tenant entities in a different directory from your Main entities.
- 7. You can execute doctrine migration commands using our proxy commands for tenant database.
+ 6. You can switch between all tenants dbs just by dispatch the same event with different db identifier.
+ 7. Now your instance from `TenantEntityManager` is connected to the tenant db with Identifier = 1.
+ 8. Its recommended having your tenant entities in a different directory from your Main entities.
+ 9. You can execute doctrine migration commands using our proxy commands for tenant database.
  
         php bin/console tenant:migration:diff 1   # t:m:d 1 for short , To generate migraiton for tenant db  => 1
         
@@ -128,6 +131,8 @@ hakam_multi_tenancy:
     dbname:   tanent1                                           # default tenant database to init the tenant connection
     user:     root                                              # default tenant database username
     password: null                                              # default tenant database password
+    server_version: 5.7                                              # mysql server version
+
   tenant_migration:                                             # tenant db migration configurations, Its recommended to have a different migration for tenants dbs than you main migration config
     tenant_migration_namespace: Application\Migrations\Tenant
     tenant_migration_path: migrations/Tenant
