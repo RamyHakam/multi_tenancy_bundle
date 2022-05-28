@@ -5,12 +5,12 @@ namespace Hakam\MultiTenancyBundle\Command;
 
 
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\UpdateSchemaDoctrineCommand;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
 use Doctrine\Migrations\Configuration\Migration\ConfigurationArray;
 use Doctrine\Migrations\DependencyFactory;
 use Doctrine\ORM\EntityManagerInterface;
-use Hakam\DbSwitcherBundle\Event\SwitchDbEvent;
+use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Command\Command;
@@ -29,15 +29,15 @@ final class UpdateSchemaCommand extends Command
     /**
      * @var ManagerRegistry
      */
-    private $registry;
+    private ManagerRegistry $registry;
     /**
      * @var ContainerInterface
      */
-    private $container;
+    private ContainerInterface $container;
     /**
      * @var EventDispatcherInterface
      */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(ManagerRegistry $registry, ContainerInterface $container, EventDispatcherInterface $eventDispatcher)
     {
@@ -63,7 +63,7 @@ final class UpdateSchemaCommand extends Command
         $newInput->setInteractive($input->isInteractive());
         $otherCommand = new UpdateSchemaDoctrineCommand();
         $this->getDependencyFactory($input);
-        $otherCommand->setApplication(new Application($this->container->get( 'kernel' )));
+        $otherCommand->setApplication(new Application($this->container->get('kernel')));
         $otherCommand->run($newInput, $output);
 
         return 0;

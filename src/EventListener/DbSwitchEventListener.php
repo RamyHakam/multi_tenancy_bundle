@@ -4,10 +4,8 @@
 namespace Hakam\MultiTenancyBundle\EventListener;
 
 
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Hakam\DoctrineDbSwitcherBundle\Event\SwitchDbEvent;
-use Hakam\DoctrineDbSwitcherBundle\Services\DbConfigService;
-use Hakam\DoctrineDbSwitcherBundle\Services\TenantDbConfigurationInterface;
+use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
+use Hakam\MultiTenancyBundle\Services\DbConfigService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -19,11 +17,11 @@ class DbSwitchEventListener implements EventSubscriberInterface
     /**
      * @var ContainerInterface
      */
-    private $container;
+    private ContainerInterface $container;
     /**
      * @var DbConfigService
      */
-    private $dbConfigService;
+    private DbConfigService $dbConfigService;
 
     public function __construct(ContainerInterface $container,DbConfigService $dbConfigService)
     {
@@ -35,15 +33,14 @@ class DbSwitchEventListener implements EventSubscriberInterface
     {
       return
       [
-          SwitchDbEvent::class => 'onHakamDoctrineDbSwitcherBundleEventSwitchDbEvent'
+          SwitchDbEvent::class => 'onHakamMultiTenancyBundleEventSwitchDbEvent'
       ];
     }
 
-    public function onHakamDoctrineDbSwitcherBundleEventSwitchDbEvent( SwitchDbEvent $switchDbEvent)
+    public function onHakamMultiTenancyBundleEventSwitchDbEvent( SwitchDbEvent $switchDbEvent)
     {
-        /** @var TenantDbConfigurationInterface $dbConfig */
-        $dbConfig = $this->dbConfigService->findDbConfig($switchDbEvent->getDbIndex());
 
+        $dbConfig = $this->dbConfigService->findDbConfig($switchDbEvent->getDbIndex());
         $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
         $tenantConnection->changeParams($dbConfig->getDbName(), $dbConfig->getDbUsername(), $dbConfig->getDbPassword());
         $tenantConnection->reconnect();

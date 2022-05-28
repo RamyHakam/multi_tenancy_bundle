@@ -9,6 +9,7 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver;
 use Doctrine\DBAL\Events;
 use Doctrine\DBAL\Event;
+use Doctrine\DBAL\Exception;
 
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
@@ -17,11 +18,11 @@ class TenantConnection extends Connection
 {
 
     /** @var mixed */
-    protected $params = [];
+    protected array $params = [];
     /** @var bool */
-    protected $isConnected = false;
+    protected bool $isConnected = false;
     /** @var bool */
-    protected $autoCommit = true;
+    protected bool  $autoCommit = true;
 
     /**
      * ConnectionSwitcher constructor.
@@ -30,7 +31,7 @@ class TenantConnection extends Connection
      * @param Driver $driver
      * @param Configuration|null $config
      * @param EventManager|null $eventManager
-     * @throws \Doctrine\DBAL\DBALException
+     * @throws Exception
      */
     public function __construct($params, Driver $driver, ?Configuration $config = null, ?EventManager $eventManager = null)
     {
@@ -40,18 +41,14 @@ class TenantConnection extends Connection
 
     /**
      * @return bool
+     * @throws Exception
      */
-    public function connect()
+    public function connect(): bool
     {
         if ($this->isConnected) {
             return false;
         }
-
-        $driverOptions = $this->params['driverOptions'] ?? [];
-        $user = $this->params['user'] ?? null;
-        $password = $this->params['password'] ?? null;
-
-        $this->_conn = $this->_driver->connect($this->params, $user, $password, $driverOptions);
+        $this->_conn = $this->_driver->connect($this->params);
         $this->isConnected = true;
 
         if ($this->autoCommit === false) {
@@ -69,7 +66,7 @@ class TenantConnection extends Connection
     /**
      * @param string $dbName
      * @param string $dbUser
-     * @param string $dbPassword
+     * @param string|null $dbPassword
      * @return TenantConnection
      */
     public function changeParams(string $dbName, string $dbUser, ?string $dbPassword): self
@@ -80,6 +77,9 @@ class TenantConnection extends Connection
         return $this;
     }
 
+    /**
+     * @throws Exception
+     */
     public function reconnect()
     {
         if ($this->isConnected) {
@@ -90,7 +90,7 @@ class TenantConnection extends Connection
     }
 
     /**
-     * @return mixed|mixed[]
+     * @return mixed|array
      */
     public function getParams()
     {

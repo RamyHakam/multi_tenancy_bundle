@@ -3,7 +3,7 @@
 
 namespace Hakam\MultiTenancyBundle\Command;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -23,15 +23,15 @@ class DiffCommand extends Command
     /**
      * @var ManagerRegistry
      */
-    private $registry;
+    private ManagerRegistry $registry;
     /**
      * @var ContainerInterface
      */
-    private $container;
+    private ContainerInterface $container;
     /**
      * @var EventDispatcherInterface
      */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(ManagerRegistry $registry, ContainerInterface $container, EventDispatcherInterface $eventDispatcher)
     {

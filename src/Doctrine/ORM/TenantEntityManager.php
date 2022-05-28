@@ -19,5 +19,4 @@ class TenantEntityManager extends EntityManagerDecorator
     {
         parent::__construct($wrapped);
     }
-
 }

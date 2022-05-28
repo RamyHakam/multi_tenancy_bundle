@@ -12,17 +12,17 @@ Interface TenantDbConfigurationInterface
      * Tenant database name
      * @return string
      */
-    public function getDbName();
+    public function getDbName(): string;
 
     /**
      * Tenant database user name
      * @return string
      */
-    public function getDbUsername();
+    public function getDbUsername(): string;
 
     /**
      * Tenant database password
-     * @return mixed|null
+     * @return string|null
      */
-    public function getDbPassword();
+    public function getDbPassword(): ?string;
 }
