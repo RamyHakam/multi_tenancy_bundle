@@ -4,31 +4,27 @@
 namespace Hakam\MultiTenancyBundle\Tests\FunctionalTest;
 
 
-
-use Hakam\MultiTenancyBundle\Services\DbConfigService;
+use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ServiceWiringTest extends TestCase
 {
-    /**
-     * @var ContainerInterface
-     */
-    private  $container;
+
+    private ContainerInterface $container;
 
     public function testDbConfigServiceWiring(): void
     {
-        /** @var DbConfigService $dbConfigService */
-        $dbConfigService = $this->container->get('tenant.diff.command');
+        $tenantEntityManager = $this->container->get('tenant_entity_manager');
 
-        self::assertInstanceOf(DbConfigService::class, $dbConfigService);
+        self::assertInstanceOf(TenantEntityManager::class, $tenantEntityManager);
     }
 
     protected function setUp(): void
     {
         $config = [
-            'tenant_database_repository' => 'test',
             'tenant_database_identifier' => 'id',
+
             'tenant_connection' => [
                 'host' => '127.0.0.1',
                 'driver' => 'pdo_mysql',
@@ -39,15 +35,15 @@ class ServiceWiringTest extends TestCase
             ],
             'tenant_migration' =>
                 [
-                    'tenant_migration_namespace' => 'Application\Migrations\Tenant',
-                    'tenant_migration_path' => 'migrations/Tenant'
+                    'tenant_migration_namespace' => 'Test\Application\Migrations\Tenant',
+                    'tenant_migration_path' => 'tests/migrations/Tenant'
                 ],
             'tenant_entity_manager' =>
                 [
                     'mapping' =>
                         [
                             'type' => 'annotation',
-                            'dir' => '%kernel.project_dir%/src/Entity/Tenant',
+                            'dir' => '%kernel.project_dir%/tests',
                             'prefix' => 'Tenant',
                             'alias' => 'Tenant'
                         ]
