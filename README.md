@@ -122,26 +122,28 @@ $ composer require hakam/multi-tenancy-bundle
    `config/packages/hakam_multi_tenancy.yaml` with this configuration:
  ``` yaml 
 hakam_multi_tenancy:
-  tenant_database_className:  App\Entity\Main\TenantDbConfig     # tenant dbs configuration Class Name
-  tenant_database_identifier: id                                 # tenant db column name to get db configuration
-  tenant_connection:                                             # tenant entity manager connection configuration
+  tenant_database_className:  App\Entity\Main\TenantDbConfig                # tenant dbs configuration Class Name
+  tenant_database_identifier: id                                            # tenant db column name to get db configuration
+  tenant_connection:                                                        # tenant entity manager connection configuration
+    url:      mysql://root:null@127.0.0.1:3306/tenant1?server_version=5.7   # tenant mysql connection URL (overrides all independent parameters below)
     host:     127.0.0.1
+    port:     3306
     driver:   pdo_mysql
     charset:  utf8 
-    dbname:   tanent1                                           # default tenant database to init the tenant connection
-    user:     root                                              # default tenant database username
-    password: null                                              # default tenant database password
-    server_version: 5.7                                         # mysql server version
+    dbname:   tanent1                                                       # default tenant database to init the tenant connection
+    user:     root                                                          # default tenant database username
+    password: null                                                          # default tenant database password
+    server_version: 5.7                                                     # mysql server version
 
-  tenant_migration:                                             # tenant db migration configurations, Its recommended to have a different migration for tenants dbs than you main migration config
+  tenant_migration:                                                         # tenant db migration configurations, Its recommended to have a different migration for tenants dbs than you main migration config
     tenant_migration_namespace: Application\Migrations\Tenant
     tenant_migration_path: migrations/Tenant
-  tenant_entity_manager:                                        # tenant entity manger configuration , which is used to manage tenant entities
+  tenant_entity_manager:                                                    # tenant entity manger configuration , which is used to manage tenant entities
     mapping:                                                  
-      type:   annotation                                        # mapping type default annotation                                                       
-      dir:   '%kernel.project_dir%/src/Entity/Tenant'           # directory of tenant entities, it could be different from main directory                                           
-      prefix: App\Entity\Tenant                                 # tenant entities prefix  ex "App\Entity\Tenant"
-      alias:   Tenant                                           # tenant entities alias  ex "Tenant"
+      type:   annotation                                                    # mapping type default annotation                                                       
+      dir:   '%kernel.project_dir%/src/Entity/Tenant'                       # directory of tenant entities, it could be different from main directory                                           
+      prefix: App\Entity\Tenant                                             # tenant entities prefix  ex "App\Entity\Tenant"
+      alias:   Tenant                                                       # tenant entities alias  ex "Tenant"
  ```
              
 ### Contribution
