@@ -50,9 +50,6 @@ class TenantConnection extends Connection
         }
         $this->_conn = $this->_driver->connect(
             $this->params,
-            $this->params['user'],
-            $this->params['password'],
-            $this->params['driverOptions']
         );
         $this->isConnected = true;
 
@@ -66,20 +63,6 @@ class TenantConnection extends Connection
         }
 
         return true;
-    }
-
-    /**
-     * @param string $dbName
-     * @param string $dbUser
-     * @param string|null $dbPassword
-     * @return TenantConnection
-     */
-    public function changeParams(string $dbName, string $dbUser, ?string $dbPassword): self
-    {
-        $this->params['dbname'] = $dbName;
-        $this->params['user'] = $dbUser;
-        $this->params['password'] = $dbPassword;
-        return $this;
     }
 
     /**

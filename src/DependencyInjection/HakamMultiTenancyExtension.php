@@ -54,7 +54,7 @@ class HakamMultiTenancyExtension extends Extension implements  PrependExtensionI
                         'server_version' => $dbSwitcherConfig['tenant_connection']['server_version'],
                         'user' => $dbSwitcherConfig['tenant_connection']['user'],
                         'password' => $dbSwitcherConfig['tenant_connection']['password'],
-                        'wrapper_class' => TenantConnection::class
+                        'wrapper_class' => TenantConnection::class,
                     ]
                 ]
             ];
