@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Hakam\MultiTenancyBundle\Doctrine\DBAL;
 
 use Doctrine\Common\EventManager;
@@ -16,7 +15,6 @@ use Doctrine\DBAL\Exception;
  */
 class TenantConnection extends Connection
 {
-
     /** @var mixed */
     protected array $params = [];
     /** @var bool */

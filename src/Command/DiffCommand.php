@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Hakam\MultiTenancyBundle\Command;
 
 use Doctrine\Persistence\ManagerRegistry;
@@ -49,7 +48,6 @@ class DiffCommand extends Command
             ->setDescription('Proxy to launch doctrine:migrations:diff with custom database .')
             ->addArgument('dbId', InputArgument::OPTIONAL, 'Tenant Db Identifier to create migration.')
             ->addOption('allow-empty-diff', null, InputOption::VALUE_NONE, 'Don\'t throw an exception if no migration is available (CI).');
-
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int

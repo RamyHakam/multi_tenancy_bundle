@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Hakam\MultiTenancyBundle\Command;
-
 
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\UpdateSchemaDoctrineCommand;
 use Doctrine\Persistence\ManagerRegistry;
@@ -25,7 +23,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 final class UpdateSchemaCommand extends Command
 {
-
     /**
      * @var ManagerRegistry
      */

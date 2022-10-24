@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Hakam\MultiTenancyBundle\Services;
-
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectRepository;
@@ -23,7 +21,7 @@ class DbConfigService
      */
     private string $dbIdentifier;
 
-    public function __construct(EntityManagerInterface $entityManager,string $dbClassName, string $dbIdentifier)
+    public function __construct(EntityManagerInterface $entityManager, string $dbClassName, string $dbIdentifier)
     {
         $this->dbIdentifier = $dbIdentifier;
         $this->entityRepository = $entityManager->getRepository($dbClassName);
@@ -32,8 +30,7 @@ class DbConfigService
     public function findDbConfig(string $identifier): TenantDbConfigurationInterface
     {
         $dbConfigObject = $this->entityRepository->findOneBy([$this->dbIdentifier => $identifier]);
-        if( $dbConfigObject === null )
-        {
+        if ($dbConfigObject === null) {
             throw new RuntimeException(sprintf(
                 'Tenant db repository " %s " returns NULL for identifier " %s = %s " ',
                 get_class($this->entityRepository),
@@ -42,8 +39,7 @@ class DbConfigService
             ));
         }
 
-        if( !$dbConfigObject instanceof TenantDbConfigurationInterface)
-        {
+        if (!$dbConfigObject instanceof TenantDbConfigurationInterface) {
             throw new LogicException(sprintf(
                 'The tenant db entity  " %s ". Should implement " Hakam\MultiTenancyBundle\TenantDbConfigurationInterface " ',
                 get_class($dbConfigObject)

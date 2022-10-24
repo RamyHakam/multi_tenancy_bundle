@@ -1,12 +1,11 @@
 <?php
 
-
 namespace Hakam\MultiTenancyBundle\Services;
 
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
  */
-Interface TenantDbConfigurationInterface
+interface TenantDbConfigurationInterface
 {
     /**
      * Tenant database name

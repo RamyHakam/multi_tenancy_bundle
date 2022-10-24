@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Hakam\MultiTenancyBundle\DependencyInjection;
-
 
 use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
@@ -15,7 +13,7 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
  */
-class HakamMultiTenancyExtension extends Extension implements  PrependExtensionInterface
+class HakamMultiTenancyExtension extends Extension implements PrependExtensionInterface
 {
     /**
      * @throws \Exception
