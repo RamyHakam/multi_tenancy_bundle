@@ -58,7 +58,7 @@ class Configuration implements ConfigurationInterface
             ->ignoreExtraKeys()
             ->addDefaultsIfNotSet()
             ->children()
-            ->variableNode('type')->defaultValue('annotation')->info('mapping type default annotation')->end()
+            ->variableNode('type')->defaultValue('attribute')->info('mapping type default attribute')->end()
             ->variableNode('dir')->defaultValue('%kernel.project_dir%/src/Entity')->info('directory of tenant entities, it could be different from main directory')->end()
             ->variableNode('prefix')->defaultValue('App\Tenant')->info('Tenant entities prefix example " #App\Entity\Tenant" ')->end()
             ->variableNode('alias')->info('Tenant entities alias example " Tenant " ')->end()
