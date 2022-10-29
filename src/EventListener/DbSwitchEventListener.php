@@ -30,16 +30,20 @@ class DbSwitchEventListener implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return
-        [
-            SwitchDbEvent::class => 'onHakamMultiTenancyBundleEventSwitchDbEvent'
-        ];
+            [
+                SwitchDbEvent::class => 'onHakamMultiTenancyBundleEventSwitchDbEvent'
+            ];
     }
 
     public function onHakamMultiTenancyBundleEventSwitchDbEvent(SwitchDbEvent $switchDbEvent)
     {
         $dbConfig = $this->dbConfigService->findDbConfig($switchDbEvent->getDbIndex());
         $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
-        $tenantConnection->changeParams($dbConfig->getDbName(), $dbConfig->getDbUsername(), $dbConfig->getDbPassword());
-        $tenantConnection->reconnect();
+        $params = [
+            'dbname' => $dbConfig->getDbName(),
+            'user' => $dbConfig->getDbUsername(),
+            'password' => $dbConfig->getDbPassword(),
+        ];
+        $tenantConnection->switchConnection($params);
     }
 }
