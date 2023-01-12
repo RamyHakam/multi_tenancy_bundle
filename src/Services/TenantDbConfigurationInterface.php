@@ -1,28 +1,24 @@
 <?php
 
-
 namespace Hakam\MultiTenancyBundle\Services;
 
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
  */
-Interface TenantDbConfigurationInterface
+interface TenantDbConfigurationInterface
 {
     /**
-     * Tenant database name
-     * @return string
+     * Tenant database name.
      */
     public function getDbName(): string;
 
     /**
-     * Tenant database user name
-     * @return string
+     * Tenant database user name.
      */
     public function getDbUsername(): string;
 
     /**
-     * Tenant database password
-     * @return string|null
+     * Tenant database password.
      */
     public function getDbPassword(): ?string;
 }

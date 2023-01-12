@@ -1,15 +1,13 @@
 <?php
 
-
 namespace Hakam\MultiTenancyBundle\Command;
 
-
 use Doctrine\Bundle\DoctrineBundle\Command\Proxy\UpdateSchemaDoctrineCommand;
-use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
 use Doctrine\Migrations\Configuration\Migration\ConfigurationArray;
 use Doctrine\Migrations\DependencyFactory;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
@@ -25,18 +23,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  */
 final class UpdateSchemaCommand extends Command
 {
-
-    /**
-     * @var ManagerRegistry
-     */
     private ManagerRegistry $registry;
-    /**
-     * @var ContainerInterface
-     */
+
     private ContainerInterface $container;
-    /**
-     * @var EventDispatcherInterface
-     */
+
     private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(ManagerRegistry $registry, ContainerInterface $container, EventDispatcherInterface $eventDispatcher)
