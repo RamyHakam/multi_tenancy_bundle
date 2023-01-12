@@ -53,68 +53,110 @@ $ composer require hakam/multi-tenancy-bundle
    Thanks for Doctrine migration bundle v3+ .
    
 ### Usage Example 
- You can dispatch the event where ever you want to switch to a custom db
+ You can dispatch the event where ever you want to switch to a custom db.
+
+
    
    ```php
-      namespace App\Controller;
-    
-    
-      use Symfony\Component\EventDispatcher\EventDispatcherInterface;  
-      use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
-      use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
-      use Doctrine\ORM\EntityManagerInterface;
-      use App\Entity\Tenant\TenantEntityExample;
-      use App\Entity\Main\MainLog;
+      <?php
 
+namespace App\Controller;
 
-       public class AccountController extends AbstractController
-       {
-    
-           /**
-            * @var EntityManagerInterface
-            */
-           private $mainEntityManager;
-           /**
-            * @var TenantEntityManager
-            */
-           private $tenantEntityManager;
-           /**
-            * @var EventDispatcherInterface
-            */
-           private $dispatcher;
-    
-        public function __construct(
-                EntityManagerInterface $entityManager,
-                TenantEntityManager $tenantEntityManager,
-                EventDispatcherInterface $dispatcher)
-            {
-                $this->mainEntityManager = $entityManager;
-                $this->tenantEntityManager = $tenantEntityManager;
-                $this->dispatcher = $dispatcher;
-            }
-    
-        public function updateTenantAccount(TenantEntityExample $tenantEntityExample)
-            {
-                   // switch connection to tenant account database
-    
-                  $switchEvent = new SwitchDbEvent($tenantEntityExample->getDbConfigId());
-                  $this->dispatcher->dispatch($switchEvent);
-    
-                  // now $tenantEntityManager is connected to custom tenant db
-    
-                  $tenantEntityExample->updateSomthing();
-                  $this->tenantEntityManager->persist($tenantEntityExample);
-                  $this->tenantEntityManager->persist();
-    
-                  //log update action in our main db 
-    
-                  $mainLog =new MainLog($tenantEntityExample->getId());
-                  $this->mainEntityManager->persist($mainLog);
-                  $this->mainEntityManager->flush();
-            }
-    
-           //..
-       }
+use App\Entity\Main\TenantDbConfig;
+use Hakam\MultiTenancyBundle\Services\DbCreateService;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
+use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Entity\Tenant\TestEntity;
+use App\Entity\Main\MainEntity;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
+
+class MultiTenantController extends AbstractController
+{
+    public function __construct(
+        private EntityManagerInterface $mainEntityManager,
+        private TenantEntityManager $tenantEntityManager,
+        private EventDispatcherInterface $dispatcher,
+        private DbCreateService $createService,
+    ) {
+    }
+
+    /**
+     * Create two new tenant configs in the main database.
+     * Generate new databases for each tenant.
+     * Update the schema on the new databases.
+     */
+    #[Route('/build_db', name: 'app_build_db')]
+    public function buildDb()
+    {
+        $tenants = [];
+
+        // Create a new TenantDBConfig
+        $tenantDb = new TenantDbConfig();
+        $tenantDb
+            ->setDbName('liveTenantDb1')
+            ->setDbUserName('root')
+            ->setDbPassword('password')
+            ;
+        $this->mainEntityManager->persist($tenantDb);
+        $tenants[] = $tenantDb;
+
+        // Create a new TenantDBConfig
+        $tenantDb = new TenantDbConfig();
+        $tenantDb
+            ->setDbName('liveTenantDb2')
+            ->setDbUserName('root')
+            ->setDbPassword('password')
+        ;
+        $tenants[] = $tenantDb;
+        $this->mainEntityManager->persist($tenantDb);
+
+        // Persist the new configurations to the main database.
+        $this->mainEntityManager->flush();
+
+        // For each of the new tenants, create a new database and set it's schema
+        foreach ($tenants as $tenantDb) {
+            $this->createService->createDatabase($tenantDb->getDbName());
+            $this->createService->createSchemaInNewDb($tenantDb->getId());
+        }
+
+        return new JsonResponse();
+    }
+
+    /**
+     * An example of how to switch and update tenant databases
+     */
+    #[Route('/test_db', name: 'app_test_db')]
+    public function testDb(EntityManagerInterface $entityManager)
+    {
+
+        $tenantDbConfigs = $this->mainEntityManager->getRepository(TenantDbConfig::class)->findAll();
+
+        foreach ($tenantDbConfigs as $tenantDbConfig) {
+            // Dispatch an event with the index ID for the entity that contains the tenant database connection details.
+            $switchEvent = new SwitchDbEvent($tenantDbConfig->getId());
+            $this->dispatcher->dispatch($switchEvent);
+
+            $tenantEntity1 = new TestEntity();
+            $tenantEntity1->setName($tenantDbConfig->getDbName());
+
+            $this->tenantEntityManager->persist($tenantEntity1);
+            $this->tenantEntityManager->flush();
+        }
+
+        // Add a new entity to the main database.
+        $mainLog = new MainEntity();
+        $mainLog->setName('mainTtest');
+        $this->mainEntityManager->persist($mainLog);
+        $this->mainEntityManager->flush();
+
+        return new JsonResponse();
+    }
+}
+
    ```
  ### Configuration
  
