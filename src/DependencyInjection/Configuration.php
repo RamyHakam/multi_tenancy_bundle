@@ -1,14 +1,13 @@
 <?php
 
-
 namespace Hakam\MultiTenancyBundle\DependencyInjection;
-
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
  * @category Database
+ *
  * @author   Ramy Hakam <ramyhakam1@gmail.com>
  */
 class Configuration implements ConfigurationInterface
@@ -59,14 +58,15 @@ class Configuration implements ConfigurationInterface
             ->ignoreExtraKeys()
             ->addDefaultsIfNotSet()
             ->children()
-            ->variableNode('type')->defaultValue('annotation')->info('mapping type default annotation')->end()
+            ->variableNode('type')->defaultValue('attribute')->info('mapping type default attribute')->end()
             ->variableNode('dir')->defaultValue('%kernel.project_dir%/src/Entity')->info('directory of tenant entities, it could be different from main directory')->end()
             ->variableNode('prefix')->defaultValue('App\Tenant')->info('Tenant entities prefix example " #App\Entity\Tenant" ')->end()
             ->variableNode('alias')->info('Tenant entities alias example " Tenant " ')->end()
-            ->variableNode('is_bundle')->defaultValue(false)->info('Tenant entities alias example " Tenant " ') ->end()
+            ->variableNode('is_bundle')->defaultValue(false)->info('Tenant entities alias example " Tenant " ')->end()
             ->end()
             ->end()
             ->end();
+
         return $treeBuilder;
     }
 }
