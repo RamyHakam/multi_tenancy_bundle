@@ -3,11 +3,14 @@
 namespace Hakam\MultiTenancyBundle\Services;
 
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
+use Hakam\MultiTenancyBundle\Exception\MultiTenancyException;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * @author Mark Ogilvie <m.ogilvie@parolla.ie>
@@ -33,13 +36,13 @@ class DbCreateService
         $shouldNotCreateDatabase = in_array($dbName, $schemaManager->listDatabases());
 
         if ($shouldNotCreateDatabase) {
-            return;
+            throw new MultiTenancyException(sprintf('Database %s already exists.', $dbName), Response::HTTP_BAD_REQUEST);
         }
 
         try {
             $schemaManager->createDatabase($dbName);
         } catch (\Exception $e) {
-            throw new \Exception(sprintf('Unable to create new tenant database %s: %s', $dbName, $e->getMessage()));
+            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName),$e->getCode(), $e);
         }
 
         $tmpConnection->close();
