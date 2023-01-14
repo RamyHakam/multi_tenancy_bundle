@@ -61,7 +61,7 @@ $ composer require hakam/multi-tenancy-bundle
 namespace App\Controller;
 
 use App\Entity\Main\TenantDbConfig;
-use Hakam\MultiTenancyBundle\Services\DbCreateService;
+use Hakam\MultiTenancyBundle\Services\DbService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
@@ -78,7 +78,7 @@ class MultiTenantController extends AbstractController
         private EntityManagerInterface $mainEntityManager,
         private TenantEntityManager $tenantEntityManager,
         private EventDispatcherInterface $dispatcher,
-        private DbCreateService $createService,
+        private DbService $dbService,
     ) {
     }
 
@@ -117,8 +117,8 @@ class MultiTenantController extends AbstractController
 
         // For each of the new tenants, create a new database and set it's schema
         foreach ($tenants as $tenantDb) {
-            $this->createService->createDatabase($tenantDb->getDbName());
-            $this->createService->createSchemaInNewDb($tenantDb->getId());
+            $this->dbService->createDatabase($tenantDb->getDbName());
+            $this->dbService->createSchemaInNewDb($tenantDb->getId());
         }
 
         return new JsonResponse();
