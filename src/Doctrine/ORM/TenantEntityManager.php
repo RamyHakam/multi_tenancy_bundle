@@ -10,7 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
  *
  * @author  Ramy Hakam <ramyhakam1@gmial.com>
  */
-class TenantEntityManager extends EntityManagerDecorator
+class TenantEntityManager extends EntityManagerDecorator implements EntityManagerInterface
 {
     public function __construct(EntityManagerInterface $wrapped)
     {
