@@ -48,8 +48,10 @@ final class UpdateSchemaCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $newInput = new ArrayInput([
-            // ToDo: Add command options list
+            'command' => 'doctrine:schema:update',
+            '--force' => true
         ]);
+
         $newInput->setInteractive($input->isInteractive());
         $otherCommand = new UpdateSchemaDoctrineCommand();
         $this->getDependencyFactory($input);
