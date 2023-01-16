@@ -48,11 +48,8 @@ class DbService
         $tmpConnection->close();
     }
 
-    public function createSchemaInNewDb($tenantId)
+    public function createSchemaInDb()
     {
-        $switchEvent = new SwitchDbEvent($tenantId);
-        $this->eventDispatcher->dispatch($switchEvent);
-
         $metadatas = $this->entityManager->getMetadataFactory()->getAllMetadata();
 
         $schemaTool = new SchemaTool($this->entityManager);
