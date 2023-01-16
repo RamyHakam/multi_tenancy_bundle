@@ -36,13 +36,13 @@ class DbService
         $shouldNotCreateDatabase = in_array($dbName, $schemaManager->listDatabases());
 
         if ($shouldNotCreateDatabase) {
-            throw new MultiTenancyException(sprintf('Database %s already exists.', $dbName), Response::HTTP_BAD_REQUEST);
+            throw new MultiTenancyException(sprintf('Database %s already exists.', $dbName), Response::HTTP_BAD_REQUEST, $e);
         }
 
         try {
             $schemaManager->createDatabase($dbName);
         } catch (\Exception $e) {
-            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName),$e->getCode());
+            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName, $e->getMessage()),$e->getCode(), $e);
         }
 
         $tmpConnection->close();
@@ -81,7 +81,7 @@ class DbService
         $shouldNotCreateDatabase = !in_array($dbName, $schemaManager->listDatabases());
 
         if ($shouldNotCreateDatabase) {
-            throw new MultiTenancyException(sprintf('Database %s does not exist.', $dbName), Response::HTTP_BAD_REQUEST);
+            throw new MultiTenancyException(sprintf('Database %s does not exist.', $dbName), Response::HTTP_BAD_REQUEST, $e);
         }
 
         try {
