@@ -87,7 +87,7 @@ class DbService
         try {
             $schemaManager->dropDatabase($dbName);
         } catch (\Exception $e) {
-            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName),$e->getCode());
+            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName, $e->getMessage() ), $e->getCode(), $e);
         }
 
         $tmpConnection->close();
