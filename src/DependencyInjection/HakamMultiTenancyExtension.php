@@ -40,10 +40,12 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         $dbSwitcherConfig = $this->processConfiguration(new Configuration(), $configs);
         if (5 === count($dbSwitcherConfig)) {
             $bundles = $container->getParameter('kernel.bundles');
+
             $tenantConnectionConfig = [
                 'connections' => [
                     'tenant' => [
                         'driver' => $dbSwitcherConfig['tenant_connection']['driver'],
+                        'url' => $dbSwitcherConfig['tenant_connection']['url'],
                         'host' => $dbSwitcherConfig['tenant_connection']['host'],
                         'port' => $dbSwitcherConfig['tenant_connection']['port'],
                         'charset' => $dbSwitcherConfig['tenant_connection']['charset'],
