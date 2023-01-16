@@ -31,23 +31,11 @@ class DbService
 
     public function createDatabase($dbName): void
     {
-        // The hakam_configuration yaml has tenant1 defined as the initial database.
-
         $params = [
-              "url" => $this->dbCredentials['db_url'],
-              "driver" => "pdo_mysql",
-//              "host" => "127.0.0.1",
-//              "port" => 3309,
-//              "user" => "root",
-//              "password" => "password",
-              "driverOptions" => [],
-              "defaultTableOptions" => [],
-              "dbname" => $this->dbCredentials['initial_db_name'],
-              "serverVersion" => "8",
-              "charset" => "utf8mb4",
-            ];
+            "url" => $this->dbCredentials['db_url'],
+        ];
 
-        // Override the dbname with out preferred dbname
+        // Override the dbname without preferred dbname
         $tmpConnection = DriverManager::getConnection($params);
 
         $schemaManager = method_exists($tmpConnection, 'createSchemaManager')
