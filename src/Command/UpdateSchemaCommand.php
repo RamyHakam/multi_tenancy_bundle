@@ -17,12 +17,17 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+
+#[AsCommand(
+    name: 'tenant:schema:update',
+    description: 'Proxy to launch doctrine:schema:update with custom databases.',
+)]
 final class UpdateSchemaCommand extends Command
 {
     public function __construct(
-        private ContainerInterface $container,
-        private EventDispatcherInterface $eventDispatcher,
-        private EntityManagerInterface $entityManager,
+        private readonly ContainerInterface $container,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly EntityManagerInterface $entityManager,
     ) {
         parent::__construct();
     }
