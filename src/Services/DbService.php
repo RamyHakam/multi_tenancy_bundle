@@ -29,7 +29,7 @@ class DbService
     {
     }
 
-    public function createDatabase($dbName): void
+    public function createDatabase(string $dbName): void
     {
         $params = [
             "url" => $this->dbCredentials['db_url'],

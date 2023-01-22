@@ -10,7 +10,10 @@ use Doctrine\ORM\Mapping as ORM;
  * @author Ramy Hakam <pencilsoft1@gmail.com>
  */ trait TenantDbConfigTrait
 {
-    #[ORM\Column(length: 255)]
+    /**
+     * Use a Base32 Encoded version of UUID's
+     */
+    #[ORM\Column(length: 64)]
     protected string $dbName;
 
     #[ORM\Column(length: 255)]
