@@ -5,7 +5,7 @@
         http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
         <service id ="hakam_db_config.service" class="Hakam\MultiTenancyBundle\Services\DbConfigService" public="false" >
-            <argument  key="$entityManager" type="service" id = 'doctrine.orm.entity_manager'/>
+            <argument  key="$entityManager" type="service" id = 'Doctrine\ORM\EntityManagerInterface'/>
             <argument  key="$dbClassName" type="string" id="dbClassName"/>
             <argument  key="$dbIdentifier" type="string" id="id"/>
         </service>
@@ -32,16 +32,16 @@
             <argument type="service" id="event_dispatcher" />
         </service>
 
-        <service id="Hakam\MultiTenancyBundle\Command\UpdateSchemaCommand">
-            <tag name="console.command" />
-            <argument type="service" id="service_container"/>
-            <argument type="service" id="event_dispatcher" />
-            <argument type="service" id="Doctrine\ORM\EntityManagerInterface" />
-        </service>
+        <!--        <service id="Hakam\MultiTenancyBundle\Command\UpdateSchemaCommand">-->
+        <!--            <tag name="console.command" />-->
+        <!--            <argument type="service" id="service_container"/>-->
+        <!--            <argument type="service" id="event_dispatcher" />-->
+        <!--            <argument type="service" id="Doctrine\ORM\EntityManagerInterface" />-->
+        <!--        </service>-->
         <service id="tenant_db_interface" class="Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface" public="true"/>
 
         <service class="Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager" id="tenant_entity_manager" public="true">
-            <argument type="service" id="doctrine.orm.tenant_entity_manager"/>
+            <argument type="service" id="Doctrine\ORM\EntityManagerInterface"/>
         </service>
         <service id="Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager" alias="tenant_entity_manager" />
     </services>
