@@ -29,8 +29,6 @@ final class UpdateSchemaCommand extends Command
         private readonly EventDispatcherInterface $eventDispatcher,
         private readonly EntityManagerInterface $entityManager,
     ) {
-        parent::__construct();
-    }
 
     protected function configure(): void
     {

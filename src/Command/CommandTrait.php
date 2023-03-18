@@ -16,7 +16,8 @@ trait CommandTrait
 {
     protected function getDependencyFactory(InputInterface $input): DependencyFactory
     {
-        if (null !== $input->getArgument('dbId')) {
+        if ($input->getArgument('dbId') !== null) {
+        
             $switchEvent = new SwitchDbEvent($input->getArgument('dbId'));
             $this->eventDispatcher->dispatch($switchEvent);
         }
