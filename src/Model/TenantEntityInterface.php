@@ -7,5 +7,4 @@ namespace Hakam\MultiTenancyBundle\Model;
  */
 interface TenantEntityInterface
 {
-
 }

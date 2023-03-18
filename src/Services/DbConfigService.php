@@ -13,7 +13,6 @@ class DbConfigService
     private ObjectRepository  $entityRepository;
 
     public function __construct(EntityManagerInterface $entityManager, private string $dbClassName, private string $dbIdentifier)
-    
     {
         $this->entityRepository = $entityManager->getRepository($dbClassName);
     }

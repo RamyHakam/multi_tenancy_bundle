@@ -29,8 +29,7 @@ final class MigrateCommand extends Command
         ManagerRegistry $registry,
         ContainerInterface $container,
         EventDispatcherInterface $eventDispatcher
-    )
-    {
+    ) {
         parent::__construct();
         $this->registry = $registry;
         $this->container = $container;

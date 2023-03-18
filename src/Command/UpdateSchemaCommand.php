@@ -17,7 +17,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-
 #[AsCommand(
     name: 'tenant:schema:update',
     description: 'Proxy to launch doctrine:schema:update with custom databases.',

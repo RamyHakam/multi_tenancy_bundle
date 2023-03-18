@@ -6,7 +6,9 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Events;
 use Doctrine\DBAL\Event;
 use Doctrine\DBAL\Exception;
-	@@ -16,91 +12,34 @@
+
+/**
+ * @author Ramy Hakam <pencilsoft1@gmail.com>
  */
 class TenantConnection extends Connection
 {

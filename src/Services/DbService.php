@@ -25,8 +25,7 @@ class DbService
         private TenantEntityManager $tenantEntityManager,
         #[Autowire('%tenant_db_credentials%')]
         private array $dbCredentials
-    )
-    {
+    ) {
     }
 
     public function createDatabase(string $dbName): void
@@ -51,7 +50,7 @@ class DbService
         try {
             $schemaManager->createDatabase($dbName);
         } catch (\Exception $e) {
-            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName, $e->getMessage()),$e->getCode(), $e);
+            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName, $e->getMessage()), $e->getCode(), $e);
         }
 
         $tmpConnection->close();
@@ -93,7 +92,7 @@ class DbService
         try {
             $schemaManager->dropDatabase($dbName);
         } catch (\Exception $e) {
-            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName, $e->getMessage() ), $e->getCode(), $e);
+            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName, $e->getMessage()), $e->getCode(), $e);
         }
 
         $tmpConnection->close();
