@@ -20,7 +20,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
      */
     public function load(array $configs, ContainerBuilder $container)
     {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
 
         $configuration = $this->getConfiguration($configs, $container);
@@ -38,21 +38,24 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
     {
         $configs = $container->getExtensionConfig($this->getAlias());
         $dbSwitcherConfig = $this->processConfiguration(new Configuration(), $configs);
-        if (count($dbSwitcherConfig)  === 5) {
+        if (5 === count($dbSwitcherConfig)) {
             $bundles = $container->getParameter('kernel.bundles');
+
             $tenantConnectionConfig = [
                 'connections' => [
                     'tenant' => [
                         'driver' => $dbSwitcherConfig['tenant_connection']['driver'],
+                        'url' => $dbSwitcherConfig['tenant_connection']['url'],
                         'host' => $dbSwitcherConfig['tenant_connection']['host'],
+                        'port' => $dbSwitcherConfig['tenant_connection']['port'],
                         'charset' => $dbSwitcherConfig['tenant_connection']['charset'],
                         'dbname' => $dbSwitcherConfig['tenant_connection']['dbname'],
                         'server_version' => $dbSwitcherConfig['tenant_connection']['server_version'],
                         'user' => $dbSwitcherConfig['tenant_connection']['user'],
                         'password' => $dbSwitcherConfig['tenant_connection']['password'],
-                        'wrapper_class' => TenantConnection::class
-                    ]
-                ]
+                        'wrapper_class' => TenantConnection::class,
+                    ],
+                ],
             ];
             $tenantEntityManagerConfig = [
                 'entity_managers' => [
@@ -62,18 +65,18 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
                             'HakamMultiTenancyBundle' => [
                                 'type' => $dbSwitcherConfig['tenant_entity_manager']['mapping']['type'],
                                 'dir' => $dbSwitcherConfig['tenant_entity_manager']['mapping']['dir'],
-                                'prefix' => $dbSwitcherConfig['tenant_entity_manager']['mapping']['prefix']?? null,
-                                'alias' => $dbSwitcherConfig['tenant_entity_manager']['mapping']['alias']?? null,
-                                'is_bundle' => $dbSwitcherConfig['tenant_entity_manager']['mapping']['is_bundle']?? true,
-                            ]
-                        ]
-                    ]
-                ]
+                                'prefix' => $dbSwitcherConfig['tenant_entity_manager']['mapping']['prefix'] ?? null,
+                                'alias' => $dbSwitcherConfig['tenant_entity_manager']['mapping']['alias'] ?? null,
+                                'is_bundle' => $dbSwitcherConfig['tenant_entity_manager']['mapping']['is_bundle'] ?? true,
+                            ],
+                        ],
+                    ],
+                ],
             ];
 
             $tenantDoctrineMigrationPath =
                 [
-                    $dbSwitcherConfig['tenant_migration']['tenant_migration_namespace'] => $dbSwitcherConfig['tenant_migration']['tenant_migration_path']
+                    $dbSwitcherConfig['tenant_migration']['tenant_migration_namespace'] => $dbSwitcherConfig['tenant_migration']['tenant_migration_path'],
                 ];
 
             if (!isset($bundles['doctrine'])) {

@@ -12,13 +12,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class DbSwitchEventListener implements EventSubscriberInterface
 {
-    /**
-     * @var ContainerInterface
-     */
     private ContainerInterface $container;
-    /**
-     * @var DbConfigService
-     */
+
     private DbConfigService $dbConfigService;
 
     public function __construct(ContainerInterface $container, DbConfigService $dbConfigService)
@@ -30,9 +25,9 @@ class DbSwitchEventListener implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return
-            [
-                SwitchDbEvent::class => 'onHakamMultiTenancyBundleEventSwitchDbEvent'
-            ];
+        [
+            SwitchDbEvent::class => 'onHakamMultiTenancyBundleEventSwitchDbEvent',
+        ];
     }
 
     public function onHakamMultiTenancyBundleEventSwitchDbEvent(SwitchDbEvent $switchDbEvent)

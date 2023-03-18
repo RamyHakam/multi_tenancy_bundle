@@ -19,17 +19,10 @@ class DiffCommand extends Command
 {
     use CommandTrait;
 
-    /**
-     * @var ManagerRegistry
-     */
     private ManagerRegistry $registry;
-    /**
-     * @var ContainerInterface
-     */
+
     private ContainerInterface $container;
-    /**
-     * @var EventDispatcherInterface
-     */
+
     private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(ManagerRegistry $registry, ContainerInterface $container, EventDispatcherInterface $eventDispatcher)

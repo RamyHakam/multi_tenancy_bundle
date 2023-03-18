@@ -8,20 +8,17 @@ namespace Hakam\MultiTenancyBundle\Services;
 interface TenantDbConfigurationInterface
 {
     /**
-     * Tenant database name
-     * @return string
+     * Tenant database name.
      */
     public function getDbName(): string;
 
     /**
-     * Tenant database user name
-     * @return string
+     * Tenant database user name.
      */
     public function getDbUsername(): string;
 
     /**
-     * Tenant database password
-     * @return string|null
+     * Tenant database password.
      */
     public function getDbPassword(): ?string;
 }

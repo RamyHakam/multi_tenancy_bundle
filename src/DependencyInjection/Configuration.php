@@ -7,6 +7,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
  * @category Database
+ *
  * @author   Ramy Hakam <ramyhakam1@gmail.com>
  */
 class Configuration implements ConfigurationInterface
@@ -24,11 +25,13 @@ class Configuration implements ConfigurationInterface
             ->ignoreExtraKeys()
             ->addDefaultsIfNotSet()
             ->children()
+            ->variableNode('url')->defaultValue('mysql://root:password@127.0.0.1:3306/tenant1?serverVersion=8&charset=utf8mb4')->end()
             ->variableNode('host')->defaultValue('127.0.0.1')->end()
+            ->variableNode('port')->defaultValue('3306')->end()
             ->variableNode('driver')->defaultValue('pdo_mysql')->end()
             ->variableNode('charset')->defaultValue('utf8')->end()
             ->variableNode('server_version')->defaultValue('5.7')->end()
-            ->variableNode('dbname')->info('default tenant database to init the tenant connection')->defaultValue('tenant_db')->end()
+            ->variableNode('dbname')->info('default tenant database to initialise the tenant connection')->defaultValue('tenant_db')->end()
             ->variableNode('user')->info('default tenant database username')->defaultValue('root')->end()
             ->variableNode('password')->info('default tenant database password')->defaultNull()->end()
             ->end()
@@ -60,10 +63,11 @@ class Configuration implements ConfigurationInterface
             ->variableNode('dir')->defaultValue('%kernel.project_dir%/src/Entity')->info('directory of tenant entities, it could be different from main directory')->end()
             ->variableNode('prefix')->defaultValue('App\Tenant')->info('Tenant entities prefix example " #App\Entity\Tenant" ')->end()
             ->variableNode('alias')->info('Tenant entities alias example " Tenant " ')->end()
-            ->variableNode('is_bundle')->defaultValue(false)->info('Tenant entities alias example " Tenant " ') ->end()
+            ->variableNode('is_bundle')->defaultValue(false)->info('Tenant entities alias example " Tenant " ')->end()
             ->end()
             ->end()
             ->end();
+
         return $treeBuilder;
     }
 }

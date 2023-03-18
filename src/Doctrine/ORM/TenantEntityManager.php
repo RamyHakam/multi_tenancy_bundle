@@ -6,12 +6,11 @@ use Doctrine\ORM\Decorator\EntityManagerDecorator;
 use Doctrine\ORM\EntityManagerInterface;
 
 /**
- * Entity Manager for Tenant Database
+ * Entity Manager for Tenant Database.
  *
  * @author  Ramy Hakam <ramyhakam1@gmial.com>
  */
-
-class TenantEntityManager extends EntityManagerDecorator
+class TenantEntityManager extends EntityManagerDecorator implements EntityManagerInterface
 {
     public function __construct(EntityManagerInterface $wrapped)
     {
