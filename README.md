@@ -93,11 +93,13 @@ class MultiTenantController extends AbstractController
         $tenants = [];
 
         // Create a new TenantDBConfig
+        // Currently the new database should have the same username and password   as the main user  , cuz we are using the same user for all databases.
+        // Multi users will be added in the future.
         $tenantDb = new TenantDbConfig();
         $tenantDb
             ->setDbName('liveTenantDb1')
-            ->setDbUserName('root')
-            ->setDbPassword('password')
+            ->setDbUserName('root') // the same db user as main db 
+            ->setDbPassword('password') // the same db password as main db
             ;
         $this->mainEntityManager->persist($tenantDb);
         $tenants[] = $tenantDb;
@@ -106,8 +108,8 @@ class MultiTenantController extends AbstractController
         $tenantDb = new TenantDbConfig();
         $tenantDb
             ->setDbName('liveTenantDb2')
-            ->setDbUserName('root')
-            ->setDbPassword('password')
+            ->setDbUserName('root') // the same db user as main db
+            ->setDbPassword('password') // the same db password as main db
         ;
         $tenants[] = $tenantDb;
         $this->mainEntityManager->persist($tenantDb);
