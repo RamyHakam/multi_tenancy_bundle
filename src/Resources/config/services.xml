@@ -11,7 +11,7 @@
         </service>
         <service id="Hakam\MultiTenancyBundle\Services\DbConfigService" alias="hakam_db_config.service"/>
 
-        <service id ="Hakam\MultiTenancyBundle\Services\DbService" public="false" autowire="true" ></service>
+        <service id ="Hakam\MultiTenancyBundle\Services\DbService" public="false" autowire="true" />
 
         <service id="Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener">
             <tag name="kernel.event_listener" event= "Hakam\MultiTenancyBundle\Event\SwitchDbEvent" />
@@ -24,6 +24,10 @@
             <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
             <argument type="service" id="service_container"/>
             <argument type="service" id="event_dispatcher" />
+        </service>
+        <service id="Hakam\MultiTenancyBundle\Command\CreateDatabaseCommand">
+            <tag name="console.command" />
+            <argument type="service" id="Hakam\MultiTenancyBundle\Services\DbService"/>
         </service>
         <service id="Hakam\MultiTenancyBundle\Command\MigrateCommand">
             <tag name="console.command" />
