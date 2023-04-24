@@ -30,8 +30,6 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         $definition = $container->getDefinition('hakam_db_config.service');
         $definition->setArgument(1, $configs['tenant_database_className']);
         $definition->setArgument(2, $configs['tenant_database_identifier']);
-
-        $this->prepend($container);
     }
 
     public function prepend(ContainerBuilder $container)

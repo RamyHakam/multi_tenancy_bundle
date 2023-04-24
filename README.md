@@ -1,16 +1,11 @@
 # Symfony Multi-Tenancy Bundle  
 
 
-Multi tenancy bundle is an easy way to support multi-tenant databases in your symfony application, Which is a very helpful to extend doctrine to manage multiple databases with one doctrine entity manager where you can switch between all of them in the Runtime
- 
- ##### This bundle provides this list of features :  
- 
-  - Switch between the tenant databases on  the runtime easily by dispatch an event.
-  - Supporting different entities mapping for  the main and tenant entities.
-  - Provide custom extended doctrine commands to manage tenant databases independently. 
-  - Generate and run migrations independently of your main database.
-  - Execute bulk migrations for all tenants dbs with one command (soon).
-  - Create and prepare tenant database if not exist
+The Multi Tenancy Bundle for Symfony is a convenient solution for incorporating multi-tenant databases in your Symfony application. It simplifies the process of using Doctrine to handle multiple databases with a single entity manager, allowing you to switch between them during runtime.
+
+This bundle comes with a range of features, including the ability to effortlessly switch between tenant databases by triggering an event. Additionally, it supports distinct entity mapping for both the main and tenant entities. It also includes custom extended Doctrine commands for managing tenant databases independently, as well as the capability to generate and execute migrations for each database separately.
+
+In the near future, you will also be able to execute bulk migrations for all tenant databases with a single command. Additionally, the bundle allows you to create and prepare a tenant database if it doesn't already exist
 
   
 
