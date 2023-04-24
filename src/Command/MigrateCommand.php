@@ -3,7 +3,6 @@
 namespace Hakam\MultiTenancyBundle\Command;
 
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -11,7 +10,7 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
@@ -20,24 +19,17 @@ final class MigrateCommand extends Command
 {
     use CommandTrait;
 
-    /**
-     * @var ManagerRegistry
-     */
     private ManagerRegistry $registry;
-    /**
-     * @var ContainerInterface
-     */
+
     private ContainerInterface $container;
-    /**
-     * @var EventDispatcherInterface
-     */
+
     private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         ManagerRegistry $registry,
         ContainerInterface $container,
-        EventDispatcherInterface $eventDispatcher)
-    {
+        EventDispatcherInterface $eventDispatcher
+    ) {
         parent::__construct();
         $this->registry = $registry;
         $this->container = $container;

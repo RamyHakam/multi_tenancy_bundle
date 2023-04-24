@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Hakam\MultiTenancyBundle\Tests\FunctionalTest;
-
 
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use PHPUnit\Framework\TestCase;
@@ -10,7 +8,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ServiceWiringTest extends TestCase
 {
-
     private ContainerInterface $container;
 
     public function testDbConfigServiceWiring(): void

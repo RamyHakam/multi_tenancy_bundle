@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Hakam\MultiTenancyBundle\EventListener;
-
 
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Hakam\MultiTenancyBundle\Services\DbConfigService;
@@ -14,16 +12,11 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class DbSwitchEventListener implements EventSubscriberInterface
 {
-    /**
-     * @var ContainerInterface
-     */
     private ContainerInterface $container;
-    /**
-     * @var DbConfigService
-     */
+
     private DbConfigService $dbConfigService;
 
-    public function __construct(ContainerInterface $container,DbConfigService $dbConfigService)
+    public function __construct(ContainerInterface $container, DbConfigService $dbConfigService)
     {
         $this->container = $container;
         $this->dbConfigService = $dbConfigService;
@@ -31,18 +24,21 @@ class DbSwitchEventListener implements EventSubscriberInterface
 
     public static function getSubscribedEvents()
     {
-      return
-      [
-          SwitchDbEvent::class => 'onHakamMultiTenancyBundleEventSwitchDbEvent'
-      ];
+        return
+        [
+            SwitchDbEvent::class => 'onHakamMultiTenancyBundleEventSwitchDbEvent',
+        ];
     }
 
-    public function onHakamMultiTenancyBundleEventSwitchDbEvent( SwitchDbEvent $switchDbEvent)
+    public function onHakamMultiTenancyBundleEventSwitchDbEvent(SwitchDbEvent $switchDbEvent)
     {
-
         $dbConfig = $this->dbConfigService->findDbConfig($switchDbEvent->getDbIndex());
         $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
-        $tenantConnection->changeParams($dbConfig->getDbName(), $dbConfig->getDbUsername(), $dbConfig->getDbPassword());
-        $tenantConnection->reconnect();
+        $params = [
+            'dbname' => $dbConfig->getDbName(),
+            'user' => $dbConfig->getDbUsername(),
+            'password' => $dbConfig->getDbPassword(),
+        ];
+        $tenantConnection->switchConnection($params);
     }
 }
