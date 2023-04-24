@@ -1,6 +1,6 @@
 <?php
 
-namespace Hakam\MultiTenancyBundle\Tests\FunctionalTest;
+namespace Hakam\MultiTenancyBundle\Tests\Functional;
 
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use PHPUnit\Framework\TestCase;

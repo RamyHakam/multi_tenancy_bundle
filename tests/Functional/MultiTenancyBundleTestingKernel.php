@@ -1,6 +1,6 @@
 <?php
 
-namespace Hakam\MultiTenancyBundle\Tests\FunctionalTest;
+namespace Hakam\MultiTenancyBundle\Tests\Functional;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle;
