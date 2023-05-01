@@ -12,7 +12,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
  */
 class Configuration implements ConfigurationInterface
 {
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('hakam_multi_tenancy');
         $rootNode = $treeBuilder->getRootNode();
@@ -25,7 +25,7 @@ class Configuration implements ConfigurationInterface
             ->ignoreExtraKeys()
             ->addDefaultsIfNotSet()
             ->children()
-            ->variableNode('url')->defaultValue('mysql://root:password@127.0.0.1:3306/tenant1?serverVersion=8&charset=utf8mb4')->end()
+            ->variableNode('url')->defaultValue( $_ENV['DATABASE_URL']?? 'mysql://root@localhost:3306/DM')->end()
             ->variableNode('host')->defaultValue('127.0.0.1')->end()
             ->variableNode('port')->defaultValue('3306')->end()
             ->variableNode('driver')->defaultValue('pdo_mysql')->end()
