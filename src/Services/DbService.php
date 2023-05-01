@@ -21,7 +21,7 @@ class DbService
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
         private TenantEntityManager $tenantEntityManager,
-        #[Autowire('%tenant_db_credentials%')]
+        #[Autowire('%hakam.tenant_db_credentials%')]
         private array $dbCredentials
     ) {
     }
