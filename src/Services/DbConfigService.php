@@ -10,16 +10,17 @@ use Doctrine\Persistence\ObjectRepository;
  */
 class DbConfigService
 {
-    private ObjectRepository  $entityRepository;
+    private ObjectRepository $entityRepository;
 
     public function __construct(EntityManagerInterface $entityManager, private string $dbClassName, private string $dbIdentifier)
     {
         $this->entityRepository = $entityManager->getRepository($dbClassName);
     }
 
-    public function findDbConfig(string $identifier): TenantDbConfigurationInterface
+    public function findDbConfig(?string $identifier): TenantDbConfigurationInterface
     {
-        $dbConfigObject = $this->entityRepository->findOneBy([$this->dbIdentifier => $identifier]);
+        $dbConfigObject = $identifier ? $dbConfigObject = $this->entityRepository->findOneBy([$this->dbIdentifier => $identifier]) :
+            $this->entityRepository->findAll()[0];
         if (null === $dbConfigObject) {
             throw new \RuntimeException(sprintf('Tenant db repository " %s " returns NULL for identifier " %s = %s " ', get_class($this->entityRepository), $this->dbIdentifier, $identifier));
         }

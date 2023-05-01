@@ -9,14 +9,14 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 class SwitchDbEvent extends Event
 {
-    private string $dbIndex;
+    private ?string $dbIndex;
 
-    public function __construct(string $tenantDbIndex)
+    public function __construct(?string $tenantDbIndex)
     {
         $this->dbIndex = $tenantDbIndex;
     }
 
-    public function getDbIndex(): string
+    public function getDbIndex(): ?string
     {
         return $this->dbIndex;
     }
