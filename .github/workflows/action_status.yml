@@ -1,4 +1,4 @@
-name: Multi Tenancy Symfony
+name: action_status
 
 on:
   push:
