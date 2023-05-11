@@ -1,4 +1,5 @@
 # Symfony Multi-Tenancy Bundle  ![](https://github.com/RamyHakam/multi_tenancy_bundle/workflows/action_status/badge.svg)
+![Multi-Tenancy Bundle (Desktop Wallpaper)](https://github.com/RamyHakam/multi_tenancy_bundle/assets/17661342/eef23e6a-881c-4817-b7b8-8b7cec913154)
 
 
 The Multi Tenancy Bundle for Symfony is a convenient solution for incorporating multi-tenant databases in your Symfony application. It simplifies the process of using Doctrine to handle multiple databases with a single entity manager, allowing you to switch between them during runtime.
