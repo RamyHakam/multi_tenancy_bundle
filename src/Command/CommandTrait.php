@@ -16,10 +16,9 @@ trait CommandTrait
 {
     protected function getDependencyFactory(InputInterface $input): DependencyFactory
     {
-        if ($input->getArgument('dbId') !== null) {
-            $switchEvent = new SwitchDbEvent($input->getArgument('dbId'));
+            $switchEvent = new SwitchDbEvent($input->getArgument('dbId')?? null);
             $this->eventDispatcher->dispatch($switchEvent);
-        }
+
         /** @var EntityManagerInterface $em */
         $em = $this->registry->getManager('tenant');
 

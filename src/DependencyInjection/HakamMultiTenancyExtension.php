@@ -9,6 +9,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
@@ -27,6 +28,9 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
 
         $configs = $this->processConfiguration($configuration, $configs);
 
+        // set the required parameter
+        $container->setParameter('hakam.tenant_db_credentials', ['db_url'=>$configs['tenant_connection']['url']]);
+
         $definition = $container->getDefinition('hakam_db_config.service');
         $definition->setArgument(1, $configs['tenant_database_className']);
         $definition->setArgument(2, $configs['tenant_database_identifier']);
@@ -38,6 +42,8 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         $dbSwitcherConfig = $this->processConfiguration(new Configuration(), $configs);
         if (5 === count($dbSwitcherConfig)) {
             $bundles = $container->getParameter('kernel.bundles');
+
+            $this->checkDir($dbSwitcherConfig['tenant_entity_manager']['mapping']['dir']);
 
             $tenantConnectionConfig = [
                 'connections' => [
@@ -72,6 +78,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
                 ],
             ];
 
+          $this->checkDir($dbSwitcherConfig['tenant_migration']['tenant_migration_path']);
             $tenantDoctrineMigrationPath =
                 [
                     $dbSwitcherConfig['tenant_migration']['tenant_migration_namespace'] => $dbSwitcherConfig['tenant_migration']['tenant_migration_path'],
@@ -89,6 +96,13 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
             } else {
                 throw new InvalidConfigurationException('You need to enable Doctrine Migration Bundle to be able to use MultiTenancy Bundle');
             }
+        }
+    }
+    private function checkDir(string  $dir): void
+    {
+        $fileSystem = new Filesystem();
+        if (!$fileSystem->exists($dir)) {
+            $fileSystem->mkdir($dir);
         }
     }
 }
