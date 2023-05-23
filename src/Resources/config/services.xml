@@ -4,49 +4,57 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
-        <service id ="hakam_db_config.service" class="Hakam\MultiTenancyBundle\Services\DbConfigService" public="false" >
-            <argument  key="$entityManager" type="service" id = 'doctrine.orm.entity_manager'/>
-            <argument  key="$dbClassName" type="string" id="dbClassName"/>
-            <argument  key="$dbIdentifier" type="string" id="id"/>
+        <service id="hakam_db_config.service" class="Hakam\MultiTenancyBundle\Services\DbConfigService" public="false">
+            <argument key="$entityManager" type="service" id='doctrine.orm.entity_manager'/>
+            <argument key="$dbClassName" type="string" id="dbClassName"/>
+            <argument key="$dbIdentifier" type="string" id="id"/>
         </service>
         <service id="Hakam\MultiTenancyBundle\Services\DbConfigService" alias="hakam_db_config.service"/>
 
-        <service id ="Hakam\MultiTenancyBundle\Services\DbService" public="false" autowire="true" />
+        <service id="Hakam\MultiTenancyBundle\Services\DbService" public="false" autowire="true"/>
 
         <service id="Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener">
-            <tag name="kernel.event_listener" event= "Hakam\MultiTenancyBundle\Event\SwitchDbEvent" />
+            <tag name="kernel.event_listener" event="Hakam\MultiTenancyBundle\Event\SwitchDbEvent"/>
             <argument type="service" id="service_container"/>
             <argument type="service" id="hakam_db_config.service"/>
+            <argument type="string">%env(DATABASE_URL)%</argument>
         </service>
 
         <service id="Hakam\MultiTenancyBundle\Command\DiffCommand">
-            <tag name="console.command" />
+            <tag name="console.command"/>
             <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
             <argument type="service" id="service_container"/>
-            <argument type="service" id="event_dispatcher" />
+            <argument type="service" id="event_dispatcher"/>
         </service>
+        <service id="Symfony\Component\Console\Application" public="true"/>
         <service id="Hakam\MultiTenancyBundle\Command\CreateDatabaseCommand">
-            <tag name="console.command" />
+            <tag name="console.command"/>
+            <argument type="service" id="Symfony\Component\Console\Application"/>
+            <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
+            <argument type="service" id="service_container"/>
+            <argument type="service" id="event_dispatcher"/>
             <argument type="service" id="Hakam\MultiTenancyBundle\Services\DbService"/>
         </service>
         <service id="Hakam\MultiTenancyBundle\Command\MigrateCommand">
-            <tag name="console.command" />
+            <tag name="console.command"/>
             <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
             <argument type="service" id="service_container"/>
-            <argument type="service" id="event_dispatcher" />
+            <argument type="service" id="event_dispatcher"/>
         </service>
 
         <service id="Hakam\MultiTenancyBundle\Command\UpdateSchemaCommand">
-            <tag name="console.command" />
+            <tag name="console.command"/>
             <argument type="service" id="service_container"/>
-            <argument type="service" id="event_dispatcher" />
-            <argument type="service" id="Doctrine\ORM\EntityManagerInterface" />
+            <argument type="service" id="event_dispatcher"/>
+            <argument type="service" id="Doctrine\ORM\EntityManagerInterface"/>
         </service>
-        <service id="tenant_db_interface" class="Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface" public="true"/>
+        <service id="tenant_db_interface" class="Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface"
+                 public="true"/>
 
-        <service class="Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager" id="tenant_entity_manager" public="true">
+        <service class="Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager" id="tenant_entity_manager"
+                 public="true">
             <argument type="service" id="doctrine.orm.tenant_entity_manager"/>
         </service>
-        <service id="Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager" alias="tenant_entity_manager" />
+        <service id="Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager" alias="tenant_entity_manager"/>
     </services>
 </container>

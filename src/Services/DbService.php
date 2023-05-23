@@ -5,6 +5,7 @@ namespace Hakam\MultiTenancyBundle\Services;
 use Doctrine\DBAL\Driver\AbstractMySQLDriver;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
@@ -20,18 +21,23 @@ class DbService
 {
     public function __construct(
         private EventDispatcherInterface $eventDispatcher,
-        private TenantEntityManager $tenantEntityManager,
+        private TenantEntityManager      $tenantEntityManager,
+        private EntityManagerInterface   $entityManager,
+        #[Autowire('%hakam.tenant_db_list_entity%')]
+        private string                   $tenantDbListEntity,
         #[Autowire('%hakam.tenant_db_credentials%')]
-        private array $dbCredentials
-    ) {
+        private array                    $dbCredentials
+    )
+    {
     }
+
     /**
      * Creates a new database with the given name.
      *
      * @param string $dbName The name of the new database.
      * @throws MultiTenancyException|Exception If the database already exists or cannot be created.
      */
-    public function createDatabase(string $dbName): void
+    public function createDatabase(string $dbName): int
     {
         $params = [
             "url" => $this->dbCredentials['db_url'],
@@ -59,13 +65,13 @@ class DbService
             $schemaManager = method_exists($tmpConnection, 'createSchemaManager')
                 ? $tmpConnection->createSchemaManager()
                 : $tmpConnection->getSchemaManager();
-
             $schemaManager->createDatabase($dbName);
+            $tmpConnection->close();
+            return $this->addDbToMainList($dbName);
+
         } catch (\Exception $e) {
             throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName, $e->getMessage()), $e->getCode(), $e);
         }
-
-        $tmpConnection->close();
     }
 
     /**
@@ -80,6 +86,7 @@ class DbService
         $this->eventDispatcher->dispatch(new SwitchDbEvent($UserDbId));
 
         $schemaTool = new SchemaTool($this->tenantEntityManager);
+
 
         $sqls = $schemaTool->getUpdateSchemaSql($metadata);
 
@@ -121,5 +128,14 @@ class DbService
         }
 
         $tmpConnection->close();
+    }
+
+    private function addDbToMainList(string $dbname): int
+    {
+        $newDbConfig = new   $this->tenantDbListEntity();
+        $newDbConfig->setDbName($dbname);
+        $this->entityManager->persist($newDbConfig);
+        $this->entityManager->flush();
+        return $newDbConfig->getId();
     }
 }
