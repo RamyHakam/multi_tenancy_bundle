@@ -28,14 +28,35 @@ $ composer require hakam/multi-tenancy-bundle
  2. You can use the `TenantDbConfigTrait` to implement the full required  db config entity fields .
  3. Split your entities in two directories, one for the main database and one for the tenant databases.
           For example  `Main and Tenant `.
- 4. Add  the `TenantEntityManager` to your service or controller arguments.  
- 5. Dispatch `SwitchDbEvent` with a custom value for your tenant db Identifier.
+4. Split the migrations in two directories, one for the main database and one for the tenant databases.
+          For example  `Main and Tenant `.
+5. Update your doctrine config to use the new directories for entities and migrations.See the example below.
+```yaml
+# config/packages/doctrine.yaml
+doctrine:
+    orm:
+        mappings:
+            App:
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Entity/Main'
+                prefix: 'App\Entity\Main'
+                
+# config/packages/doctrine_migrations.yaml
+doctrine_migrations:
+    migrations_paths:
+        'DoctrineMigrations\Main': '%kernel.project_dir%/src/Migrations/Main'
+``` 
+####  You just need to update the config for the main EntityManager , Then the bundle will handle the rest for you.
+6. Add  the `TenantEntityManager` to your service or controller arguments.  
+7. Dispatch `SwitchDbEvent` with a custom value for your tenant db Identifier.
     `Example new SwitchDbEvent(1)`
- 6. You can switch between all tenants dbs just by dispatch the same event with different db identifier.
- 7. Now your instance from `TenantEntityManager` is connected to the tenant db with Identifier = 1.
- 8. Its recommended having your tenant entities in a different directory from your Main entities.
- 9. You can execute doctrine migration commands using our proxy commands for tenant database.
- 
+8. You can switch between all tenants dbs just by dispatch the same event with different db identifier.
+9. Now your instance from `TenantEntityManager` is connected to the tenant db with Identifier = 1.
+10. Its recommended having your tenant entities in a different directory from your Main entities.
+11. You can execute doctrine migration commands using our proxy commands for tenant database.
+
+        php bin/console tenant:database:create $dbName   # t:d:c $dbname  for short , To create and exceute  migraiton for a tenant db with name $dbName
+
         php bin/console tenant:migration:diff 1   # t:m:d 1 for short , To generate migraiton for tenant db  => 1
         
         php bin/console tenant:migration:migrate 1  # t:m:m 1, To run migraitons for tenant db  => 1
@@ -43,13 +64,48 @@ $ composer require hakam/multi-tenancy-bundle
         # Pass tenant identifier is optional and if it null the command will be executed on the defualt tenant db. 
         # You can use the same options here for the same doctrine commands.
         
-### Note:
-  All the doctrine migration commands and files is generated and executed especially for tenant databases independent from the main db migrations, 
+### Notes:
+  All the doctrine migration commands and files is generated and executed especially for tenant databases independent of the main db migrations, 
    Thanks for Doctrine migration bundle v3+ .
-   
-### Usage Example 
- You can dispatch the event where ever you want to switch to a custom db.
 
+   All the tenant databases migrations will be saved in the same directory you configured for tenant entities.
+
+   All the tenant databases has the same host ,username and password as the main database. we will support different host, username and password for  tenant dbs in the near future.
+
+### Get Started Example
+1. After configure the bundle as we mentioned above , you can use the following steps to get started.
+2. You need to generate the main database migration with the new entity first.
+        example  ` php bin/console doctrine:migrations:diff`
+3. Then migrate the main database.
+        example  ` php bin/console doctrine:migrations:migrate`
+4. Now you are ready to create new tenant databases and switch between them.
+5.  To create a new tenant database and execute the migration for it.
+        example  ` php bin/console tenant:database:create $dbName`
+6. To switch to a tenant database.
+        example  ` $this->dispatcher->dispatch(new SwitchDbEvent($tenantDb->getId()));` then you can use the `TenantEntityManager` to execute your queries.
+7.  You can add a relation between your tenant entity  and the `TenantDbConfig` entity to get the tenant db config easily. 
+```php
+      <?php
+      public Class AppController extends AbstractController
+      {
+      public function __construct(
+        private EntityManagerInterface $mainEntityManager,
+        private TenantEntityManager $tenantEntityManager,
+        private EventDispatcherInterface $dispatcher
+    ) {
+    }
+     public function switchToLoggedInUserTenantDb(): void
+     {
+        $this->dispatcher->dispatch(new SwitchDbEvent($this->getUser()->getTenantDbConfig()->getId()));
+        // Now you can use the tenant entity manager to execute your queries.
+     }
+    }
+```      
+8. You can use the custom doctrine commands for tenant databases to perform the same doctrine commands on tenant databases.
+        example  ` php bin/console tenant:migration:diff 1` to generate migration for tenant db with id = 1.
+        example  ` php bin/console tenant:migration:migrate 1` to execute migration for tenant db with id = 1.
+9. Now You can work with the `TenantEntityManager` as you work with the main entity manager.
+10. You can now add or delete entities from the main or tenant databases and generate migrations for each database separately.
 ```php
       <?php
 
@@ -76,51 +132,6 @@ class MultiTenantController extends AbstractController
         private DbService $dbService,
     ) {
     }
-
-    /**
-     * Create two new tenant configs in the main database.
-     * Generate new databases for each tenant.
-     * Update the schema on the new databases.
-     */
-    #[Route('/build_db', name: 'app_build_db')]
-    public function buildDb()
-    {
-        $tenants = [];
-
-        // Create a new TenantDBConfig
-        // Currently the new database should have the same username and password   as the main user  , cuz we are using the same user for all databases.
-        // Multi users will be added in the future.
-        $tenantDb = new TenantDbConfig();
-        $tenantDb
-            ->setDbName('liveTenantDb1')
-            ->setDbUserName('root') // the same db user as main db 
-            ->setDbPassword('password') // the same db password as main db
-            ;
-        $this->mainEntityManager->persist($tenantDb);
-        $tenants[] = $tenantDb;
-
-        // Create a new TenantDBConfig
-        $tenantDb = new TenantDbConfig();
-        $tenantDb
-            ->setDbName('liveTenantDb2')
-            ->setDbUserName('root') // the same db user as main db
-            ->setDbPassword('password') // the same db password as main db
-        ;
-        $tenants[] = $tenantDb;
-        $this->mainEntityManager->persist($tenantDb);
-
-        // Persist the new configurations to the main database.
-        $this->mainEntityManager->flush();
-
-        // For each of the new tenants, create a new database and set it's schema
-        foreach ($tenants as $tenantDb) {
-            $this->dbService->createDatabase($tenantDb->getDbName());
-            $this->dbService->createSchemaInNewDb($tenantDb->getId());
-        }
-
-        return new JsonResponse();
-    }
-
     /**
      * An example of how to switch and update tenant databases
      */

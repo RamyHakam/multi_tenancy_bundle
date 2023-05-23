@@ -20,7 +20,7 @@ class DbSwitchEventListenerTest extends TestCase
         $mockDbConfigService = $this->createMock(DbConfigService::class);
 
         // create a test instance of the listener
-        $listener = new DbSwitchEventListener($mockContainer, $mockDbConfigService);
+        $listener = new DbSwitchEventListener($mockContainer, $mockDbConfigService, 'test_database_url');
 
         // create a test event
         $testDbIndex = 1;

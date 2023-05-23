@@ -21,7 +21,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
      */
     public function load(array $configs, ContainerBuilder $container)
     {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.xml');
 
         $configuration = $this->getConfiguration($configs, $container);
@@ -29,7 +29,8 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         $configs = $this->processConfiguration($configuration, $configs);
 
         // set the required parameter
-        $container->setParameter('hakam.tenant_db_credentials', ['db_url'=>$configs['tenant_connection']['url']]);
+        $container->setParameter('hakam.tenant_db_credentials', ['db_url' => $configs['tenant_connection']['url']]);
+        $container->setParameter('hakam.tenant_db_list_entity', $configs['tenant_database_className']);
 
         $definition = $container->getDefinition('hakam_db_config.service');
         $definition->setArgument(1, $configs['tenant_database_className']);
@@ -43,7 +44,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         if (5 === count($dbSwitcherConfig)) {
             $bundles = $container->getParameter('kernel.bundles');
 
-            $this->checkDir($dbSwitcherConfig['tenant_entity_manager']['mapping']['dir']);
+            $this->checkDir($container->getParameter('kernel.project_dir'), $dbSwitcherConfig['tenant_entity_manager']['mapping']['dir']);
 
             $tenantConnectionConfig = [
                 'connections' => [
@@ -78,7 +79,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
                 ],
             ];
 
-          $this->checkDir($dbSwitcherConfig['tenant_migration']['tenant_migration_path']);
+            $this->checkDir($container->getParameter('kernel.project_dir'), $dbSwitcherConfig['tenant_migration']['tenant_migration_path']);
             $tenantDoctrineMigrationPath =
                 [
                     $dbSwitcherConfig['tenant_migration']['tenant_migration_namespace'] => $dbSwitcherConfig['tenant_migration']['tenant_migration_path'],
@@ -91,16 +92,19 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
             }
 
             if (!isset($bundles['doctrine_migrations'])) {
-            //    $container->prependExtensionConfig('doctrine_migrations', ['migrations_paths' => $tenantDoctrineMigrationPath]);
+                //    $container->prependExtensionConfig('doctrine_migrations', ['migrations_paths' => $tenantDoctrineMigrationPath]);
                 $container->setParameter('tenant_doctrine_migration', ['migrations_paths' => $tenantDoctrineMigrationPath]);
             } else {
                 throw new InvalidConfigurationException('You need to enable Doctrine Migration Bundle to be able to use MultiTenancy Bundle');
             }
         }
     }
-    private function checkDir(string  $dir): void
+
+    private function checkDir(string $projectDir, string $dir): void
     {
         $fileSystem = new Filesystem();
+        $dir = str_replace('%kernel.project_dir%', '', $dir);
+        $dir = $projectDir . $dir;
         if (!$fileSystem->exists($dir)) {
             $fileSystem->mkdir($dir);
         }

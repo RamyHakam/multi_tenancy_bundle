@@ -4,6 +4,7 @@ namespace Hakam\MultiTenancyBundle\Command;
 
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
@@ -15,6 +16,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
  */
+#[AsCommand(
+    name: 'tenant:migrations:migrate',
+    description: 'Proxy to migrate a new tenant database.',
+)]
 final class MigrateCommand extends Command
 {
     use CommandTrait;
