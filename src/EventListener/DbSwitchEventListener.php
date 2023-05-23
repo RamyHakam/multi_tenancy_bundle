@@ -12,33 +12,41 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class DbSwitchEventListener implements EventSubscriberInterface
 {
-    private ContainerInterface $container;
 
-    private DbConfigService $dbConfigService;
+    public function __construct(
+        private ContainerInterface $container,
+        private DbConfigService    $dbConfigService,
+        private string             $databaseURL
+    )
+    {}
 
-    public function __construct(ContainerInterface $container, DbConfigService $dbConfigService)
-    {
-        $this->container = $container;
-        $this->dbConfigService = $dbConfigService;
-    }
-
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return
-        [
-            SwitchDbEvent::class => 'onHakamMultiTenancyBundleEventSwitchDbEvent',
-        ];
+            [
+                SwitchDbEvent::class => 'onHakamMultiTenancyBundleEventSwitchDbEvent',
+            ];
     }
 
-    public function onHakamMultiTenancyBundleEventSwitchDbEvent(SwitchDbEvent $switchDbEvent)
+    public function onHakamMultiTenancyBundleEventSwitchDbEvent(SwitchDbEvent $switchDbEvent): void
     {
         $dbConfig = $this->dbConfigService->findDbConfig($switchDbEvent->getDbIndex());
         $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
         $params = [
             'dbname' => $dbConfig->getDbName(),
-            'user' => $dbConfig->getDbUsername(),
-            'password' => $dbConfig->getDbPassword(),
+            'user' => $dbConfig->getDbUsername() ?? $this->parseDatabaseUrl($this->databaseURL)['user'],
+            'password' => $dbConfig->getDbPassword() ?? $this->parseDatabaseUrl($this->databaseURL)['password'],
         ];
         $tenantConnection->switchConnection($params);
+    }
+
+    private function parseDatabaseUrl(string $databaseURL): array
+    {
+        $url = parse_url($databaseURL);
+        return [
+            'dbname' => substr($url['path'], 1),
+            'user' => $url['user'],
+            'password' => $url['pass'],
+        ];
     }
 }

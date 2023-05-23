@@ -15,7 +15,7 @@ interface TenantDbConfigurationInterface
     /**
      * Tenant database user name.
      */
-    public function getDbUsername(): string;
+    public function getDbUsername(): ?string;
 
     /**
      * Tenant database password.
