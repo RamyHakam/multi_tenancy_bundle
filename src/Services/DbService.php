@@ -8,6 +8,7 @@ use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
+use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Hakam\MultiTenancyBundle\Exception\MultiTenancyException;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -67,7 +68,7 @@ class DbService
                 : $tmpConnection->getSchemaManager();
             $schemaManager->createDatabase($dbName);
             $tmpConnection->close();
-            return $this->addDbToMainList($dbName);
+            return 1;
 
         } catch (\Exception $e) {
             throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName, $e->getMessage()), $e->getCode(), $e);
@@ -130,12 +131,22 @@ class DbService
         $tmpConnection->close();
     }
 
-    private function addDbToMainList(string $dbname): int
+    private function onboardNewDatabaseConfig(string $dbname): int
     {
+        //check if db already exists
+        $dbConfig = $this->entityManager->getRepository($this->tenantDbListEntity)->findOneBy(['dbName' => $dbname]);
+        if ($dbConfig) {
+            return $dbConfig->getId();
+        }
         $newDbConfig = new   $this->tenantDbListEntity();
         $newDbConfig->setDbName($dbname);
         $this->entityManager->persist($newDbConfig);
         $this->entityManager->flush();
         return $newDbConfig->getId();
+    }
+
+    public function getListOfNotCreatedDataBases(): array
+    {
+        return $this->entityManager->getRepository($this->tenantDbListEntity)->findBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_NOT_CREATED]);
     }
 }
