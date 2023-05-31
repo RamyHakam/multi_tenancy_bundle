@@ -177,9 +177,6 @@ hakam_multi_tenancy:
     port:     3306                                              # default is 3306
     driver:   pdo_mysql
     charset:  utf8 
-    dbname:   tanent1                                           # default tenant database to init the tenant connection
-    user:     root                                              # default tenant database username
-    password: null                                              # default tenant database password
     server_version: 5.7                                         # mysql server version
 
   tenant_migration:                                             # tenant db migration configurations, Its recommended to have a different migration for tenants dbs than you main migration config
