@@ -63,7 +63,9 @@ doctrine_migrations:
         
         # Pass tenant identifier is optional and if it null the command will be executed on the defualt tenant db. 
         # You can use the same options here for the same doctrine commands.
-        
+  ### Example
+ You can check  this  project example   [Multi-Tenant Bundle Example](https://github.com/RamyHakam/multi-tenancy-project-example) to see how to use the bundle.
+
 ### Notes:
   All the doctrine migration commands and files is generated and executed especially for tenant databases independent of the main db migrations, 
    Thanks for Doctrine migration bundle v3+ .
