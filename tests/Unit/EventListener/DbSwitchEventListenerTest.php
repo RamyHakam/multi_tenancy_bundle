@@ -3,6 +3,7 @@
 namespace Hakam\MultiTenancyBundle\Tests\Unit\EventListener;
 
 use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
+use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface;
 use PHPUnit\Framework\TestCase;
 use Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener;
@@ -87,5 +88,20 @@ class DbConfig implements TenantDbConfigurationInterface
     public function setDbPassword(?string $dbPassword): void
     {
         $this->dbPassword = $dbPassword;
+    }
+
+    public function getId(): ?int
+    {
+        return 1;
+    }
+
+    public function getDatabaseStatus(): DatabaseStatusEnum
+    {
+         return DatabaseStatusEnum::DATABASE_CREATED;
+    }
+
+    public function setDatabaseStatus(DatabaseStatusEnum $databaseStatus): TenantDbConfigurationInterface
+    {
+       return $this;
     }
 }

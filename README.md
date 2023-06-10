@@ -8,6 +8,11 @@ This bundle comes with a range of features, including the ability to effortlessl
 
 In the near future, you will also be able to execute bulk migrations for all tenant databases with a single command. Additionally, the bundle allows you to create and prepare a tenant database if it doesn't already exist
 
+### Supported Databases:
+- MySQL / MariaDB   
+- PostgreSQL
+- SQLite
+
   
 
 ### Installation
@@ -27,11 +32,12 @@ $ composer require hakam/multi-tenancy-bundle
  ###### The idea behind this bundle is simple,You have a main database and  multi-tenant databases So: 
  1. Create specific entity witch should implement `TenantDbConfigurationInterface`. In your main database to save all tenant databases configurations. 
  2. You can use the `TenantDbConfigTrait` to implement the full required  db config entity fields .
- 3. Split your entities in two directories, one for the main database and one for the tenant databases.
+3. You can use the `TimestampableTrait` to add `createdAt` and `updatedAt` fields to your entity then you should add `#[ORM\HasLifecycleCallbacks]` attribute to your entity class.
+4. Split your entities in two directories, one for the main database and one for the tenant databases.
           For example  `Main and Tenant `.
-4. Split the migrations in two directories, one for the main database and one for the tenant databases.
+5. Split the migrations in two directories, one for the main database and one for the tenant databases.
           For example  `Main and Tenant `.
-5. Update your doctrine config to use the new directories for entities and migrations.See the example below.
+6. Update your doctrine config to use the new directories for entities and migrations.See the example below.
 ```yaml
 # config/packages/doctrine.yaml
 doctrine:
@@ -48,15 +54,15 @@ doctrine_migrations:
         'DoctrineMigrations\Main': '%kernel.project_dir%/src/Migrations/Main'
 ``` 
 ####  You just need to update the config for the main EntityManager , Then the bundle will handle the rest for you.
-6. Add  the `TenantEntityManager` to your service or controller arguments.  
-7. Dispatch `SwitchDbEvent` with a custom value for your tenant db Identifier.
+7. Add  the `TenantEntityManager` to your service or controller arguments.  
+8. Dispatch `SwitchDbEvent` with a custom value for your tenant db Identifier.
     `Example new SwitchDbEvent(1)`
-8. You can switch between all tenants dbs just by dispatch the same event with different db identifier.
-9. Now your instance from `TenantEntityManager` is connected to the tenant db with Identifier = 1.
-10. Its recommended having your tenant entities in a different directory from your Main entities.
-11. You can execute doctrine migration commands using our proxy commands for tenant database.
+9. You can switch between all tenants dbs just by dispatch the same event with different db identifier.
+10. Now your instance from `TenantEntityManager` is connected to the tenant db with Identifier = 1.
+11. ts recommended having your tenant entities in a different directory from your Main entities.
+12. You can execute doctrine migration commands using our proxy commands for tenant database.
 
-        php bin/console tenant:database:create $dbName   # t:d:c $dbname  for short , To create and exceute  migraiton for a tenant db with name $dbName
+        php bin/console tenant:database:create   # t:d:c  for short , To create and exceute  migraiton for non exist tenant db
 
         php bin/console tenant:migration:diff 1   # t:m:d 1 for short , To generate migraiton for tenant db  => 1
         
@@ -64,7 +70,9 @@ doctrine_migrations:
         
         # Pass tenant identifier is optional and if it null the command will be executed on the defualt tenant db. 
         # You can use the same options here for the same doctrine commands.
-        
+  ### Example
+ You can check  this  project example   [Multi-Tenant Bundle Example](https://github.com/RamyHakam/multi-tenancy-project-example) to see how to use the bundle.
+
 ### Notes:
   All the doctrine migration commands and files is generated and executed especially for tenant databases independent of the main db migrations, 
    Thanks for Doctrine migration bundle v3+ .
@@ -80,8 +88,8 @@ doctrine_migrations:
 3. Then migrate the main database.
         example  ` php bin/console doctrine:migrations:migrate`
 4. Now you are ready to create new tenant databases and switch between them.
-5.  To create a new tenant database and execute the migration for it.
-        example  ` php bin/console tenant:database:create $dbName`
+5.  To create a new tenant database and execute the migration for it. Add the `TenantDbConfig` entity to your main database. then you can use the following command.
+        example  ` php bin/console tenant:database:create` this command will create a new tenant database and execute the migration for it.
 6. To switch to a tenant database.
         example  ` $this->dispatcher->dispatch(new SwitchDbEvent($tenantDb->getId()));` then you can use the `TenantEntityManager` to execute your queries.
 7.  You can add a relation between your tenant entity  and the `TenantDbConfig` entity to get the tenant db config easily. 
@@ -176,11 +184,8 @@ hakam_multi_tenancy:
   tenant_connection:                                            # tenant entity manager connection configuration
     host:     127.0.0.1
     port:     3306                                              # default is 3306
-    driver:   pdo_mysql
+    driver:   pdo_mysql 
     charset:  utf8 
-    dbname:   tanent1                                           # default tenant database to init the tenant connection
-    user:     root                                              # default tenant database username
-    password: null                                              # default tenant database password
     server_version: 5.7                                         # mysql server version
 
   tenant_migration:                                             # tenant db migration configurations, Its recommended to have a different migration for tenants dbs than you main migration config

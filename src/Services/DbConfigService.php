@@ -4,6 +4,7 @@ namespace Hakam\MultiTenancyBundle\Services;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectRepository;
+use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
@@ -19,8 +20,8 @@ class DbConfigService
 
     public function findDbConfig(?string $identifier): TenantDbConfigurationInterface
     {
-        $dbConfigObject = $identifier ? $dbConfigObject = $this->entityRepository->findOneBy([$this->dbIdentifier => $identifier]) :
-            $this->entityRepository->findAll()[0];
+        $dbConfigObject = $identifier ?  $this->entityRepository->findOneBy([$this->dbIdentifier => $identifier]) :
+            $this->entityRepository->findOneBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_CREATED]);
         if (null === $dbConfigObject) {
             throw new \RuntimeException(sprintf('Tenant db repository " %s " returns NULL for identifier " %s = %s " ', get_class($this->entityRepository), $this->dbIdentifier, $identifier));
         }
