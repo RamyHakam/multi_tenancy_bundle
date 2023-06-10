@@ -3,11 +3,13 @@
 namespace Hakam\MultiTenancyBundle\Services;
 
 use Doctrine\DBAL\Driver\AbstractMySQLDriver;
+use Doctrine\DBAL\Driver\AbstractPostgreSQLDriver;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
+use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Hakam\MultiTenancyBundle\Exception\MultiTenancyException;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -47,9 +49,10 @@ class DbService
         $tmpConnection = DriverManager::getConnection($params);
 
         $platform = $tmpConnection->getDatabasePlatform();
-        if ($tmpConnection->getDriver() instanceof AbstractMySQLDriver) {
+        if ($tmpConnection->getDriver() instanceof AbstractMySQLDriver || $tmpConnection->getDriver() instanceof AbstractPostgreSQLDriver) {
             $sql = $platform->getListDatabasesSQL();
         } else {
+            // support SQLite
             $sql = 'SELECT name FROM sqlite_master WHERE type = "database"';
         }
         $statement = $tmpConnection->executeQuery($sql);
@@ -67,7 +70,7 @@ class DbService
                 : $tmpConnection->getSchemaManager();
             $schemaManager->createDatabase($dbName);
             $tmpConnection->close();
-            return $this->addDbToMainList($dbName);
+            return 1;
 
         } catch (\Exception $e) {
             throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName, $e->getMessage()), $e->getCode(), $e);
@@ -130,12 +133,27 @@ class DbService
         $tmpConnection->close();
     }
 
-    private function addDbToMainList(string $dbname): int
+    private function onboardNewDatabaseConfig(string $dbname): int
     {
+        //check if db already exists
+        $dbConfig = $this->entityManager->getRepository($this->tenantDbListEntity)->findOneBy(['dbName' => $dbname]);
+        if ($dbConfig) {
+            return $dbConfig->getId();
+        }
         $newDbConfig = new   $this->tenantDbListEntity();
         $newDbConfig->setDbName($dbname);
         $this->entityManager->persist($newDbConfig);
         $this->entityManager->flush();
         return $newDbConfig->getId();
+    }
+
+    public function getListOfNotCreatedDataBases(): array
+    {
+        return $this->entityManager->getRepository($this->tenantDbListEntity)->findBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_NOT_CREATED]);
+    }
+
+    public function getDefaultTenantDataBase(): TenantDbConfigurationInterface
+    {
+        return $this->entityManager->getRepository($this->tenantDbListEntity)->findOneBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_CREATED]);
     }
 }
