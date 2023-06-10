@@ -18,7 +18,7 @@
         "doctrine/doctrine-bundle": "^2.7",
         "doctrine/doctrine-migrations-bundle": "^3.0",
         "symfony/orm-pack": "^2.0",
-        "doctrine/annotations": "^1.10",
+        "doctrine/annotations": "^2.0",
         "symfony/filesystem": "^6.2"
     },
     "autoload": {
