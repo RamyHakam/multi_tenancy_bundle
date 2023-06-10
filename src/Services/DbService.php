@@ -3,6 +3,7 @@
 namespace Hakam\MultiTenancyBundle\Services;
 
 use Doctrine\DBAL\Driver\AbstractMySQLDriver;
+use Doctrine\DBAL\Driver\AbstractPostgreSQLDriver;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
@@ -48,9 +49,10 @@ class DbService
         $tmpConnection = DriverManager::getConnection($params);
 
         $platform = $tmpConnection->getDatabasePlatform();
-        if ($tmpConnection->getDriver() instanceof AbstractMySQLDriver) {
+        if ($tmpConnection->getDriver() instanceof AbstractMySQLDriver || $tmpConnection->getDriver() instanceof AbstractPostgreSQLDriver) {
             $sql = $platform->getListDatabasesSQL();
         } else {
+            // support SQLite
             $sql = 'SELECT name FROM sqlite_master WHERE type = "database"';
         }
         $statement = $tmpConnection->executeQuery($sql);
@@ -148,5 +150,10 @@ class DbService
     public function getListOfNotCreatedDataBases(): array
     {
         return $this->entityManager->getRepository($this->tenantDbListEntity)->findBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_NOT_CREATED]);
+    }
+
+    public function getDefaultTenantDataBase(): TenantDbConfigurationInterface
+    {
+        return $this->entityManager->getRepository($this->tenantDbListEntity)->findOneBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_CREATED]);
     }
 }
