@@ -18,7 +18,8 @@ class DbSwitchEventListener implements EventSubscriberInterface
         private DbConfigService    $dbConfigService,
         private string             $databaseURL
     )
-    {}
+    {
+    }
 
     public static function getSubscribedEvents(): array
     {
