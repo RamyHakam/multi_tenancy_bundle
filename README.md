@@ -41,18 +41,29 @@ $ composer require hakam/multi-tenancy-bundle
 ```yaml
 # config/packages/doctrine.yaml
 doctrine:
+  dbal:
+    default_connection: default
+    url: '%env(resolve:DATABASE_URL)%'
     orm:
-        mappings:
-            App:
+      default_entity_manager: default #set the default entity manager to use the main database 
+      entity_managers:   
+          default:
+            connection: default #set the default entity manager  to use the default connection
+            naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+            auto_mapping: true
+            mappings:
+              App:
                 is_bundle: false
                 dir: '%kernel.project_dir%/src/Entity/Main'
                 prefix: 'App\Entity\Main'
+                alias: App
                 
 # config/packages/doctrine_migrations.yaml
 doctrine_migrations:
     migrations_paths:
         'DoctrineMigrations\Main': '%kernel.project_dir%/src/Migrations/Main'
 ``` 
+#### You MUST  config the default connection and the default entity manager to use the main database. see the example above, for the complete configuration
 ####  You just need to update the config for the main EntityManager , Then the bundle will handle the rest for you.
 7. Add  the `TenantEntityManager` to your service or controller arguments.  
 8. Dispatch `SwitchDbEvent` with a custom value for your tenant db Identifier.
@@ -192,6 +203,7 @@ hakam_multi_tenancy:
     tenant_migration_namespace: Application\Migrations\Tenant
     tenant_migration_path: migrations/Tenant
   tenant_entity_manager:                                        # tenant entity manger configuration , which is used to manage tenant entities
+    tenant_naming_strategy:                                       # tenant entity manager naming strategy
     mapping:                                                  
       type:   attribute                                          # mapping type default annotation                                                       
       dir:   '%kernel.project_dir%/src/Entity/Tenant'           # directory of tenant entities, it could be different from main directory                                           
