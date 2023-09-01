@@ -51,6 +51,7 @@ class Configuration implements ConfigurationInterface
             ->ignoreExtraKeys()
             ->addDefaultsIfNotSet()
             ->children()
+            ->variableNode('tenant_naming_strategy')->defaultValue('doctrine.orm.naming_strategy.default')->end()
             ->arrayNode('mapping')
             ->info('tenant Entity Manager mapping configuration, Its recommended to have a different mapping config than your main entity config')
             ->ignoreExtraKeys()
