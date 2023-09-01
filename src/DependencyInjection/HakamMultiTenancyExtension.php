@@ -63,6 +63,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
                 'entity_managers' => [
                     'tenant' => [
                         'connection' => 'tenant',
+                        'naming_strategy' => $dbSwitcherConfig['tenant_entity_manager']['tenant_naming_strategy'],
                         'mappings' => [
                             'HakamMultiTenancyBundle' => [
                                 'type' => $dbSwitcherConfig['tenant_entity_manager']['mapping']['type'],
