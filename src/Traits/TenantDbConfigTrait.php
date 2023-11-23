@@ -20,6 +20,12 @@ trait TenantDbConfigTrait
     #[ORM\Column(type: 'string', length: 255, nullable: true, options: ["default" => null])]
     protected ?string $dbPassword = null;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true, options: ["default" => null])]
+    protected ?string $dbHost = null;
+
+    #[ORM\Column(type: 'string', length: 5, nullable: true, options: ["default" => null])]
+    protected ?string $dbPort = null;
+
     #[ORM\Column(type: 'string', length: 255, enumType: DatabaseStatusEnum::class, options: ["default" => DatabaseStatusEnum::DATABASE_NOT_CREATED])]
     private DatabaseStatusEnum $databaseStatus = DatabaseStatusEnum::DATABASE_NOT_CREATED;
 
@@ -94,4 +100,41 @@ trait TenantDbConfigTrait
         $this->databaseStatus = $databaseStatus;
         return $this;
     }
+
+    /**
+     * @param string|null $dbHost
+     * @return self
+     */
+    public function setDbHost(?string $dbHost): self
+    {
+        $this->dbHost = $dbHost;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDbHost(): ?string
+    {
+        return $this->dbHost;
+    }
+
+    /**
+     * @param string|null $dbPort
+     * @return self
+     */
+    public function setDbPort(?string $dbPort): self
+    {
+        $this->dbPort = $dbPort;
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDbPort(): ?string
+    {
+        return $this->dbPort;
+    }
+
 }
