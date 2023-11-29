@@ -32,6 +32,8 @@ class DbSwitchEventListenerTest extends TestCase
         $mockDbConfig->setDbName('test_db_name');
         $mockDbConfig->setDbUsername('test_username');
         $mockDbConfig->setDbPassword('test_password');
+        $mockDbConfig->setDbHost('127.0.0.1');
+        $mockDbConfig->setDbPort('3306');
         $mockDbConfigService->expects($this->once())
             ->method('findDbConfig')
             ->with($testDbIndex)
@@ -59,6 +61,8 @@ class DbConfig implements TenantDbConfigurationInterface
     private string $dbName;
     private string $dbUsername;
     private ?string $dbPassword;
+    private ?string $dbPort;
+    private ?string $dbHost;
 
     public function getDbName(): string
     {
@@ -103,5 +107,47 @@ class DbConfig implements TenantDbConfigurationInterface
     public function setDatabaseStatus(DatabaseStatusEnum $databaseStatus): TenantDbConfigurationInterface
     {
        return $this;
+    }
+
+
+
+    /**
+     * Get the value of dbPort
+     */ 
+    public function getDbPort(): null|string
+    {
+        return $this->dbPort;
+    }
+
+    /**
+     * Set the value of dbPort
+     *
+     * @return  self
+     */ 
+    public function setDbPort($dbPort)
+    {
+        $this->dbPort = $dbPort;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of dbHost
+     */ 
+    public function getDbHost(): null|string
+    {
+        return $this->dbHost;
+    }
+
+    /**
+     * Set the value of dbHost
+     *
+     * @return  self
+     */ 
+    public function setDbHost($dbHost)
+    {
+        $this->dbHost = $dbHost;
+
+        return $this;
     }
 }

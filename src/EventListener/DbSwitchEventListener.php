@@ -37,6 +37,8 @@ class DbSwitchEventListener implements EventSubscriberInterface
             'dbname' => $dbConfig->getDbName(),
             'user' => $dbConfig->getDbUsername() ?? $this->parseDatabaseUrl($this->databaseURL)['user'],
             'password' => $dbConfig->getDbPassword() ?? $this->parseDatabaseUrl($this->databaseURL)['password'],
+            'host' => $dbConfig->getDbHost() ?? $this->parseDatabaseUrl($this->databaseURL)['host'],
+            'port' => $dbConfig->getDbPort() ?? $this->parseDatabaseUrl($this->databaseURL)['port'],
         ];
         $tenantConnection->switchConnection($params);
     }
@@ -48,6 +50,8 @@ class DbSwitchEventListener implements EventSubscriberInterface
             'dbname' => substr($url['path'], 1),
             'user' => $url['user'],
             'password' => $url['pass'],
+            'host' => $url['host'],
+            'port' => $url['port'],
         ];
     }
 }

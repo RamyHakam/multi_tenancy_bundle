@@ -30,6 +30,16 @@ interface TenantDbConfigurationInterface
     public function getDbPassword(): ?string;
 
     /**
+     * Tenant databasehost.
+     */
+    public function getDbHost(): ?string;
+
+    /**
+     * Tenant database port.
+     */
+    public function getDbPort(): ?string;
+
+    /**
      * Tenant database status.
      */
     public function getDatabaseStatus(): DatabaseStatusEnum;
