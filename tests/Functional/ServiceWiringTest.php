@@ -37,6 +37,14 @@ class ServiceWiringTest extends TestCase
                 ],
             'tenant_entity_manager' =>
                 [
+                    'tenant_naming_strategy' => 'doctrine.orm.naming_strategy.default',
+                    'dql' =>
+                        [
+                            'string_functions' =>
+                                [
+                                    'FIELD' => 'Tenant\Functions\FieldFunction'
+                                ]
+                        ],
                     'mapping' =>
                         [
                             'type' => 'annotation',
