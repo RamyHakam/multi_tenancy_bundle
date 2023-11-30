@@ -77,6 +77,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
                 ],
             ];
 
+            $this->injectTenantDqlFunctions($tenantEntityManagerConfig, $dbSwitcherConfig);
             $this->checkDir($container->getParameter('kernel.project_dir'), $dbSwitcherConfig['tenant_migration']['tenant_migration_path']);
             $tenantDoctrineMigrationPath =
                 [
@@ -105,6 +106,13 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         $dir = $projectDir . $dir;
         if (!$fileSystem->exists($dir)) {
             $fileSystem->mkdir($dir);
+        }
+    }
+
+    private function injectTenantDqlFunctions(array &$tenantEntityManagerConfig, array $dbSwitchConfig): void
+    {
+        if (isset($dbSwitchConfig['tenant_entity_manager']['dql'])) {
+            $tenantEntityManagerConfig['entity_managers']['tenant']['dql'] = $dbSwitchConfig['tenant_entity_manager']['dql'];
         }
     }
 }
