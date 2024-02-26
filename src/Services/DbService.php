@@ -6,6 +6,7 @@ use Doctrine\DBAL\Driver\AbstractMySQLDriver;
 use Doctrine\DBAL\Driver\AbstractPostgreSQLDriver;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Tools\DsnParser;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
@@ -41,12 +42,9 @@ class DbService
      */
     public function createDatabase(string $dbName): int
     {
-        $params = [
-            "url" => $this->dbCredentials['db_url'],
-        ];
 
-        // Override the dbname without preferred dbname
-        $tmpConnection = DriverManager::getConnection($params);
+        $dsnParser = new DsnParser(['mysql' => 'pdo_mysql']);
+        $tmpConnection = DriverManager::getConnection($dsnParser->parse($this->dbCredentials['db_url']));
 
         $platform = $tmpConnection->getDatabasePlatform();
         if ($tmpConnection->getDriver() instanceof AbstractMySQLDriver || $tmpConnection->getDriver() instanceof AbstractPostgreSQLDriver) {
