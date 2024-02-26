@@ -47,7 +47,7 @@ class ServiceWiringTest extends TestCase
                         ],
                     'mapping' =>
                         [
-                            'type' => 'annotation',
+                            'type' => 'attribute',
                             'dir' => '%kernel.project_dir%/tests',
                             'prefix' => 'Tenant',
                             'alias' => 'Tenant'
