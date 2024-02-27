@@ -56,10 +56,11 @@ final class UpdateSchemaCommand extends Command
         $repo = $this->entityManager->getRepository(Tenant::class);
 
         if (null !== $tenantId) {
-            // Get tenant db name passed as an option.
-            $tenants = $repo->findBy(['dbName' => $singleDbName]);
-        } elseif (null !== $singleDbName) {
+            // Get tenant using the tenant id.
             $tenants = $repo->findBy(['id' => $tenantId]);
+        } elseif (null !== $singleDbName) {
+            // Get tenant using database name.
+            $tenants = $repo->findBy(['dbName' => $singleDbName]);
         } else {
             // Get all tenants
             $tenants = $repo->findAll();
