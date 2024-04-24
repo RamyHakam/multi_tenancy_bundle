@@ -3,8 +3,6 @@
 namespace Hakam\MultiTenancyBundle\Doctrine\DBAL;
 
 use Doctrine\DBAL\Connection;
-use Doctrine\DBAL\Events;
-use Doctrine\DBAL\Event;
 use Doctrine\DBAL\Exception;
 
 /**
@@ -20,19 +18,16 @@ class TenantConnection extends Connection
     protected bool $autoCommit = true;
 
     /**
+     * @param array $params
      * @return bool
      * @throws Exception
+     * @throws \Doctrine\DBAL\Driver\Exception
      */
     public function switchConnection(array $params): bool
     {
-        $this->_conn = $this->_driver->connect($params);
-
+        $this->_conn = property_exists($this, 'driver') ? $this->driver->connect($params) : $this->_driver->connect($params);
         if ($this->autoCommit === false) {
             $this->beginTransaction();
-        }
-        if ($this->_eventManager->hasListeners(Events::postConnect)) {
-            $eventArgs = new Event\ConnectionEventArgs($this);
-            $this->_eventManager->dispatchEvent(Events::postConnect, $eventArgs);
         }
         return true;
     }
