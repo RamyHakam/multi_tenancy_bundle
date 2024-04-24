@@ -13,15 +13,12 @@ In the near future, you will also be able to execute bulk migrations for all ten
 - PostgreSQL
 - SQLite
 
-  
-
 ### Installation
 
 This bundle requires 
 - [Symfony](https://symfony.org/) v5+ to run.
 - [Doctrine Bundle](https://github.com/doctrine/DoctrineBundle)
 - [Doctrine Migration Bundle](https://github.com/doctrine/DoctrineMigrationsBundle) v3+ to run 
-
 
 Install using Composer
 
@@ -70,10 +67,10 @@ doctrine_migrations:
     `Example new SwitchDbEvent(1)`
 9. You can switch between all tenants dbs just by dispatch the same event with different db identifier.
 10. Now your instance from `TenantEntityManager` is connected to the tenant db with Identifier = 1.
-11. ts recommended having your tenant entities in a different directory from your Main entities.
+11. It's recommended having your tenant entities in a different directory from your Main entities.
 12. You can execute doctrine migration commands using our proxy commands for tenant database.
 
-        php bin/console tenant:database:create   # t:d:c  for short , To create and exceute  migraiton for non exist tenant db
+        php bin/console tenant:database:create   # t:d:c  for short , To create and execute migration for non existing tenant db
 
         php bin/console tenant:migration:diff 1   # t:m:d 1 for short , To generate migraiton for tenant db  => 1
         
@@ -105,20 +102,20 @@ doctrine_migrations:
         example  ` $this->dispatcher->dispatch(new SwitchDbEvent($tenantDb->getId()));` then you can use the `TenantEntityManager` to execute your queries.
 7.  You can add a relation between your tenant entity  and the `TenantDbConfig` entity to get the tenant db config easily. 
 ```php
-      <?php
+<?php
       public Class AppController extends AbstractController
       {
-      public function __construct(
+        public function __construct(
         private EntityManagerInterface $mainEntityManager,
         private TenantEntityManager $tenantEntityManager,
         private EventDispatcherInterface $dispatcher
     ) {
     }
-     public function switchToLoggedInUserTenantDb(): void
-     {
+      public function switchToLoggedInUserTenantDb(): void
+      {
         $this->dispatcher->dispatch(new SwitchDbEvent($this->getUser()->getTenantDbConfig()->getId()));
         // Now you can use the tenant entity manager to execute your queries.
-     }
+      }
     }
 ```      
 8. You can use the custom doctrine commands for tenant databases to perform the same doctrine commands on tenant databases.
@@ -127,7 +124,7 @@ doctrine_migrations:
 9. Now You can work with the `TenantEntityManager` as you work with the main entity manager.
 10. You can now add or delete entities from the main or tenant databases and generate migrations for each database separately.
 ```php
-      <?php
+<?php
 
 namespace App\Controller;
 
@@ -225,8 +222,9 @@ Store the users current tenant ID in the session or the User entity.
 This allows you to get the current tenant at any time.
 
 ### Tenant Interface
-Implement an interface on all your tenant entities. This allows you to identify if an entity is assicated with a
+Implement an interface on all your tenant entities. This allows you to identify if an entity is associated with a
 tenant object. Then you can get the current tenant ID from the current user, and switch the entity manager to the tenant DB.
+
 ```php
 
 namespace App\Entity\Tenant;
@@ -245,11 +243,10 @@ class OrgActivity extends OrgActivitySuperclass implements TenantEntityInterface
     private ?int $id = null;
            
 }
-
 ```
 
 #### Custom Controller
-Extend your base controller class to overwrite some of the normal controler functions for presistance.
+Extend your base controller class to overwrite some of the normal controller functions for persistence.
 ```php
 <?php
 
@@ -335,16 +332,16 @@ abstract class DbSwitcherController extends BaseController
 ```
 
 #### Custom Value Resolver
-Symfony uses an Entity Value Resolver to load entities assicated with parameters passed to controller actions.
+Symfony uses an Entity Value Resolver to load entities associated with parameters passed to controller actions.
 https://symfony.com/doc/current/controller/value_resolver.html
 
 This resolver is essential to making sure your IsGranted and other Security actions work in the controllers.
 
 Create a custom entity value resolver to switch based on a ReflectionClass of the entity (based on the TenantEntityInterface).
 
-You can copy the value rosolver here: https://github.com/symfony/symfony/blob/6.2/src/Symfony/Bridge/Doctrine/ArgumentResolver/EntityValueResolver.php
+You can copy the value resolver here: https://github.com/symfony/symfony/blob/6.2/src/Symfony/Bridge/Doctrine/ArgumentResolver/EntityValueResolver.php
 
-And modify it to exclude non TenantEntityIntrface objects. Then switch DB based on the current user tenant.
+And modify it to exclude non TenantEntityInterface objects. Then switch DB based on the current user tenant.
 
 ```php
 <?php
