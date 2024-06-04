@@ -48,4 +48,6 @@ interface TenantDbConfigurationInterface
      * Tenant database status.
      */
     public function setDatabaseStatus(DatabaseStatusEnum $databaseStatus): self;
+
+    public function getDsnUrl(): string;
 }

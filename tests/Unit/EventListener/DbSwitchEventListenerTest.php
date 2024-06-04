@@ -150,4 +150,13 @@ class DbConfig implements TenantDbConfigurationInterface
 
         return $this;
     }
+
+    public function getDsnUrl(): string
+    {
+        $dbHost = $this->getDbHost() ?: '127.0.0.1';
+        $dbPort = $this->getDbPort() ?: '3306';
+        $dbUsername = $this->getDbUsername();
+        $dbPassword = $this->getDbPassword() ? ':' . $this->getDbPassword() : '';
+        return sprintf('mysql://%s%s@%s:%s', $dbUsername, $dbPassword, $dbHost, $dbPort);
+    }
 }

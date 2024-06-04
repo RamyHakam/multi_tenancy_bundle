@@ -2,8 +2,7 @@
 
 namespace Hakam\MultiTenancyBundle\Services;
 
-use Doctrine\DBAL\Driver\AbstractMySQLDriver;
-use Doctrine\DBAL\Driver\AbstractPostgreSQLDriver;
+
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Tools\DsnParser;
@@ -23,13 +22,13 @@ use Symfony\Component\HttpFoundation\Response;
 class DbService
 {
     public function __construct(
-        private EventDispatcherInterface $eventDispatcher,
-        private TenantEntityManager      $tenantEntityManager,
-        private EntityManagerInterface   $entityManager,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly TenantEntityManager      $tenantEntityManager,
+        private readonly EntityManagerInterface   $entityManager,
         #[Autowire('%hakam.tenant_db_list_entity%')]
-        private string                   $tenantDbListEntity,
+        private readonly string                   $tenantDbListEntity,
         #[Autowire('%hakam.tenant_db_credentials%')]
-        private array                    $dbCredentials
+        private array                             $dbCredentials
     )
     {
     }
@@ -37,41 +36,25 @@ class DbService
     /**
      * Creates a new database with the given name.
      *
-     * @param string $dbName The name of the new database.
-     * @throws MultiTenancyException|Exception If the database already exists or cannot be created.
+     * @param TenantDbConfigurationInterface $dbConfiguration
+     * @return int
+     * @throws Exception If the database already exists or cannot be created.
+     * @throws MultiTenancyException If the database already exists or cannot be created.
      */
-    public function createDatabase(string $dbName): int
+    public function createDatabase(TenantDbConfigurationInterface $dbConfiguration): int
     {
-
         $dsnParser = new DsnParser(['mysql' => 'pdo_mysql']);
-        $tmpConnection = DriverManager::getConnection($dsnParser->parse($this->dbCredentials['db_url']));
-
-        $platform = $tmpConnection->getDatabasePlatform();
-        if ($tmpConnection->getDriver() instanceof AbstractMySQLDriver || $tmpConnection->getDriver() instanceof AbstractPostgreSQLDriver) {
-            $sql = $platform->getListDatabasesSQL();
-        } else {
-            // support SQLite
-            $sql = 'SELECT name FROM sqlite_master WHERE type = "database"';
-        }
-        $statement = $tmpConnection->executeQuery($sql);
-        $databaseList = $statement->fetchFirstColumn();
-
-        $shouldNotCreateDatabase = in_array($dbName, $databaseList);
-
-        if ($shouldNotCreateDatabase) {
-            throw new MultiTenancyException(sprintf('Database %s already exists.', $dbName), Response::HTTP_BAD_REQUEST);
-        }
-
+        $tenantConnection = DriverManager::getConnection($dsnParser->parse($dbConfiguration->getDsnUrl()));
         try {
-            $schemaManager = method_exists($tmpConnection, 'createSchemaManager')
-                ? $tmpConnection->createSchemaManager()
-                : $tmpConnection->getSchemaManager();
-            $schemaManager->createDatabase($dbName);
-            $tmpConnection->close();
+            $schemaManager = method_exists($tenantConnection, 'createSchemaManager')
+                ? $tenantConnection->createSchemaManager()
+                : $tenantConnection->getSchemaManager();
+            $schemaManager->createDatabase($dbConfiguration->getDbName());
+            $tenantConnection->close();
             return 1;
 
         } catch (\Exception $e) {
-            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName, $e->getMessage()), $e->getCode(), $e);
+            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbConfiguration->getDbName(), $e->getMessage()), $e->getCode(), $e);
         }
     }
 
