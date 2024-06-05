@@ -43,7 +43,10 @@ class DbService
     public function createDatabase(string $dbName): int
     {
 
-        $dsnParser = new DsnParser(['mysql' => 'pdo_mysql']);
+        $dsnParser = new DsnParser([
+            'mysql' => 'pdo_mysql',
+            'postgresql' => 'pdo_pgsql',
+        ]);
         $tmpConnection = DriverManager::getConnection($dsnParser->parse($this->dbCredentials['db_url']));
 
         $platform = $tmpConnection->getDatabasePlatform();
