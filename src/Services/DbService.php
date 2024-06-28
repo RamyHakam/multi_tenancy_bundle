@@ -43,7 +43,10 @@ class DbService
      */
     public function createDatabase(TenantDbConfigurationInterface $dbConfiguration): int
     {
-        $dsnParser = new DsnParser(['mysql' => 'pdo_mysql']);
+        $dsnParser = new DsnParser([
+            'mysql' => 'pdo_mysql',
+            'postgresql' => 'pdo_pgsql',
+            ]);
         $tenantConnection = DriverManager::getConnection($dsnParser->parse($dbConfiguration->getDsnUrl()));
         try {
             $schemaManager = method_exists($tenantConnection, 'createSchemaManager')
