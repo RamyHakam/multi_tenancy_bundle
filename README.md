@@ -86,8 +86,8 @@ doctrine_migrations:
    Thanks for Doctrine migration bundle v3+ .
 
    All the tenant databases migrations will be saved in the same directory you configured for tenant entities.
-
-   All the tenant databases has the same host ,username and password as the main database. we will support different host, username and password for  tenant dbs in the near future.
+ 
+      Update:  Now you can have different host, username and password for tenant dbs.
 
 ### Get Started Example
 1. After configure the bundle as we mentioned above , you can use the following steps to get started.
