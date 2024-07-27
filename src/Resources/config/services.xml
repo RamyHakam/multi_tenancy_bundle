@@ -40,6 +40,7 @@
             <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
             <argument type="service" id="service_container"/>
             <argument type="service" id="event_dispatcher"/>
+            <argument type="service" id="Hakam\MultiTenancyBundle\Services\DbService"/>
         </service>
 
         <service id="Hakam\MultiTenancyBundle\Command\UpdateSchemaCommand">

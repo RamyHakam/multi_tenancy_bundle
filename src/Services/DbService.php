@@ -136,6 +136,16 @@ class DbService
         return $this->entityManager->getRepository($this->tenantDbListEntity)->findBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_NOT_CREATED]);
     }
 
+    public function getListOfNewCreatedDataBases(): array
+    {
+        return $this->entityManager->getRepository($this->tenantDbListEntity)->findBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_CREATED]);
+    }
+
+    public function getListOfTenantDataBases(): array
+    {
+        return $this->entityManager->getRepository($this->tenantDbListEntity)->findBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_MIGRATED]);
+    }
+
     public function getDefaultTenantDataBase(): TenantDbConfigurationInterface
     {
         return $this->entityManager->getRepository($this->tenantDbListEntity)->findOneBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_CREATED]);
