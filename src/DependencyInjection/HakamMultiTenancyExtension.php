@@ -103,7 +103,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
     {
         $fileSystem = new Filesystem();
         $dir = str_replace('%kernel.project_dir%', '', $dir);
-        $dir = $projectDir . $dir;
+        $dir = sprintf("%s/%s",$projectDir , $dir);
         if (!$fileSystem->exists($dir)) {
             $fileSystem->mkdir($dir);
         }
