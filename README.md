@@ -1,6 +1,10 @@
-# Symfony Multi-Tenancy Bundle  ![](https://github.com/RamyHakam/multi_tenancy_bundle/workflows/action_status/badge.svg)
+# Symfony Multi-Tenancy Bundle  
+![Action Status](https://github.com/RamyHakam/multi_tenancy_bundle/workflows/action_status/badge.svg)
+[![Latest Stable Version](http://poser.pugx.org/hakam/multi-tenancy-bundle/v)](https://packagist.org/packages/hakam/multi-tenancy-bundle)
+[![Total Downloads](http://poser.pugx.org/hakam/multi-tenancy-bundle/downloads)](https://packagist.org/packages/hakam/multi-tenancy-bundle)
+[![License](http://poser.pugx.org/hakam/multi-tenancy-bundle/license)](https://packagist.org/packages/hakam/multi-tenancy-bundle)
+[![PHP Version Require](http://poser.pugx.org/hakam/multi-tenancy-bundle/require/php)](https://packagist.org/packages/hakam/multi-tenancy-bundle)
 ![Multi-Tenancy Bundle (Desktop Wallpaper)](https://github.com/RamyHakam/multi_tenancy_bundle/assets/17661342/eef23e6a-881c-4817-b7b8-8b7cec913154)
-
 
 The Multi Tenancy Bundle for Symfony is a convenient solution for incorporating multi-tenant databases in your Symfony application. It simplifies the process of using Doctrine to handle multiple databases with a single entity manager, allowing you to switch between them during runtime.
 
@@ -70,24 +74,26 @@ doctrine_migrations:
 11. It's recommended having your tenant entities in a different directory from your Main entities.
 12. You can execute doctrine migration commands using our proxy commands for tenant database.
 
-        php bin/console tenant:database:create   # t:d:c  for short , To create and execute migration for non existing tenant db
+        php bin/console tenant:database:create   # t:d:c  for short , To create non existing tenant dbs list 
 
-        php bin/console tenant:migration:diff 1   # t:m:d 1 for short , To generate migraiton for tenant db  => 1
+        php bin/console tenant:migration:diff    # t:m:d  for short , To generate migraiton for tenant db 
         
-        php bin/console tenant:migration:migrate 1  # t:m:m 1, To run migraitons for tenant db  => 1
-        
-        # Pass tenant identifier is optional and if it null the command will be executed on the defualt tenant db. 
-        # You can use the same options here for the same doctrine commands.
+        php bin/console tenant:migration:migrate init  # t:m:m init , To run migraitons for  new tenant dbs up to the latest version.
+       
+        php bin/console tenant:migration:migrate update  # t:m:m update , To run migrations for  all tenant db to the latest version.
+
   ### Example
  You can check  this  project example   [Multi-Tenant Bundle Example](https://github.com/RamyHakam/multi-tenancy-project-example) to see how to use the bundle.
 
 ### Notes:
-  All the doctrine migration commands and files is generated and executed especially for tenant databases independent of the main db migrations, 
+  All the doctrine migration commands and files are generated and executed especially for tenant databases independent of the main db migrations, 
    Thanks for Doctrine migration bundle v3+ .
 
    All the tenant databases migrations will be saved in the same directory you configured for tenant entities.
  
       Update:  Now you can have different host, username and password for tenant dbs.
+      Update:  All tenant databases share the same `dbusername` and `dbpassword` from the selected tenant host.
+      Update:  Now you can have different driver for tenant dbs and main db.
 
 ### Get Started Example
 1. After configure the bundle as we mentioned above , you can use the following steps to get started.
@@ -119,8 +125,8 @@ doctrine_migrations:
     }
 ```      
 8. You can use the custom doctrine commands for tenant databases to perform the same doctrine commands on tenant databases.
-        example  ` php bin/console tenant:migration:diff 1` to generate migration for tenant db with id = 1.
-        example  ` php bin/console tenant:migration:migrate 1` to execute migration for tenant db with id = 1.
+        example  ` php bin/console tenant:migration:diff ` to generate migration for tenant db.
+        example  ` php bin/console tenant:migration:migrate update ` to execute migration for all  tenant db to the latest version.
 9. Now You can work with the `TenantEntityManager` as you work with the main entity manager.
 10. You can now add or delete entities from the main or tenant databases and generate migrations for each database separately.
 ```php
@@ -172,7 +178,7 @@ class MultiTenantController extends AbstractController
 
         // Add a new entity to the main database.
         $mainLog = new MainEntity();
-        $mainLog->setName('mainTtest');
+        $mainLog->setName('mainTest');
         $this->mainEntityManager->persist($mainLog);
         $this->mainEntityManager->flush();
 

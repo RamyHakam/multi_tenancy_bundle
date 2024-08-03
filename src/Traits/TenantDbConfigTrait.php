@@ -4,6 +4,7 @@ namespace Hakam\MultiTenancyBundle\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
+use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
 
 /**
  *  Trait to add tenant database configuration to an entity.
@@ -13,6 +14,9 @@ trait TenantDbConfigTrait
 {
     #[ORM\Column(type: 'string', length: 255)]
     protected string $dbName;
+
+    #[ORM\Column(type: 'string', length: 255, enumType: DriverTypeEnum::class, options: ["default" => DriverTypeEnum::MYSQL])]
+    private DriverTypeEnum $driverType = DriverTypeEnum::MYSQL;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true, options: ["default" => null])]
     protected ?string $dbUserName = null;
@@ -44,6 +48,17 @@ trait TenantDbConfigTrait
     public function setDbName(string $dbName): self
     {
         $this->dbName = $dbName;
+        return $this;
+    }
+
+    public function getDriverType(): DriverTypeEnum
+    {
+        return $this->driverType;
+    }
+
+    public function setDriverType(DriverTypeEnum $driverType): self
+    {
+        $this->driverType = $driverType;
         return $this;
     }
 
@@ -139,11 +154,12 @@ trait TenantDbConfigTrait
 
     public function getDsnUrl(): string
     {
+        $dbDriver = $this->getDriverType()->value ?: DriverTypeEnum::MYSQL->value;
         $dbHost = $this->getDbHost() ?: '127.0.0.1';
         $dbPort = $this->getDbPort() ?: '3306';
         $dbUsername = $this->getDbUsername();
         $dbPassword = $this->getDbPassword() ? ':' . $this->getDbPassword() : '';
 
-        return sprintf('mysql://%s%s@%s:%s', $dbUsername, $dbPassword, $dbHost, $dbPort);
+        return sprintf('%s://%s%s@%s:%s', $dbDriver, $dbUsername, $dbPassword, $dbHost, $dbPort);
     }
 }
