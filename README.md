@@ -1,12 +1,7 @@
 # Symfony Multi-Tenancy Bundle  
 ![Action Status](https://github.com/RamyHakam/multi_tenancy_bundle/workflows/action_status/badge.svg)
-[![Latest Stable Version](http://poser.pugx.org/hakam/multi-tenancy-bundle/v)](https://packagist.org/packages/hakam/multi-tenancy-bundle)
-[![Total Downloads](http://poser.pugx.org/hakam/multi-tenancy-bundle/downloads)](https://packagist.org/packages/hakam/multi-tenancy-bundle)
-[![License](http://poser.pugx.org/hakam/multi-tenancy-bundle/license)](https://packagist.org/packages/hakam/multi-tenancy-bundle)
-[![PHP Version Require](http://poser.pugx.org/hakam/multi-tenancy-bundle/require/php)](https://packagist.org/packages/hakam/multi-tenancy-bundle)
-![Multi-Tenancy Bundle (Desktop Wallpaper)](https://github.com/RamyHakam/multi_tenancy_bundle/assets/17661342/eef23e6a-881c-4817-b7b8-8b7cec913154)
 
-The Multi Tenancy Bundle for Symfony is a convenient solution for incorporating multi-tenant databases in your Symfony application. It simplifies the process of using Doctrine to handle multiple databases with a single entity manager, allowing you to switch between them during runtime.
+The Multi-Tenancy Bundle for Symfony is a convenient solution for incorporating multi-tenant databases in your Symfony application. It simplifies the process of using Doctrine to handle multiple databases with a single entity manager, allowing you to switch between them during runtime.
 
 This bundle comes with a range of features, including the ability to effortlessly switch between tenant databases by triggering an event. Additionally, it supports distinct entity mapping for both the main and tenant entities. It also includes custom extended Doctrine commands for managing tenant databases independently, as well as the capability to generate and execute migrations for each database separately.
 
