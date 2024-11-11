@@ -2,6 +2,7 @@
 
 namespace Hakam\MultiTenancyBundle\EventListener;
 
+use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Hakam\MultiTenancyBundle\Services\DbConfigService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,7 +17,8 @@ class DbSwitchEventListener implements EventSubscriberInterface
     public function __construct(
         private ContainerInterface $container,
         private DbConfigService    $dbConfigService,
-        private string             $databaseURL
+        private TenantEntityManager $tenantEntityManager,
+        private string             $databaseURL,
     )
     {
     }
@@ -33,6 +35,7 @@ class DbSwitchEventListener implements EventSubscriberInterface
     {
         $dbConfig = $this->dbConfigService->findDbConfig($switchDbEvent->getDbIndex());
         $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
+
         $params = [
             'dbname' => $dbConfig->getDbName(),
             'user' => $dbConfig->getDbUsername() ?? $this->parseDatabaseUrl($this->databaseURL)['user'],
@@ -40,7 +43,11 @@ class DbSwitchEventListener implements EventSubscriberInterface
             'host' => $dbConfig->getDbHost() ?? $this->parseDatabaseUrl($this->databaseURL)['host'],
             'port' => $dbConfig->getDbPort() ?? $this->parseDatabaseUrl($this->databaseURL)['port'],
         ];
+
         $tenantConnection->switchConnection($params);
+
+        //clear the entity manager to avoid Doctrine cache issues
+        $this->tenantEntityManager->clear();
     }
 
     private function parseDatabaseUrl(string $databaseURL): array
