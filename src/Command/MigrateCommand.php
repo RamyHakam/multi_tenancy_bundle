@@ -30,7 +30,7 @@ final class MigrateCommand extends Command
     use CommandTrait;
 
     const MIGRATE_TYPE_INIT = 'init';
-    const MIGRATE_TYPE_MIGRATE = 'migrate';
+    const MIGRATE_TYPE_UPDATE = 'update';
 
     public function __construct(
         private readonly ManagerRegistry          $registry,
@@ -65,7 +65,7 @@ final class MigrateCommand extends Command
                 $io->newLine();
                 $listOfDbsToMigrate = $this->dbService->getListOfNewCreatedDataBases();
                 break;
-            case self::MIGRATE_TYPE_MIGRATE:
+            case self::MIGRATE_TYPE_UPDATE:
                 $io->note('Migrating the existing databases');
                 $io->newLine();
                 $listOfDbsToMigrate = $this->dbService->getListOfTenantDataBases();
