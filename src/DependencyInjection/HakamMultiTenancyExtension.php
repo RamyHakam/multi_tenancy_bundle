@@ -19,7 +19,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
     /**
      * @throws \Exception
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.xml');
@@ -37,7 +37,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         $definition->setArgument(2, $configs['tenant_database_identifier']);
     }
 
-    public function prepend(ContainerBuilder $container)
+    public function prepend(ContainerBuilder $container): void
     {
         $configs = $container->getExtensionConfig($this->getAlias());
         $dbSwitcherConfig = $this->processConfiguration(new Configuration(), $configs);
