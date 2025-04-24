@@ -17,6 +17,7 @@
             <tag name="kernel.event_listener" event="Hakam\MultiTenancyBundle\Event\SwitchDbEvent"/>
             <argument type="service" id="service_container"/>
             <argument type="service" id="hakam_db_config.service"/>
+            <argument type="service" id="tenant_entity_manager"/>
             <argument type="string">%env(DATABASE_URL)%</argument>
         </service>
 
