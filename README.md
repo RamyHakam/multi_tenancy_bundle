@@ -202,15 +202,15 @@ hakam_multi_tenancy:
     tenant_migration_namespace: Application\Migrations\Tenant
     tenant_migration_path: migrations/Tenant
   tenant_entity_manager:                                        # tenant entity manger configuration , which is used to manage tenant entities
-    tenant_naming_strategy:                                       # tenant entity manager naming strategy
-        dql:                                             # tenant entity manager dql configuration
-          string_functions:
-            test_string: App\DQL\StringFunction
-            second_string: App\DQL\SecondStringFunction
-          numeric_functions:
-            test_numeric: App\DQL\NumericFunction
-          datetime_functions:
-            test_datetime: App\DQL\DatetimeFunction
+    tenant_naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware # tenant entity manager naming strategy - usually the same as in doctrine.yaml
+    dql:                                                        # tenant entity manager dql configuration
+      string_functions:
+        test_string: App\DQL\StringFunction
+        second_string: App\DQL\SecondStringFunction
+      numeric_functions:
+        test_numeric: App\DQL\NumericFunction
+      datetime_functions:
+        test_datetime: App\DQL\DatetimeFunction
     mapping:                                                  
       type:   attribute                                          # mapping type default annotation                                                       
       dir:   '%kernel.project_dir%/src/Entity/Tenant'           # directory of tenant entities, it could be different from main directory                                           
