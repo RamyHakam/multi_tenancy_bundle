@@ -9,7 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Traversable;
 
-final  class TenantFixtureLoader
+final class TenantFixtureLoader
 {
     public function __construct(
         #[AutowireIterator('tenant_fixture')]private readonly iterable $fixtures
