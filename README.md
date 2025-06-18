@@ -1,40 +1,100 @@
-# Symfony Multi-Tenancy Bundle  
+# Symfony Multi-Tenancy Bundle
 ![Action Status](https://github.com/RamyHakam/multi_tenancy_bundle/workflows/action_status/badge.svg)
 ![Multi-Tenancy Bundle (Desktop Wallpaper)](https://github.com/RamyHakam/multi_tenancy_bundle/assets/17661342/eef23e6a-881c-4817-b7b8-8b7cec913154)
 
-The Multi-Tenancy Bundle for Symfony is a convenient solution for incorporating multi-tenant databases in your Symfony application. It simplifies the process of using Doctrine to handle multiple databases with a single entity manager, allowing you to switch between them during runtime.
+---
 
-This bundle comes with a range of features, including the ability to effortlessly switch between tenant databases by triggering an event. Additionally, it supports distinct entity mapping for both the main and tenant entities. It also includes custom extended Doctrine commands for managing tenant databases independently, as well as the capability to generate and execute migrations for each database separately.
+## ✨ Feature Overview
 
-In the near future, you will also be able to execute bulk migrations for all tenant databases with a single command. Additionally, the bundle allows you to create and prepare a tenant database if it doesn't already exist
+| Feature                                                 | Description                                                                                                              |
+|---------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------|
+| 🧠 Runtime DB Switching                                 | Switch between tenant databases dynamically using `SwitchDbEvent`                                                        |
+| 🗂️ Separate Entity Mapping                             | Support for separate entity directories for Main and Tenant                                                              |
+| 🧠 Dedicated `TenantEntityManager` Service              | Injected once and automatically connects to the target tenant DB after `SwitchDbEvent` is dispatched.                    |
+| 🧰 Custom Doctrine Commands                             | Extended commands like `tenant:database:create`, `tenant:migration:migrate`, etc. for managing tenant DBs                |
+| 📦 Tenant Migrations Tracked Independently from Main DB | All tenant databases share a dedicated migration path and history, completely separate from the main database migrations |
+| 🆕 🔁 Bulk Tenant Migration Execution                   | Migrate all tenant DBs to latest schema using one command                                                                |
+| 🆕🏗️ On-the-Fly Tenant DB Creation                     | Create tenant DBs automatically if they don’t exist                                                                      |
+| 🆕 ✅ Tenant Fixtures with `tenant:fixtures:load`        | Load fixtures per tenant DB using `#[TenantFixture]` attribute — works like default Doctrine with full option support    |
+| 🆕 🔄 Tenant Fixture Ordering / Dependencies            | Fully supports `getDependencies()` and `getOrder()` just like native fixtures                                            |
+| 🆕 🌍 Per-Tenant DB Host Configuration                  | Tenants can point to different DB hosts based on configuration in the entity                                             |
+| 🆕 🔐 Per-Tenant DB Credentials                         | Shared credentials per host; each host can have its own user/pass used for all associated tenants                        |
+| 🆕 🔧 Per-Tenant DB Driver Support                      | Main and Tenant DBs can use different drivers (e.g. PostgreSQL main, MySQL tenant)                                       |
 
-### Supported Databases:
-- MySQL / MariaDB   
+> These features empower Symfony apps to operate with multiple isolated databases efficiently — great for SaaS and region-based tenancy.
+
+---
+
+
+---
+
+## ✅ New: Load Tenant Fixtures with `tenant:fixtures:load`
+
+You can now load **tenant-specific fixtures** just like regular Doctrine fixtures by simply using the `#[TenantFixture]` attribute.
+
+### 🔧 How to use:
+1. Annotate your fixture class with the attribute:
+   ```php
+   use Hakam\MultiTenancyBundle\Attribute\TenantFixture;
+
+   #[TenantFixture]
+   class ProductFixtures extends Fixture
+   {
+       public function load(ObjectManager $manager): void
+       {
+           // your fixture logic
+       }
+   }
+   ```
+2. Run the command:
+   ```bash
+   php bin/console tenant:fixtures:load
+   ```
+
+### 🛠 Features Supported:
+- Uses the same behavior and options as the default `doctrine:fixtures:load`.
+- Supports `--append`, `--group=`, `--purge-with-truncate`.
+- Supports `--dbid=` to specify the tenant database ID.
+- Respects fixture dependencies via `getDependencies()`.
+- Automatically loads fixtures in the order defined by `getOrder()`.
+- Prevent Main database fixtures from being loaded into tenant databases or vice versa.
+- 
+
+> You can use `make:fixture` or manual creation. Just add the attribute.
+
+---
+
+## 🛠 Supported Databases:
+- MySQL / MariaDB
 - PostgreSQL
 - SQLite
 
-### Installation
+---
 
-This bundle requires 
-- [Symfony](https://symfony.org/) v5+ to run.
+## ⚙️ Installation
+
+This bundle requires:
+- [Symfony](https://symfony.com/) v5+
 - [Doctrine Bundle](https://github.com/doctrine/DoctrineBundle)
-- [Doctrine Migration Bundle](https://github.com/doctrine/DoctrineMigrationsBundle) v3+ to run 
+- [Doctrine Migrations Bundle](https://github.com/doctrine/DoctrineMigrationsBundle) v3+
 
-Install using Composer
+Install using Composer:
 
-```sh
-$ composer require hakam/multi-tenancy-bundle
-``` 
- ### Using the Bundle
- ###### The idea behind this bundle is simple,You have a main database and  multi-tenant databases So: 
- 1. Create specific entity witch should implement `TenantDbConfigurationInterface`. In your main database to save all tenant databases configurations. 
- 2. You can use the `TenantDbConfigTrait` to implement the full required  db config entity fields .
-3. You can use the `TimestampableTrait` to add `createdAt` and `updatedAt` fields to your entity then you should add `#[ORM\HasLifecycleCallbacks]` attribute to your entity class.
-4. Split your entities in two directories, one for the main database and one for the tenant databases.
-          For example  `Main and Tenant `.
-5. Split the migrations in two directories, one for the main database and one for the tenant databases.
-          For example  `Main and Tenant `.
-6. Update your doctrine config to use the new directories for entities and migrations.See the example below.
+```bash
+composer require hakam/multi-tenancy-bundle
+```
+
+---
+
+## 📦 Using the Bundle
+
+### 1. Define a Tenant Configuration Entity
+Create an entity in your **main database** that implements `TenantDbConfigurationInterface`.  
+You can use `TenantDbConfigTrait` and `TimestampableTrait` to simplify implementation.
+
+### 2. Configure Doctrine
+Split main and tenant entity mappings and migrations:
+
 ```yaml
 # config/packages/doctrine.yaml
 doctrine:
@@ -42,43 +102,97 @@ doctrine:
     default_connection: default
     url: '%env(resolve:DATABASE_URL)%'
     orm:
-      default_entity_manager: default #set the default entity manager to use the main database 
-      entity_managers:   
-          default:
-            connection: default #set the default entity manager  to use the default connection
-            naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
-            auto_mapping: true
-            mappings:
-              App:
-                is_bundle: false
-                dir: '%kernel.project_dir%/src/Entity/Main'
-                prefix: 'App\Entity\Main'
-                alias: App
-                
+      default_entity_manager: default
+      entity_managers:
+        default:
+          connection: default
+          auto_mapping: true
+          mappings:
+            App:
+              is_bundle: false
+              dir: '%kernel.project_dir%/src/Entity/Main'
+              prefix: 'App\Entity\Main'
+              alias: App
+```
+
+```yaml
 # config/packages/doctrine_migrations.yaml
 doctrine_migrations:
-    migrations_paths:
-        'DoctrineMigrations\Main': '%kernel.project_dir%/src/Migrations/Main'
-``` 
-#### You MUST  config the default connection and the default entity manager to use the main database. see the example above, for the complete configuration
-####  You just need to update the config for the main EntityManager , Then the bundle will handle the rest for you.
-7. Add  the `TenantEntityManager` to your service or controller arguments.  
-8. Dispatch `SwitchDbEvent` with a custom value for your tenant db Identifier.
-    `Example new SwitchDbEvent(1)`
-9. You can switch between all tenants dbs just by dispatch the same event with different db identifier.
-10. Now your instance from `TenantEntityManager` is connected to the tenant db with Identifier = 1.
-11. It's recommended having your tenant entities in a different directory from your Main entities.
-12. You can execute doctrine migration commands using our proxy commands for tenant database.
+  migrations_paths:
+    'DoctrineMigrations\Main': '%kernel.project_dir%/src/Migrations/Main'
+```
 
-        php bin/console tenant:database:create   # t:d:c  for short , To create non existing tenant dbs list 
+### 3. Add Configuration
+In `config/packages/hakam_multi_tenancy.yaml`:
 
-        php bin/console tenant:migration:diff    # t:m:d  for short , To generate migraiton for tenant db 
-        
-        php bin/console tenant:migration:migrate init  # t:m:m init , To run migraitons for  new tenant dbs up to the latest version.
-       
-        php bin/console tenant:migration:migrate update  # t:m:m update , To run migrations for  all tenant db to the latest version.
+```yaml
+hakam_multi_tenancy:
+  tenant_database_className:  App\Entity\Main\TenantDbConfig
+  tenant_database_identifier: id
+  tenant_connection:
+    host: 127.0.0.1
+    port: 3306
+    driver: pdo_mysql
+    charset: utf8
+    server_version: 5.7
 
-  ### Example
+  tenant_migration:
+    tenant_migration_namespace: Application\Migrations\Tenant
+    tenant_migration_path: migrations/Tenant
+
+  tenant_entity_manager:
+    mapping:
+      type: attribute
+      dir: '%kernel.project_dir%/src/Entity/Tenant'
+      prefix: App\Entity\Tenant
+      alias: Tenant
+```
+
+---
+
+## 🧠 Get Started Example
+
+1. Generate & run the main migration:
+   ```bash
+   php bin/console doctrine:migrations:diff
+   php bin/console doctrine:migrations:migrate
+   ```
+
+2. Create a `TenantDbConfig` record in the main database.
+
+3. Create a tenant database:
+   ```bash
+   php bin/console tenant:database:create
+   ```
+
+4. Switch to tenant database in controller:
+   ```php
+   $dispatcher->dispatch(new SwitchDbEvent($tenant->getId()));
+   $tenantEntityManager->persist($entity);
+   ```
+
+5. Use tenant migration commands:
+   ```bash
+   php bin/console tenant:migration:diff
+   php bin/console tenant:migration:migrate update
+   ```
+
+---
+
+## 🔄 Doctrine Commands for Tenants
+
+| Command                                | Description                                   |
+|----------------------------------------|-----------------------------------------------|
+| `tenant:database:create`               | Create tenant DBs that don’t exist yet        |
+| `tenant:migration:diff`                | Generate migrations for tenants               |
+| `tenant:migration:migrate init`        | Migrate newly created tenant DBs              |
+| `tenant:migration:migrate update`      | Migrate all tenant DBs to the latest version  |
+| `tenant:fixtures:load`                 | Load fixtures for tenant DBs                  |
+
+> ℹ️ All commands support the optional `--dbid=` argument to run the command for a specific tenant database.  
+> If `--dbid` is not provided, the first available (default) tenant DB will be used.
+---
+ ### Example
  You can check  this  project example   [Multi-Tenant Bundle Example](https://github.com/RamyHakam/multi-tenancy-project-example) to see how to use the bundle.
 
 ### Notes:
@@ -86,13 +200,9 @@ doctrine_migrations:
    Thanks for Doctrine migration bundle v3+ .
 
    All the tenant databases migrations will be saved in the same directory you configured for tenant entities.
- 
-      Update:  Now you can have different host, username and password for tenant dbs.
-      Update:  All tenant databases share the same `dbusername` and `dbpassword` from the selected tenant host.
-      Update:  Now you can have different driver for tenant dbs and main db.
 
 ### Get Started Example
-1. After configure the bundle as we mentioned above , you can use the following steps to get started.
+1. After configuring the bundle as we mentioned above  , you can use the following steps to get started.
 2. You need to generate the main database migration with the new entity first.
         example  ` php bin/console doctrine:migrations:diff`
 3. Then migrate the main database.
