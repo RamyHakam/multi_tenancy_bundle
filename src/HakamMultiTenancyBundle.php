@@ -2,6 +2,8 @@
 
 namespace Hakam\MultiTenancyBundle;
 
+use Hakam\MultiTenancyBundle\DependencyInjection\Compiler\FixtureTaggingPass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 /**
@@ -9,4 +11,9 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
  */
 class HakamMultiTenancyBundle extends Bundle
 {
+    public function build(ContainerBuilder $container): void
+    {
+        parent::build($container);
+        $container->addCompilerPass(new FixtureTaggingPass());
+    }
 }

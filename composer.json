@@ -26,6 +26,9 @@
             "Hakam\\MultiTenancyBundle\\": "src/"
         }
     },
+    "suggest": {
+        "doctrine/doctrine-fixtures-bundle": "Required to load fixtures for tenants and main database"
+    },
     "autoload-dev": {
         "psr-4": {
             "Hakam\\MultiTenancyBundle\\Tests\\": "tests/"
@@ -33,6 +36,7 @@
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^5.4 | ^v6.4.0|^7.0",
-        "phpunit/phpunit": "^9.5"
+        "phpunit/phpunit": "^9.5",
+        "doctrine/doctrine-fixtures-bundle": "^3.6"
     }
 }

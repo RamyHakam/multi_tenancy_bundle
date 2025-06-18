@@ -11,6 +11,14 @@
         </service>
         <service id="Hakam\MultiTenancyBundle\Services\DbConfigService" alias="hakam_db_config.service"/>
 
+        <service id="hakam_tenant_fixtures_loader.service" class="Hakam\MultiTenancyBundle\Services\TenantFixtureLoader"
+                 public="false">
+            <argument type="tagged_iterator" tag="tenant_fixture"/>
+        </service>
+
+        <service id="Hakam\MultiTenancyBundle\Services\TenantFixtureLoader"
+                 alias="hakam_tenant_fixtures_loader.service" public="false"/>
+
         <service id="Hakam\MultiTenancyBundle\Services\DbService" public="false" autowire="true"/>
 
         <service id="Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener">
@@ -43,6 +51,15 @@
             <argument type="service" id="Hakam\MultiTenancyBundle\Services\DbService"/>
         </service>
 
+        <service id="Hakam\MultiTenancyBundle\Command\LoadTenantFixtureCommand">
+            <tag name="console.command"/>
+            <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
+            <argument type="service" id="service_container"/>
+            <argument type="service" id="event_dispatcher"/>
+            <argument type="service" id="hakam_tenant_fixtures_loader.service"/>
+            <argument type="iterator" index-by="alias" tag="doctrine.fixtures.purger_factory" />
+        </service>
+
         <service id="Hakam\MultiTenancyBundle\Command\UpdateSchemaCommand">
             <tag name="console.command"/>
             <argument type="service" id="service_container"/>
@@ -57,5 +74,9 @@
             <argument type="service" id="doctrine.orm.tenant_entity_manager"/>
         </service>
         <service id="Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager" alias="tenant_entity_manager"/>
+
+        <service id="hakam.tenant_purger_factory" class="Hakam\MultiTenancyBundle\Purger\TenantORMPurgerFactory">
+            <tag name="doctrine.fixtures.purger_factory" alias="tenant_default"/>
+        </service>
     </services>
 </container>
