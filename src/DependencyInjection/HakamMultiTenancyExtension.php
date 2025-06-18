@@ -9,7 +9,6 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Symfony\Component\Filesystem\Filesystem;
 
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
@@ -44,8 +43,6 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         if (5 === count($dbSwitcherConfig)) {
             $bundles = $container->getParameter('kernel.bundles');
 
-            $this->checkDir($container->getParameter('kernel.project_dir'), $dbSwitcherConfig['tenant_entity_manager']['mapping']['dir']);
-
             $tenantConnectionConfig = [
                 'connections' => [
                     'tenant' => [
@@ -78,7 +75,6 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
             ];
 
             $this->injectTenantDqlFunctions($tenantEntityManagerConfig, $dbSwitcherConfig);
-            $this->checkDir($container->getParameter('kernel.project_dir'), $dbSwitcherConfig['tenant_migration']['tenant_migration_path']);
             $tenantDoctrineMigrationPath =
                 [
                     $dbSwitcherConfig['tenant_migration']['tenant_migration_namespace'] => $dbSwitcherConfig['tenant_migration']['tenant_migration_path'],
@@ -91,21 +87,10 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
             }
 
             if (!isset($bundles['doctrine_migrations'])) {
-                //    $container->prependExtensionConfig('doctrine_migrations', ['migrations_paths' => $tenantDoctrineMigrationPath]);
                 $container->setParameter('tenant_doctrine_migration', ['migrations_paths' => $tenantDoctrineMigrationPath]);
             } else {
                 throw new InvalidConfigurationException('You need to enable Doctrine Migration Bundle to be able to use MultiTenancy Bundle');
             }
-        }
-    }
-
-    private function checkDir(string $projectDir, string $dir): void
-    {
-        $fileSystem = new Filesystem();
-        $dir = str_replace('%kernel.project_dir%', '', $dir);
-        $dir = sprintf("%s/%s",$projectDir , $dir);
-        if (!$fileSystem->exists($dir)) {
-            $fileSystem->mkdir($dir);
         }
     }
 
