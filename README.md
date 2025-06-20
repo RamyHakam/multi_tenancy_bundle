@@ -1,6 +1,42 @@
 # Symfony Multi-Tenancy Bundle
-![Action Status](https://github.com/RamyHakam/multi_tenancy_bundle/workflows/action_status/badge.svg)
+![Action Status](https://github.com/RamyHakam/multi_tenancy_bundle/workflows/action_status/badge.svg?style=flat-square)
+[![Total Downloads](https://img.shields.io/packagist/dt/hakam/multi-tenancy-bundle?style=flat-square)](https://packagist.org/packages/hakam/multi-tenancy-bundle)
+[![Symfony Flex](https://img.shields.io/badge/Symfony%20Flex-Recipe%20Available-brightgreen.svg?style=flat-square)](https://github.com/symfony/recipes-contrib)
+
 ![Multi-Tenancy Bundle (Desktop Wallpaper)](https://github.com/RamyHakam/multi_tenancy_bundle/assets/17661342/eef23e6a-881c-4817-b7b8-8b7cec913154)
+
+---
+
+## 🧩 Overview
+
+The **Symfony Multi-Tenancy Bundle** enables scalable, production-ready multi-tenancy for Symfony applications.
+
+Ideal for **SaaS platforms**, **region-based services**, and **multi-vendor e-commerce systems**.
+
+This bundle is designed around a **database-per-tenant architecture**, where each tenant (e.g., company, region, or seller) has its own isolated database.
+
+It provides a flexible foundation for building multi-tenant SaaS platforms where each tenant has:
+
+- A fully isolated database
+- Independent schema migration lifecycle
+- Dedicated entity structure
+
+This model supports both:
+- **Customer-based tenancy** (each company/user gets their own DB)
+- **Region-based tenancy** (databases split per country, region, or legal boundary)
+
+The bundle integrates seamlessly with Doctrine and Symfony’s service container, offering:
+
+- Automatic tenant database switching at runtime
+- Configurable DB hosts, drivers, and credentials per tenant
+- Separate migration/fixture directories for main and tenant databases
+- Runtime isolation without needing multiple Symfony instances
+
+Ideal for developers building:
+- B2B SaaS platforms
+- Regional/multi-country deployments
+- Multi-vendor marketplaces
+- White-label or agency platforms requiring isolated data per client where **each tenant has a fully isolated database**, such as B2B SaaS, white-label apps, or geo-distributed services.
 
 ---
 
@@ -25,6 +61,33 @@
 
 ---
 
+---
+
+## 📦 Using the Bundle
+
+The idea behind this bundle is simple: you have a **main database** and multiple **tenant databases**. Here's how to use it:
+
+1. **Create a configuration entity** in your main database that implements `TenantDbConfigurationInterface`.
+    - Use `TenantDbConfigTrait` to include all required fields.
+    - Use `TimestampableTrait` for `createdAt` and `updatedAt` fields, and add the `#[ORM\HasLifecycleCallbacks]` attribute.
+
+2. **Split your entities** into two directories:
+    - `src/Entity/Main/` for main DB entities
+    - `src/Entity/Tenant/` for tenant DB entities
+
+3. **Split migrations** into two directories:
+    - `src/Migrations/Main/`
+    - `src/Migrations/Tenant/`
+
+4. **Inject `TenantEntityManager`** in your services or controllers.
+
+5. **Switch to a tenant DB** by dispatching:
+```php
+$dispatcher->dispatch(new SwitchDbEvent($tenantId));
+```
+> This will connect the `TenantEntityManager` to the database of the given tenant ID.
+
+6. **Recommended**: Keep tenant entities in a different directory from main entities for clean structure and separation.
 
 ---
 
@@ -51,20 +114,11 @@ You can now load **tenant-specific fixtures** just like regular Doctrine fixture
    php bin/console tenant:fixtures:load
    ```
 
-### 🛠 Features Supported:
-- Uses the same behavior and options as the default `doctrine:fixtures:load`.
-- Supports `--append`, `--group=`, `--purge-with-truncate`.
-- Supports `--dbid=` to specify the tenant database ID.
-- Respects fixture dependencies via `getDependencies()`.
-- Automatically loads fixtures in the order defined by `getOrder()`.
-- Prevent Main database fixtures from being loaded into tenant databases or vice versa.
-- 
-
-> You can use `make:fixture` or manual creation. Just add the attribute.
+> Supports `--append`, `--group=`, `--purge-with-truncate`, `--dbid=`, and fixture dependencies like native Doctrine fixtures.
 
 ---
 
-## 🛠 Supported Databases:
+## 🛠 Supported Databases
 - MySQL / MariaDB
 - PostgreSQL
 - SQLite
@@ -73,62 +127,81 @@ You can now load **tenant-specific fixtures** just like regular Doctrine fixture
 
 ## ⚙️ Installation
 
-This bundle requires:
-- [Symfony](https://symfony.com/) v5+
-- [Doctrine Bundle](https://github.com/doctrine/DoctrineBundle)
-- [Doctrine Migrations Bundle](https://github.com/doctrine/DoctrineMigrationsBundle) v3+
+You can install the Multi-Tenancy Bundle using **Symfony Flex** (recommended) or set it up manually.
 
-Install using Composer:
+### ✅ Option 1: Install via Symfony Flex (Recommended)
 
+#### 📦 Step 1: Install the bundle
 ```bash
 composer require hakam/multi-tenancy-bundle
 ```
 
----
+#### ⚙️ Symfony Flex will automatically:
+- Register the bundle in `config/bundles.php`
+- Copy default config to `config/packages/hakam_multi_tenancy.yaml`
+- Create the following directory structure:
+```
+src/Entity/Main/
+src/Entity/Tenant/
+migrations/Main/
+migrations/Tenant/
+```
 
-## 📦 Using the Bundle
+#### 🛠 Step 2: Update Doctrine Configuration
 
-### 1. Define a Tenant Configuration Entity
-Create an entity in your **main database** that implements `TenantDbConfigurationInterface`.  
-You can use `TenantDbConfigTrait` and `TimestampableTrait` to simplify implementation.
-
-### 2. Configure Doctrine
-Split main and tenant entity mappings and migrations:
-
+In `config/packages/doctrine.yaml`:
 ```yaml
-# config/packages/doctrine.yaml
 doctrine:
   dbal:
     default_connection: default
     url: '%env(resolve:DATABASE_URL)%'
-    orm:
-      default_entity_manager: default
-      entity_managers:
-        default:
-          connection: default
-          auto_mapping: true
-          mappings:
-            App:
-              is_bundle: false
-              dir: '%kernel.project_dir%/src/Entity/Main'
-              prefix: 'App\Entity\Main'
-              alias: App
+
+  orm:
+    default_entity_manager: default
+    entity_managers:
+      default:
+        connection: default
+        auto_mapping: false
+        mappings:
+          Main:
+            is_bundle: false
+            dir: '%kernel.project_dir%/src/Entity/Main'
+            prefix: 'App\\Entity\\Main'
+            alias: App
 ```
 
+In `config/packages/doctrine_migrations.yaml`:
 ```yaml
-# config/packages/doctrine_migrations.yaml
 doctrine_migrations:
   migrations_paths:
-    'DoctrineMigrations\Main': '%kernel.project_dir%/src/Migrations/Main'
+    'DoctrineMigrations\\Main': '%kernel.project_dir%/src/Migrations/Main'
 ```
 
-### 3. Add Configuration
-In `config/packages/hakam_multi_tenancy.yaml`:
+---
 
+### 🧱 Option 2: Manual Installation (Without Symfony Flex)
+
+#### 📦 Step 1: Install the bundle
+```bash
+composer require hakam/multi-tenancy-bundle
+```
+
+#### 🧩 Step 2: Register the bundle manually
+In `config/bundles.php`:
+```php
+return [
+    // ...
+    Hakam\MultiTenancyBundle\HakamMultiTenancyBundle::class => ['all' => true],
+];
+```
+
+#### ⚙️ Step 3: Create the default configuration
+Create the file `config/packages/hakam_multi_tenancy.yaml`:
 ```yaml
 hakam_multi_tenancy:
   tenant_database_className:  App\Entity\Main\TenantDbConfig
   tenant_database_identifier: id
+
   tenant_connection:
     host: 127.0.0.1
     port: 3306
@@ -137,10 +210,11 @@ hakam_multi_tenancy:
     server_version: 5.7
 
   tenant_migration:
-    tenant_migration_namespace: Application\Migrations\Tenant
+    tenant_migration_namespace: DoctrineMigrations\Tenant
     tenant_migration_path: migrations/Tenant
 
   tenant_entity_manager:
+    tenant_naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
     mapping:
       type: attribute
       dir: '%kernel.project_dir%/src/Entity/Tenant'
@@ -148,7 +222,47 @@ hakam_multi_tenancy:
       alias: Tenant
 ```
 
+#### 📁 Step 4: Manually create the following folders
+```
+src/Entity/Main/
+src/Entity/Tenant/
+migrations/Main/
+migrations/Tenant/
+```
+
+#### 🗂️ Step 5: Update Doctrine Configuration
+In `config/packages/doctrine.yaml`:
+```yaml
+doctrine:
+  dbal:
+    default_connection: default
+    url: '%env(resolve:DATABASE_URL)%'
+
+  orm:
+    default_entity_manager: default
+    entity_managers:
+      default:
+        connection: default
+        auto_mapping: false
+        mappings:
+          Main:
+            is_bundle: false
+            dir: '%kernel.project_dir%/src/Entity/Main'
+            prefix: 'App\\Entity\\Main'
+            alias: App
+```
+
+In `config/packages/doctrine_migrations.yaml`:
+```yaml
+doctrine_migrations:
+  migrations_paths:
+    'DoctrineMigrations\\Main': '%kernel.project_dir%/src/Migrations/Main'
+```
+
 ---
+
+🎉 You’re now ready to define your tenant configuration entity and start using the bundle's powerful multi-tenancy features.
+
 
 ## 🧠 Get Started Example
 
