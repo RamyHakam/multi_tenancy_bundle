@@ -9,6 +9,26 @@
             <argument key="$dbClassName" type="string" id="dbClassName"/>
             <argument key="$dbIdentifier" type="string" id="id"/>
         </service>
+        <service id="Hakam\MultiTenancyBundle\MessageHandler\CreateTenantDatabaseHandler"
+                 autowire="true"
+                 autoconfigure="false">
+            <argument type="service" id="Hakam\MultiTenancyBundle\Services\DbService"/>
+            <tag name="messenger.message_handler"/>
+        </service>
+
+        <service id="Hakam\MultiTenancyBundle\Services\TenantMigrationRunner"
+                 autowire="true"
+                 autoconfigure="false" >
+            <argument type="service" id="Hakam\MultiTenancyBundle\Command\MigrateCommand"/>
+        </service>
+
+        <service id="Hakam\MultiTenancyBundle\MessageHandler\MigrateTenantDatabaseHandler"
+                 autowire="true"
+                 autoconfigure="false">
+            <argument type="service" id="Hakam\MultiTenancyBundle\Services\TenantMigrationRunner"/>
+            <tag name="messenger.message_handler"/>
+        </service>
+
         <service id="Hakam\MultiTenancyBundle\Services\DbConfigService" alias="hakam_db_config.service"/>
 
         <service id="hakam_tenant_fixtures_loader.service" class="Hakam\MultiTenancyBundle\Services\TenantFixtureLoader"
