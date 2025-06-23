@@ -54,6 +54,9 @@ class DbService
                 : $tenantConnection->getSchemaManager();
             $schemaManager->createDatabase($dbConfiguration->getDbName());
             $tenantConnection->close();
+            $dbConfiguration->setDatabaseStatus(DatabaseStatusEnum::DATABASE_CREATED);
+            $this->entityManager->persist($dbConfiguration);
+            $this->entityManager->flush();
             return 1;
 
         } catch (\Exception $e) {
@@ -134,6 +137,18 @@ class DbService
     public function getListOfNotCreatedDataBases(): array
     {
         return $this->entityManager->getRepository($this->tenantDbListEntity)->findBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_NOT_CREATED]);
+    }
+
+    /**
+     * @throws MultiTenancyException
+     */
+    public function getTenantDbConfigById(int $tenantDbId): TenantDbConfigurationInterface
+    {
+        $tenantDbConfig = $this->entityManager->getRepository($this->tenantDbListEntity)->find($tenantDbId);
+        if (!$tenantDbConfig) {
+            throw new MultiTenancyException(sprintf('Tenant database configuration with ID %d not found.', $tenantDbId), Response::HTTP_NOT_FOUND);
+        }
+        return $tenantDbConfig;
     }
 
     public function getListOfNewCreatedDataBases(): array
