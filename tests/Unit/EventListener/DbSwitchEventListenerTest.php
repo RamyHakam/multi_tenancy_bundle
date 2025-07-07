@@ -3,6 +3,7 @@
 namespace Hakam\MultiTenancyBundle\Tests\Unit\EventListener;
 
 use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
+use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface;
 use PHPUnit\Framework\TestCase;
@@ -19,9 +20,11 @@ class DbSwitchEventListenerTest extends TestCase
         // mock the necessary dependencies
         $mockContainer = $this->createMock(ContainerInterface::class);
         $mockDbConfigService = $this->createMock(DbConfigService::class);
+        $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
+
 
         // create a test instance of the listener
-        $listener = new DbSwitchEventListener($mockContainer, $mockDbConfigService, 'test_database_url');
+        $listener = new DbSwitchEventListener($mockContainer, $mockDbConfigService, $mockTenantEntityManager,'test_database_url');
 
         // create a test event
         $testDbIndex = 1;
@@ -50,6 +53,9 @@ class DbSwitchEventListenerTest extends TestCase
             ->method('get')
             ->with('doctrine')
             ->willReturn($mockDoctrine);
+
+        $mockTenantEntityManager->expects($this->once())
+            ->method('clear');
 
         // trigger the event and test the result
         $listener->onHakamMultiTenancyBundleEventSwitchDbEvent($testEvent);
