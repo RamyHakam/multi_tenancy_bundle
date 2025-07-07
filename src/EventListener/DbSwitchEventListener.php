@@ -44,10 +44,10 @@ class DbSwitchEventListener implements EventSubscriberInterface
             'port' => $dbConfig->getDbPort() ?? $this->parseDatabaseUrl($this->databaseURL)['port'],
         ];
 
-        $tenantConnection->switchConnection($params);
-
-        //clear the entity manager to avoid Doctrine cache issues
+        //clear the current entity manager to avoid Doctrine cache issues
         $this->tenantEntityManager->clear();
+
+        $tenantConnection->switchConnection($params);
     }
 
     private function parseDatabaseUrl(string $databaseURL): array
