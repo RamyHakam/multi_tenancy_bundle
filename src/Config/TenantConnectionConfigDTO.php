@@ -4,6 +4,9 @@ namespace Hakam\MultiTenancyBundle\Config;
 
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
 
+/**
+ * @author Ramy Hakam <pencilsoft1@gmail.com
+ */
 class TenantConnectionConfigDTO
 {
     private function __construct(

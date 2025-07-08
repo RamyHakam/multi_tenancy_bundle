@@ -7,6 +7,9 @@ use Doctrine\ORM\EntityRepository;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface;
 
+/**
+ * @author Ramy Hakam <pencilsoft1@gmail.com
+ */
 class DoctrineTenantConfigProvider implements TenantConfigProviderInterface
 {
     private EntityRepository $entityRepository;
