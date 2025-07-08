@@ -4,11 +4,6 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services
         http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
-        <service id="hakam_db_config.service" class="Hakam\MultiTenancyBundle\Services\DbConfigService" public="false">
-            <argument key="$entityManager" type="service" id='doctrine.orm.entity_manager'/>
-            <argument key="$dbClassName" type="string" id="dbClassName"/>
-            <argument key="$dbIdentifier" type="string" id="id"/>
-        </service>
 
         <service id="hakam_tenant_config_provider.doctrine" class="Hakam\MultiTenancyBundle\Config\DoctrineTenantConfigProvider" public="false" autowire="true" autoconfigure="true">
             <argument key="$entityManager" type="service" id='doctrine.orm.entity_manager'/>
@@ -21,7 +16,6 @@
         <service id="Hakam\MultiTenancyBundle\Config\TenantConfigProviderInterface"
                  alias="Hakam\MultiTenancyBundle\Config\DoctrineTenantConfigProvider"
                  public="false"/>
-        <service id="Hakam\MultiTenancyBundle\Services\DbConfigService" alias="hakam_db_config.service"/>
 
         <service id="hakam_tenant_fixtures_loader.service" class="Hakam\MultiTenancyBundle\Services\TenantFixtureLoader"
                  public="false">
