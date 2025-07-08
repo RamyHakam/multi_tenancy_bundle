@@ -35,6 +35,16 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         $definition = $container->getDefinition('hakam_db_config.service');
         $definition->setArgument(1, $configs['tenant_database_className']);
         $definition->setArgument(2, $configs['tenant_database_identifier']);
+
+        if ($configs['tenant_config_provider'] == 'hakam_tenant_config_provider.doctrine') {
+            // check if the tenant database className and identifier are set
+            if (empty($configs['tenant_database_className']) || empty($configs['tenant_database_identifier'])) {
+                throw new InvalidConfigurationException('You need to set tenant_database_className and tenant_database_identifier in your configuration');
+            }
+            $tenantProviderDefinition = $container->getDefinition('hakam_tenant_config_provider.doctrine');
+            $tenantProviderDefinition->setArgument(1, $configs['tenant_database_className']);
+            $tenantProviderDefinition->setArgument(2, $configs['tenant_database_identifier']);
+        }
     }
 
     public function prepend(ContainerBuilder $container): void
@@ -103,7 +113,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
     {
         $fileSystem = new Filesystem();
         $dir = str_replace('%kernel.project_dir%', '', $dir);
-        $dir = sprintf("%s/%s",$projectDir , $dir);
+        $dir = sprintf("%s/%s", $projectDir, $dir);
         if (!$fileSystem->exists($dir)) {
             $fileSystem->mkdir($dir);
         }

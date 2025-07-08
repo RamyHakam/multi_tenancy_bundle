@@ -2,16 +2,20 @@
 
 namespace Hakam\MultiTenancyBundle\Config;
 
+use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
+
 class TenantConnectionConfigDTO
 {
     private function __construct(
-       public string $driver,
-        public  string $host,
-        public  int    $port,
-        public  string $dbname,
-        public  string $user,
-        public  string $password
-    ) {}
+        public DriverTypeEnum $driver,
+        public string         $host,
+        public int            $port,
+        public string         $dbname,
+        public string         $user,
+        public ?string        $password
+    )
+    {
+    }
 
     public static function fromArray(array $data): self
     {

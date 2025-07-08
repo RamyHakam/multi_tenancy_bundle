@@ -18,7 +18,7 @@ class DoctrineTenantConfigProvider implements TenantConfigProviderInterface
 
     public function getTenantConnectionConfig(?string $identifier): TenantConnectionConfigDTO
     {
-        $tenantDbConfig = $identifier ?  $this->entityRepository->findOneBy([$this->dbIdentifier => $identifier]) :
+        $tenantDbConfig = $identifier ? $this->entityRepository->findOneBy([$this->dbIdentifier => $identifier]) :
             $this->entityRepository->findOneBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_MIGRATED]);
         if (null === $tenantDbConfig) {
             throw new \RuntimeException(sprintf('Tenant db repository " %s " returns NULL for identifier " %s = %s " ', get_class($this->entityRepository), $this->dbIdentifier, $identifier));
@@ -28,13 +28,13 @@ class DoctrineTenantConfigProvider implements TenantConfigProviderInterface
             throw new \LogicException(sprintf('The tenant db entity  " %s ". Should implement " Hakam\MultiTenancyBundle\TenantDbConfigurationInterface " ', get_class($dbConfigObject)));
         }
 
-        return  TenantConnectionConfigDTO::fromArray(
+        return TenantConnectionConfigDTO::fromArray(
             [
-                'driver' => $tenantDbConfig->getDbDriver(),
+                'driver' => $tenantDbConfig->getDriverType(),
                 'host' => $tenantDbConfig->getDbHost(),
                 'port' => $tenantDbConfig->getDbPort(),
                 'dbname' => $tenantDbConfig->getDbName(),
-                'user' => $tenantDbConfig->getDbUser(),
+                'user' => $tenantDbConfig->getDbUserName(),
                 'password' => $tenantDbConfig->getDbPassword()
             ]
         );
