@@ -8,7 +8,9 @@ use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
+ * @deprecated  Use TenantConfigProviderInterface instead.
  */
+
 class DbConfigService
 {
     private ObjectRepository $entityRepository;

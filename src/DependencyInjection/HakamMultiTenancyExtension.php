@@ -41,7 +41,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
     {
         $configs = $container->getExtensionConfig($this->getAlias());
         $dbSwitcherConfig = $this->processConfiguration(new Configuration(), $configs);
-        if (5 === count($dbSwitcherConfig)) {
+        if (6 === count($dbSwitcherConfig)) {
             $bundles = $container->getParameter('kernel.bundles');
 
             $this->checkDir($container->getParameter('kernel.project_dir'), $dbSwitcherConfig['tenant_entity_manager']['mapping']['dir']);

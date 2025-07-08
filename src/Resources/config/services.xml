@@ -9,6 +9,18 @@
             <argument key="$dbClassName" type="string" id="dbClassName"/>
             <argument key="$dbIdentifier" type="string" id="id"/>
         </service>
+
+        <service id="hakam_tenant_config_provider.doctrine" class="Hakam\MultiTenancyBundle\Config\DoctrineTenantConfigProvider" public="false" autowire="true" autoconfigure="true">
+            <argument key="$entityManager" type="service" id='doctrine.orm.entity_manager'/>
+            <argument key="$dbClassName" type="string" id="dbClassName"/>
+            <argument key="$dbIdentifier" type="string" id="id"/>
+        </service>
+        <service id="Hakam\MultiTenancyBundle\Config\DoctrineTenantConfigProvider"
+                 alias="hakam_tenant_config_provider.doctrine" public="false"/>
+
+        <service id="Hakam\MultiTenancyBundle\Config\TenantConfigProviderInterface"
+                 alias="Hakam\MultiTenancyBundle\Config\DoctrineTenantConfigProvider"
+                 public="false"/>
         <service id="Hakam\MultiTenancyBundle\Services\DbConfigService" alias="hakam_db_config.service"/>
 
         <service id="hakam_tenant_fixtures_loader.service" class="Hakam\MultiTenancyBundle\Services\TenantFixtureLoader"
@@ -24,7 +36,7 @@
         <service id="Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener">
             <tag name="kernel.event_listener" event="Hakam\MultiTenancyBundle\Event\SwitchDbEvent"/>
             <argument type="service" id="service_container"/>
-            <argument type="service" id="hakam_db_config.service"/>
+            <argument type="service" id="Hakam\MultiTenancyBundle\Config\TenantConfigProviderInterface"/>
             <argument type="service" id="tenant_entity_manager"/>
             <argument type="string">%env(DATABASE_URL)%</argument>
         </service>
