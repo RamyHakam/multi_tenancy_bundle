@@ -15,7 +15,7 @@ class TenantConnectionConfigDTO
         public int            $port,
         public string         $dbname,
         public string         $user,
-        public ?string        $password
+        public ?string        $password = null
     )
     {
     }
@@ -28,7 +28,7 @@ class TenantConnectionConfigDTO
             $data['port'],
             $data['dbname'],
             $data['user'],
-            $data['password']
+           isset( $data['password'])?? null
         );
     }
 }
