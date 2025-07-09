@@ -2,19 +2,18 @@
 
 namespace Hakam\MultiTenancyBundle\Tests\Unit\EventListener;
 
-use Hakam\MultiTenancyBundle\Config\TenantConfigProviderInterface;
 use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
+use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
+use Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener;
+use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
 use Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface;
 use PHPUnit\Framework\TestCase;
-use Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener;
-use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Hakam\MultiTenancyBundle\Services\DbConfigService;
 
 class DbSwitchEventListenerTest extends TestCase
 {
@@ -38,6 +37,7 @@ class DbSwitchEventListenerTest extends TestCase
 
         $mockDbConfig = TenantConnectionConfigDTO::fromArray(
             [
+                'identifier' => $testDbIndex,
                 'driver' => DriverTypeEnum::MYSQL,
                 'host' => ' localhost',
                 'port' => '3306',

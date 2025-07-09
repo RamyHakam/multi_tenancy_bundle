@@ -31,6 +31,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         // set the required parameter
         $container->setParameter('hakam.tenant_db_credentials', ['db_url' => $configs['tenant_connection']['url']]);
         $container->setParameter('hakam.tenant_db_list_entity', $configs['tenant_database_className']);
+        $container->setParameter('hakam.tenant_db_identifier', $configs['tenant_database_identifier']);
 
         if ($configs['tenant_config_provider'] == 'hakam_tenant_config_provider.doctrine') {
             // check if the tenant database className and identifier are set

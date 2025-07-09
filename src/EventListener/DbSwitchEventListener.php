@@ -2,9 +2,9 @@
 
 namespace Hakam\MultiTenancyBundle\EventListener;
 
-use Hakam\MultiTenancyBundle\Config\TenantConfigProviderInterface;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
+use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 

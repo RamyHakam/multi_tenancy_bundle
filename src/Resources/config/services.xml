@@ -5,16 +5,16 @@
         http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
 
-        <service id="hakam_tenant_config_provider.doctrine" class="Hakam\MultiTenancyBundle\Config\DoctrineTenantConfigProvider" public="false" autowire="true" autoconfigure="true">
+        <service id="hakam_tenant_config_provider.doctrine" class="Hakam\MultiTenancyBundle\Adapter\Doctrine\DoctrineTenantConfigProvider" public="false" autowire="true" autoconfigure="true">
             <argument key="$entityManager" type="service" id='doctrine.orm.entity_manager'/>
             <argument key="$dbClassName" type="string" id="dbClassName"/>
             <argument key="$dbIdentifier" type="string" id="id"/>
         </service>
-        <service id="Hakam\MultiTenancyBundle\Config\DoctrineTenantConfigProvider"
+        <service id="Hakam\MultiTenancyBundle\Adapter\Doctrine\DoctrineTenantConfigProvider"
                  alias="hakam_tenant_config_provider.doctrine" public="false"/>
 
-        <service id="Hakam\MultiTenancyBundle\Config\TenantConfigProviderInterface"
-                 alias="Hakam\MultiTenancyBundle\Config\DoctrineTenantConfigProvider"
+        <service id="Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface"
+                 alias="Hakam\MultiTenancyBundle\Adapter\Doctrine\DoctrineTenantConfigProvider"
                  public="false"/>
 
         <service id="hakam_tenant_fixtures_loader.service" class="Hakam\MultiTenancyBundle\Services\TenantFixtureLoader"
@@ -27,10 +27,20 @@
 
         <service id="Hakam\MultiTenancyBundle\Services\DbService" public="false" autowire="true"/>
 
+        <service id="Hakam\MultiTenancyBundle\Adapter\DefaultDsnGenerator" public="false" autowire="true"/>
+
+        <service id="Hakam\MultiTenancyBundle\Adapter\Doctrine\TenantDBALConnectionGenerator" public="false" autowire="true" autoconfigure="true"/>
+
+        <service id="Hakam\MultiTenancyBundle\Adapter\Doctrine\DoctrineTenantDatabaseManager" public="false" autowire="true"/>
+
+        <service id="Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface"
+                 alias="Hakam\MultiTenancyBundle\Adapter\Doctrine\DoctrineTenantDatabaseManager"
+                 public="false"/>
+
         <service id="Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener">
             <tag name="kernel.event_listener" event="Hakam\MultiTenancyBundle\Event\SwitchDbEvent"/>
             <argument type="service" id="service_container"/>
-            <argument type="service" id="Hakam\MultiTenancyBundle\Config\TenantConfigProviderInterface"/>
+            <argument type="service" id="Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface"/>
             <argument type="service" id="tenant_entity_manager"/>
             <argument type="string">%env(DATABASE_URL)%</argument>
         </service>
@@ -44,11 +54,7 @@
         <service id="Symfony\Component\Console\Application" public="true"/>
         <service id="Hakam\MultiTenancyBundle\Command\CreateDatabaseCommand">
             <tag name="console.command"/>
-            <argument type="service" id="Symfony\Component\Console\Application"/>
-            <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
-            <argument type="service" id="service_container"/>
-            <argument type="service" id="event_dispatcher"/>
-            <argument type="service" id="Hakam\MultiTenancyBundle\Services\DbService"/>
+            <argument type="service" id="Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface"/>
         </service>
         <service id="Hakam\MultiTenancyBundle\Command\MigrateCommand">
             <tag name="console.command"/>

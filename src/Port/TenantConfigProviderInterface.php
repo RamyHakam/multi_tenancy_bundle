@@ -1,6 +1,8 @@
 <?php
 
-namespace Hakam\MultiTenancyBundle\Config;
+namespace Hakam\MultiTenancyBundle\Port;
+
+use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 
 /**
  * Interface for providing tenant connection configuration.

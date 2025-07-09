@@ -1,0 +1,164 @@
+<?php
+
+namespace Hakam\MultiTenancyBundle\Tests\Unit\Adapter\Doctrine;
+
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ObjectRepository;
+use Exception;
+use Hakam\MultiTenancyBundle\Adapter\Doctrine\DoctrineTenantDatabaseManager;
+use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
+use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
+use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
+use Hakam\MultiTenancyBundle\Exception\MultiTenancyException;
+use Hakam\MultiTenancyBundle\Port\DoctrineDBALConnectionGeneratorInterface;
+use PHPUnit\Framework\TestCase;
+use RuntimeException;
+
+class DoctrineTenantDatabaseManagerTest extends TestCase
+{
+    private EntityManagerInterface $em;
+    private ObjectRepository $repo;
+    private DoctrineDBALConnectionGeneratorInterface $connGen;
+    private DoctrineTenantDatabaseManager $manager;
+    private const ENTITY_CLASS = 'TenantDbConfig';
+    private const IDENTIFIER_FIELD = 'id';
+
+    protected function setUp(): void
+    {
+        $this->em = $this->createMock(EntityManagerInterface::class);
+        $this->repo = $this->createMock(ObjectRepository::class);
+        $this->connGen = $this->createMock(DoctrineDBALConnectionGeneratorInterface::class);
+
+        // stub getRepository
+        $this->em->method('getRepository')
+        ->with(self::ENTITY_CLASS)
+        ->willReturn($this->repo);
+
+        $this->manager = new DoctrineTenantDatabaseManager(
+        $this->em,
+            $this->connGen,
+            self::ENTITY_CLASS,
+            self::IDENTIFIER_FIELD
+        );
+    }
+
+    public function testListDatabasesReturnsDtos(): void
+    {
+        $entity1 = $this->createConfiguredMock(TenantDbConfig::class, [
+        'getId' => 't1',
+        'getDriverType' => DriverTypeEnum::MYSQL,
+        'getDbHost' => 'h',
+        'getDbPort' => 3306,
+        'getDbName' => 'db',
+        'getDbUserName' => 'u',
+        'getDbPassword' => 'p',
+    ]);
+        $this->repo->expects($this->once())
+            ->method('findBy')
+        ->with(['databaseStatus' => DatabaseStatusEnum::DATABASE_MIGRATED])
+        ->willReturn([$entity1]);
+
+        $result = $this->manager->listDatabases();
+        $this->assertCount(1, $result);
+        $dto = $result[0];
+        $this->assertSame('t1', $dto->identifier);
+        $this->assertSame('db', $dto->dbname);
+    }
+
+    public function testListDatabasesThrowsIfEmpty(): void
+    {
+        $this->repo->method('findBy')
+        ->willReturn([]);
+        $this->expectException(RuntimeException::class);
+        $this->manager->listDatabases();
+    }
+
+    public function testListMissingDatabasesReturnsDtos(): void
+    {
+        $entity = $this->createConfiguredMock(TenantDbConfig::class, [
+        'getId' => 't2',
+        'getDriverType' => DriverTypeEnum::MYSQL,
+        'getDbHost' => 'h',
+        'getDbPort' => 3306,
+        'getDbName' => 'db',
+        'getDbUserName' => 'u',
+        'getDbPassword' => 'p',
+    ]);
+        $this->repo->method('findBy')
+        ->with(['databaseStatus' => DatabaseStatusEnum::DATABASE_NOT_CREATED])
+        ->willReturn([$entity]);
+        $result = $this->manager->listMissingDatabases();
+        $this->assertCount(1, $result);
+        $this->assertSame('t2', $result[0]->identifier);
+    }
+
+    public function testListMissingDatabasesThrowsIfEmpty(): void
+    {
+        $this->repo->method('findBy')
+        ->willReturn([]);
+        $this->expectException(RuntimeException::class);
+        $this->manager->listMissingDatabases();
+    }
+
+    public function testGetDefaultTenantIDatabaseReturnsDto(): void
+    {
+        $entity = $this->createConfiguredMock(TenantDbConfig::class, [
+        'getId' => 'def',
+        'getDriverType' => DriverTypeEnum::MYSQL,
+        'getDbHost' => 'h',
+        'getDbPort' => 3306,
+        'getDbName' => 'db',
+        'getDbUserName' => 'u',
+        'getDbPassword' => 'p',
+    ]);
+        $this->repo->method('findOneBy')
+        ->with(['databaseStatus' => DatabaseStatusEnum::DATABASE_CREATED])
+        ->willReturn($entity);
+        $dto = $this->manager->getDefaultTenantIDatabase();
+        $this->assertSame('def', $dto->identifier);
+    }
+
+    public function testGetDefaultTenantIDatabaseThrowsIfNone(): void
+    {
+        $this->repo->method('findOneBy')
+        ->willReturn(null);
+        $this->expectException(RuntimeException::class);
+        $this->manager->getDefaultTenantIDatabase();
+    }
+
+    public function testCreateTenantDatabaseWrapsExceptions(): void
+    {
+        $dto = TenantConnectionConfigDTO::fromArray([
+        'identifier' => 't',
+        'driver' => DriverTypeEnum::MYSQL,
+        'host' => 'h',
+        'port' => 3306,
+        'dbname' => 'db',
+        'user' => 'u',
+        'password' => 'p',
+    ]);
+        $this->connGen->method('generateMaintenanceConnection')
+        ->willThrowException(new Exception('err'));
+        $this->expectException(MultiTenancyException::class);
+        $this->manager->createTenantDatabase($dto);
+    }
+
+    public function testUpdateTenantDatabaseStatus(): void
+    {
+        $entity = $this->createConfiguredMock(TenantDbConfig::class, ['setDatabaseStatus' => null]);
+        $this->repo->method('findOneBy')
+        ->with([self::IDENTIFIER_FIELD => 'tid'])
+        ->willReturn($entity);
+        $this->em->expects($this->once())->method('persist')->with($entity);
+        $this->em->expects($this->once())->method('flush');
+        $result = $this->manager->updateTenantDatabaseStatus('tid', DatabaseStatusEnum::DATABASE_CREATED);
+        $this->assertTrue($result);
+    }
+
+    public function testUpdateTenantDatabaseStatusThrowsIfNotFound(): void
+    {
+        $this->repo->method('findOneBy')->willReturn(null);
+        $this->expectException(RuntimeException::class);
+        $this->manager->updateTenantDatabaseStatus('nope', DatabaseStatusEnum::DATABASE_CREATED);
+    }
+}

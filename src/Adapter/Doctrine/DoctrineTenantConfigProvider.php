@@ -1,10 +1,12 @@
 <?php
 
-namespace Hakam\MultiTenancyBundle\Config;
+namespace Hakam\MultiTenancyBundle\Adapter\Doctrine;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
+use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
 use Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface;
 
 /**
@@ -33,6 +35,7 @@ class DoctrineTenantConfigProvider implements TenantConfigProviderInterface
 
         return TenantConnectionConfigDTO::fromArray(
             [
+                'identifier' => $tenantDbConfig->getId() ?? '',
                 'driver' => $tenantDbConfig->getDriverType(),
                 'host' => $tenantDbConfig->getDbHost(),
                 'port' => $tenantDbConfig->getDbPort(),

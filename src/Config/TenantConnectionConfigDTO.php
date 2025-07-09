@@ -10,6 +10,7 @@ use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
 class TenantConnectionConfigDTO
 {
     private function __construct(
+        public string         $identifier,
         public DriverTypeEnum $driver,
         public string         $host,
         public int            $port,
@@ -23,12 +24,13 @@ class TenantConnectionConfigDTO
     public static function fromArray(array $data): self
     {
         return new self(
+            $data['identifier'],
             $data['driver'],
             $data['host'],
             $data['port'],
             $data['dbname'],
             $data['user'],
-           isset( $data['password'])?? null
+            $data['password'] ?? null
         );
     }
 }
