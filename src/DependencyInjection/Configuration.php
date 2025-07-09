@@ -21,6 +21,7 @@ class Configuration implements ConfigurationInterface
             ->children()
             ->variableNode('tenant_database_className')->info('Tenant dbs configuration Class Name')->defaultValue('TenantDb')->end()
             ->variableNode('tenant_database_identifier')->info('tenant db column name to get db configuration')->defaultValue('id')->end()
+            ->variableNode('tenant_config_provider')->info('Service ID of the TenantConfigProviderInterface implementation')->defaultValue('hakam_tenant_config_provider.doctrine')->end()
             ->arrayNode('tenant_connection')->info('tenant entity manager connection configuration')
             ->ignoreExtraKeys()
             ->addDefaultsIfNotSet()
