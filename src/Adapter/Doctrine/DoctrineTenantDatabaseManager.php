@@ -113,19 +113,35 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
         return true;
     }
 
+    public function addNewTenantDbConfig(TenantConnectionConfigDTO $dto): TenantConnectionConfigDTO
+    {
+        $dbConfig = new $this->tenantDbEntityClassName();
+        $dbConfig->setDriverType($dto->driver);
+        $dbConfig->setDatabaseStatus($dto->dbStatus);
+        $dbConfig->setDbHost($dto->host);
+        $dbConfig->setDbPort($dto->port);
+        $dbConfig->setDbName($dto->dbname);
+        $dbConfig->setDbUserName($dto->user);
+        $dbConfig->setDbPassword($dto->password);
+
+        $this->entityManager->persist($dbConfig);
+        $this->entityManager->flush();
+
+        return $this->convertToDTO($dbConfig);
+    }
+
+
     private function convertToDTO(TenantDbConfigurationInterface $dbConfig): TenantConnectionConfigDTO
     {
-        return TenantConnectionConfigDTO::fromArray(
-            [
-                'identifier' => $dbConfig->getId() ?? '',
-                'driver' => $dbConfig->getDriverType(),
-                'dbStatus' => $dbConfig->getDatabaseStatus(),
-                'host' => $dbConfig->getDbHost(),
-                'port' => $dbConfig->getDbPort(),
-                'dbname' => $dbConfig->getDbName(),
-                'user' => $dbConfig->getDbUserName(),
-                'password' => $dbConfig->getDbPassword()
-            ]
+        return TenantConnectionConfigDTO::fromArgs(
+            identifier: $dbConfig->getId() ?? null,
+            driver: $dbConfig->getDriverType(),
+            dbStatus: $dbConfig->getDatabaseStatus(),
+            host: $dbConfig->getDbHost(),
+            port: $dbConfig->getDbPort(),
+            dbname : $dbConfig->getDbName(),
+            user: $dbConfig->getDbUserName(),
+            password: $dbConfig->getDbPassword()
         );
     }
 }

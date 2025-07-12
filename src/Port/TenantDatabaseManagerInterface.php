@@ -51,6 +51,8 @@ interface TenantDatabaseManagerInterface
      */
     public function createTenantDatabase(TenantConnectionConfigDTO $tenantConnectionConfigDTO): bool;
 
+    public function addNewTenantDbConfig(TenantConnectionConfigDTO $dto): TenantConnectionConfigDTO;
+
     // update Db Status
     /**
      * Update the status of a tenant database.

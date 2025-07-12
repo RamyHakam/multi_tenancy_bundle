@@ -35,16 +35,16 @@ class DbSwitchEventListenerTest extends TestCase
         // mock the expected behavior of the DbConfigService and ContainerInterface
 
 
-        $mockDbConfig = TenantConnectionConfigDTO::fromArray(
-            [
-                'identifier' => $testDbIndex,
-                'driver' => DriverTypeEnum::MYSQL,
-                'host' => ' localhost',
-                'port' => '3306',
-                'dbname' => 'test_db_name',
-                'user' => 'test_username',
-                'password' => 'test_password'
-            ]
+        $mockDbConfig = TenantConnectionConfigDTO::fromArgs(
+
+            identifier: $testDbIndex,
+            driver: DriverTypeEnum::MYSQL,
+            dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
+            host: ' localhost',
+            port: '3306',
+            dbname: 'test_db_name',
+            user: 'test_username',
+            password: 'test_password'
         );
 
         $mockTenantDbConfigProvider->expects($this->once())

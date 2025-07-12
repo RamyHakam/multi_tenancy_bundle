@@ -33,17 +33,15 @@ class DoctrineTenantConfigProvider implements TenantConfigProviderInterface
             throw new \LogicException(sprintf('The tenant db entity  " %s ". Should implement " Hakam\MultiTenancyBundle\TenantDbConfigurationInterface " ', get_class($dbConfigObject)));
         }
 
-        return TenantConnectionConfigDTO::fromArray(
-            [
-                'identifier' => $tenantDbConfig->getId() ?? '',
-                'driver' => $tenantDbConfig->getDriverType(),
-                'dbStatus' => $tenantDbConfig->getDatabaseStatus(),
-                'host' => $tenantDbConfig->getDbHost(),
-                'port' => $tenantDbConfig->getDbPort(),
-                'dbname' => $tenantDbConfig->getDbName(),
-                'user' => $tenantDbConfig->getDbUserName(),
-                'password' => $tenantDbConfig->getDbPassword()
-            ]
+        return TenantConnectionConfigDTO::fromArgs(
+                identifier: $tenantDbConfig->getId() ?? null,
+                driver: $tenantDbConfig->getDriverType(),
+                dbStatus: $tenantDbConfig->getDatabaseStatus(),
+                host: $tenantDbConfig->getDbHost(),
+                port: $tenantDbConfig->getDbPort(),
+                dbname : $tenantDbConfig->getDbName(),
+                user: $tenantDbConfig->getDbUserName(),
+                password: $tenantDbConfig->getDbPassword()
         );
     }
 }

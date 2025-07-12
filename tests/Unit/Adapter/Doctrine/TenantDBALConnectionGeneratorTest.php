@@ -2,6 +2,7 @@
 
 namespace Hakam\MultiTenancyBundle\Tests\Unit\Adapter\Doctrine;
 
+use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use PHPUnit\Framework\TestCase;
 use Doctrine\DBAL\Connection;
 use Hakam\MultiTenancyBundle\Adapter\Doctrine\TenantDBALConnectionGenerator;
@@ -22,15 +23,16 @@ class TenantDBALConnectionGeneratorTest extends TestCase
 
     public function testGenerateReturnsSqliteMemoryConnection(): void
     {
-        $dto = TenantConnectionConfigDTO::fromArray([
-            'identifier' => 12,
-            'driver'     => DriverTypeEnum::SQLITE,
-            'host'       => '',
-            'port'       => 0,
-            'dbname'     => ':memory:',
-            'user'       => '',
-            'password'   => null,
-        ]);
+        $dto = TenantConnectionConfigDTO::fromArgs(
+            identifier: 12,
+            driver: DriverTypeEnum::SQLITE,
+            dbStatus: DatabaseStatusEnum::DATABASE_NOT_CREATED,
+            host: '',
+            port: 0,
+            dbname: ':memory:',
+            user: '',
+            password: null,
+        );
 
         $this->dsnGenerator
             ->expects($this->once())
@@ -49,15 +51,16 @@ class TenantDBALConnectionGeneratorTest extends TestCase
 
     public function testGenerateMaintenanceConnectionReturnsSqliteMemoryConnection(): void
     {
-        $dto = TenantConnectionConfigDTO::fromArray([
-            'identifier' => 12,
-            'driver'     => DriverTypeEnum::SQLITE,
-            'host'       => '',
-            'port'       => 0,
-            'dbname'     => ':memory:',
-            'user'       => '',
-            'password'   => null,
-        ]);
+        $dto = TenantConnectionConfigDTO::fromArgs(
+            identifier: 12,
+            driver: DriverTypeEnum::SQLITE,
+            dbStatus: DatabaseStatusEnum::DATABASE_NOT_CREATED,
+            host: '',
+            port: 0,
+            dbname: ':memory:',
+            user: '',
+            password: null,
+        );
 
         $this->dsnGenerator
             ->expects($this->once())

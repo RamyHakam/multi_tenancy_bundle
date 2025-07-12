@@ -130,15 +130,16 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
 
     public function testCreateTenantDatabaseWrapsExceptions(): void
     {
-        $dto = TenantConnectionConfigDTO::fromArray([
-        'identifier' => 14,
-        'driver' => DriverTypeEnum::MYSQL,
-        'host' => 'h',
-        'port' => 3306,
-        'dbname' => 'db',
-        'user' => 'u',
-        'password' => 'p',
-    ]);
+        $dto = TenantConnectionConfigDTO::fromArgs(
+        identifier : 14,
+        driver: DriverTypeEnum::MYSQL,
+        dbStatus: DatabaseStatusEnum::DATABASE_NOT_CREATED,
+        host: 'h',
+        port : 3306,
+        dbname : 'db',
+        user : 'u',
+        password : 'p',
+    );
         $this->connGen->method('generateMaintenanceConnection')
         ->willThrowException(new Exception('err'));
         $this->expectException(MultiTenancyException::class);
