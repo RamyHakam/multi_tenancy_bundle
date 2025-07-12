@@ -23,7 +23,7 @@ class TenantDBALConnectionGeneratorTest extends TestCase
     public function testGenerateReturnsSqliteMemoryConnection(): void
     {
         $dto = TenantConnectionConfigDTO::fromArray([
-            'identifier' => 'tenant1',
+            'identifier' => 12,
             'driver'     => DriverTypeEnum::SQLITE,
             'host'       => '',
             'port'       => 0,
@@ -50,7 +50,7 @@ class TenantDBALConnectionGeneratorTest extends TestCase
     public function testGenerateMaintenanceConnectionReturnsSqliteMemoryConnection(): void
     {
         $dto = TenantConnectionConfigDTO::fromArray([
-            'identifier' => 'tenant1',
+            'identifier' => 12,
             'driver'     => DriverTypeEnum::SQLITE,
             'host'       => '',
             'port'       => 0,

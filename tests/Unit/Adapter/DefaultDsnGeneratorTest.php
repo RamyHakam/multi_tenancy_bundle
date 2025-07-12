@@ -24,7 +24,7 @@ class DefaultDsnGeneratorTest extends TestCase
         return [
             'mysql with password' => [
                 TenantConnectionConfigDTO::fromArray([
-                    'identifier' => 'tenant1',
+                    'identifier' => 11,
                     'driver' => DriverTypeEnum::MYSQL,
                     'host' => 'example.com',
                     'port' => 3306,
@@ -36,7 +36,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'mysql without password' => [
                 TenantConnectionConfigDTO::fromArray([
-                    'identifier' => 'tenant2',
+                    'identifier' => 12,
                     'driver' => DriverTypeEnum::MYSQL,
                     'host' => 'host',
                     'port' => 3307,
@@ -48,7 +48,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'postgres with password' => [
                 TenantConnectionConfigDTO::fromArray([
-                    'identifier' => 'tenant3',
+                    'identifier' => 13,
                     'driver' => DriverTypeEnum::POSTGRES,
                     'host' => 'pg.example.org',
                     'port' => 5432,
@@ -60,7 +60,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'postgres without password' => [
                 TenantConnectionConfigDTO::fromArray([
-                    'identifier' => 'tenant4',
+                    'identifier' => 14,
                     'driver' => DriverTypeEnum::POSTGRES,
                     'host' => 'localhost',
                     'port' => 5433,
@@ -72,7 +72,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'sqlite absolute path' => [
                 TenantConnectionConfigDTO::fromArray([
-                    'identifier' => 'tenant5',
+                    'identifier' => 14,
                     'driver' => DriverTypeEnum::SQLITE,
                     'host' => '',
                     'port' => 0,
@@ -84,7 +84,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'sqlite relative path' => [
                 TenantConnectionConfigDTO::fromArray([
-                    'identifier' => 'tenant6',
+                    'identifier' => 15,
                     'driver' => DriverTypeEnum::SQLITE,
                     'host' => '',
                     'port' => 0,
@@ -114,7 +114,7 @@ class DefaultDsnGeneratorTest extends TestCase
         return [
             'mysql maintenance' => [
                 TenantConnectionConfigDTO::fromArray([
-                    'identifier' => 'tenant1',
+                    'identifier' => 11,
                     'driver' => DriverTypeEnum::MYSQL,
                     'host' => 'example.com',
                     'port' => 3306,
@@ -126,7 +126,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'postgres maintenance' => [
                 TenantConnectionConfigDTO::fromArray([
-                    'identifier' => 'tenant3',
+                    'identifier' => 12,
                     'driver' => DriverTypeEnum::POSTGRES,
                     'host' => 'pg.example.org',
                     'port' => 5432,
@@ -138,7 +138,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'sqlite maintenance absolute' => [
                 TenantConnectionConfigDTO::fromArray([
-                    'identifier' => 'tenant5',
+                    'identifier' => 13,
                     'driver' => DriverTypeEnum::SQLITE,
                     'host' => '',
                     'port' => 0,

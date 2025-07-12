@@ -174,4 +174,9 @@ class DbConfig implements TenantDbConfigurationInterface
         $dbPassword = $this->getDbPassword() ? ':' . $this->getDbPassword() : '';
         return sprintf('mysql://%s%s@%s:%s', $dbUsername, $dbPassword, $dbHost, $dbPort);
     }
+
+    public function getDriverType(): DriverTypeEnum
+    {
+        return DriverTypeEnum::MYSQL;
+    }
 }
