@@ -9,6 +9,7 @@ use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Exception\MultiTenancyException;
 use Hakam\MultiTenancyBundle\Port\DoctrineDBALConnectionGeneratorInterface;
 use Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface;
+use Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface;
 use RuntimeException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Throwable;
@@ -16,14 +17,15 @@ use Throwable;
 class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
 {
     private readonly ObjectRepository $tenantDatabaseRepository;
+
     public function __construct(
-        private readonly EntityManagerInterface   $entityManager,
-        #[Autowire(service:TenantDBALConnectionGenerator::class)]
+        private readonly EntityManagerInterface                   $entityManager,
+        #[Autowire(service: TenantDBALConnectionGenerator::class)]
         private readonly DoctrineDBALConnectionGeneratorInterface $doctrineDBALConnectionGenerator,
         #[Autowire('%hakam.tenant_db_list_entity%')]
-        private readonly string                   $tenantDbEntityClassName,
+        private readonly string                                   $tenantDbEntityClassName,
         #[Autowire('%hakam.tenant_db_identifier%')]
-        private readonly string                   $tenantDbIdentifier
+        private readonly string                                   $tenantDbIdentifier
     )
     {
         $this->tenantDatabaseRepository = $this->entityManager->getRepository($this->tenantDbEntityClassName);
@@ -31,49 +33,43 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
 
     public function listDatabases(): array
     {
-       $databases = $this->tenantDatabaseRepository->findBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_MIGRATED]);
-       if (count($databases) === 0) {
-              throw new RuntimeException(sprintf('No tenant databases found in repository "%s"', get_class($this->tenantDatabaseRepository)));
-       }
-       return
-              array_map(
-                fn($db) => TenantConnectionConfigDTO::fromArray(
-                     [
-                         'identifier' => $db->getId() ?? '',
-                          'driver' => $db->getDriverType(),
-                          'host' => $db->getDbHost(),
-                          'port' => $db->getDbPort(),
-                          'dbname' => $db->getDbName(),
-                          'user' => $db->getDbUserName(),
-                          'password' => $db->getDbPassword()
-                     ]
-                ),
+        $databases = $this->tenantDatabaseRepository->findBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_MIGRATED]);
+        if (count($databases) === 0) {
+            throw new RuntimeException(sprintf('No tenant databases found in repository "%s"', get_class($this->tenantDatabaseRepository)));
+        }
+        return
+            array_map(
+                fn($db) => $this->convertToDTO($db),
                 $databases
-              );
+            );
     }
 
     public function listMissingDatabases(): array
     {
         $databases = $this->tenantDatabaseRepository->findBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_NOT_CREATED]);
-        if (count($databases) === 0){
+        if (count($databases) === 0) {
             throw new RuntimeException(sprintf('No tenant databases found in repository "%s"', get_class($this->tenantDatabaseRepository)));
         }
         return
             array_map(
-                fn($db) => TenantConnectionConfigDTO::fromArray(
-                    [
-                        'identifier' => $db->getId() ?? '',
-                        'driver' => $db->getDriverType(),
-                        'host' => $db->getDbHost(),
-                        'port' => $db->getDbPort(),
-                        'dbname' => $db->getDbName(),
-                        'user' => $db->getDbUserName(),
-                        'password' => $db->getDbPassword()
-                    ]
-                ),
+                fn($db) => $this->convertToDTO($db),
                 $databases
             );
     }
+
+    public function getTenantDbListByDatabaseStatus(DatabaseStatusEnum $status): array
+    {
+        $databases = $this->tenantDatabaseRepository->findBy(['databaseStatus' => $status]);
+        if (count($databases) === 0) {
+            throw new RuntimeException(sprintf('No tenant databases found in repository "%s" with status "%s"', get_class($this->tenantDatabaseRepository), $status->value));
+        }
+        return
+            array_map(
+                fn($db) => $this->convertToDTO($db),
+                $databases
+            );
+    }
+
 
     public function getDefaultTenantIDatabase(): TenantConnectionConfigDTO
     {
@@ -81,17 +77,7 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
         if (null === $tenantDbConfig) {
             throw new RuntimeException(sprintf('No default tenant database found in repository "%s"', get_class($this->tenantDatabaseRepository)));
         }
-        return TenantConnectionConfigDTO::fromArray(
-            [
-                'identifier' => $tenantDbConfig->getId() ?? '',
-                'driver' => $tenantDbConfig->getDriverType(),
-                'host' => $tenantDbConfig->getDbHost(),
-                'port' => $tenantDbConfig->getDbPort(),
-                'dbname' => $tenantDbConfig->getDbName(),
-                'user' => $tenantDbConfig->getDbUserName(),
-                'password' => $tenantDbConfig->getDbPassword()
-            ]
-        );
+        return $this->convertToDTO($tenantDbConfig);
     }
 
     /**
@@ -115,7 +101,7 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
         }
     }
 
-    public function updateTenantDatabaseStatus(string $identifier, DatabaseStatusEnum $status): bool
+    public function updateTenantDatabaseStatus(int $identifier, DatabaseStatusEnum $status): bool
     {
         $tenantDbConfig = $this->tenantDatabaseRepository->findOneBy([$this->tenantDbIdentifier => $identifier]);
         if (null === $tenantDbConfig) {
@@ -125,5 +111,21 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
         $this->entityManager->persist($tenantDbConfig);
         $this->entityManager->flush();
         return true;
+    }
+
+    private function convertToDTO(TenantDbConfigurationInterface $dbConfig): TenantConnectionConfigDTO
+    {
+        return TenantConnectionConfigDTO::fromArray(
+            [
+                'identifier' => $dbConfig->getId() ?? '',
+                'driver' => $dbConfig->getDriverType(),
+                'dbStatus' => $dbConfig->getDatabaseStatus(),
+                'host' => $dbConfig->getDbHost(),
+                'port' => $dbConfig->getDbPort(),
+                'dbname' => $dbConfig->getDbName(),
+                'user' => $dbConfig->getDbUserName(),
+                'password' => $dbConfig->getDbPassword()
+            ]
+        );
     }
 }

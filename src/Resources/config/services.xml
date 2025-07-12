@@ -50,6 +50,8 @@
             <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
             <argument type="service" id="service_container"/>
             <argument type="service" id="event_dispatcher"/>
+            <argument type="service" id="Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface"/>
+
         </service>
         <service id="Symfony\Component\Console\Application" public="true"/>
         <service id="Hakam\MultiTenancyBundle\Command\CreateDatabaseCommand">
@@ -61,7 +63,7 @@
             <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
             <argument type="service" id="service_container"/>
             <argument type="service" id="event_dispatcher"/>
-            <argument type="service" id="Hakam\MultiTenancyBundle\Services\DbService"/>
+            <argument type="service" id="Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface"/>
         </service>
 
         <service id="Hakam\MultiTenancyBundle\Command\LoadTenantFixtureCommand">

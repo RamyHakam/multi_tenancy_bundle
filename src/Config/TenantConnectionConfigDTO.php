@@ -2,6 +2,7 @@
 
 namespace Hakam\MultiTenancyBundle\Config;
 
+use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
 
 /**
@@ -12,6 +13,7 @@ class TenantConnectionConfigDTO
     private function __construct(
         public int         $identifier,
         public DriverTypeEnum $driver,
+        public DatabaseStatusEnum $dbStatus,
         public string         $host,
         public int            $port,
         public string         $dbname,
@@ -26,6 +28,7 @@ class TenantConnectionConfigDTO
         return new self(
             $data['identifier'],
             $data['driver'],
+            $data['dbStatus'],
             $data['host'],
             $data['port'],
             $data['dbname'],

@@ -29,6 +29,15 @@ interface TenantDatabaseManagerInterface
     public function listMissingDatabases(): array;
 
     /**
+     * Get a list of tenant databases filtered by their status.
+     *
+     * @param DatabaseStatusEnum $status The status to filter tenant databases by.
+     * @return TenantConnectionConfigDTO[] An array of tenant database configurations matching the specified status.
+     */
+
+    public function getTenantDbListByDatabaseStatus(DatabaseStatusEnum $status): array;
+
+    /**
      * The “default” tenant database configuration for migrations and fixtures management.
      * This is the database that will be used when no specific tenant is provided.
      */
@@ -50,7 +59,7 @@ interface TenantDatabaseManagerInterface
      * @param DatabaseStatusEnum $status The new status to set for the tenant database.
      * @return bool True if the status was updated successfully, false otherwise.
      */
-    public function updateTenantDatabaseStatus(string $identifier, DatabaseStatusEnum $status): bool;
+    public function updateTenantDatabaseStatus(int $identifier, DatabaseStatusEnum $status): bool;
 
 //    /**
 //     * Delete a tenant database by its identifier.

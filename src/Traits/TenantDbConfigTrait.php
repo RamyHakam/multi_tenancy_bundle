@@ -27,8 +27,8 @@ trait TenantDbConfigTrait
     #[ORM\Column(type: 'string', length: 255, nullable: true, options: ["default" => null])]
     protected ?string $dbHost = null;
 
-    #[ORM\Column(type: 'string', length: 5, nullable: true, options: ["default" => null])]
-    protected ?string $dbPort = null;
+    #[ORM\Column(type: 'integer', length: 5, nullable: true, options: ["default" => null])]
+    protected ?int $dbPort = null;
 
     #[ORM\Column(type: 'string', length: 255, enumType: DatabaseStatusEnum::class, options: ["default" => DatabaseStatusEnum::DATABASE_NOT_CREATED])]
     private DatabaseStatusEnum $databaseStatus = DatabaseStatusEnum::DATABASE_NOT_CREATED;
@@ -135,19 +135,19 @@ trait TenantDbConfigTrait
     }
 
     /**
-     * @param string|null $dbPort
+     * @param int|null $dbPort
      * @return self
      */
-    public function setDbPort(?string $dbPort): self
+    public function setDbPort(?int $dbPort): self
     {
         $this->dbPort = $dbPort;
         return $this;
     }
 
     /**
-     * @return string|null
+     * @return int|null
      */
-    public function getDbPort(): ?string
+    public function getDbPort(): ?int
     {
         return $this->dbPort;
     }
@@ -156,7 +156,7 @@ trait TenantDbConfigTrait
     {
         $dbDriver = $this->getDriverType()->value ?: DriverTypeEnum::MYSQL->value;
         $dbHost = $this->getDbHost() ?: '127.0.0.1';
-        $dbPort = $this->getDbPort() ?: '3306';
+        $dbPort = $this->getDbPort() ?: 3306;
         $dbUsername = $this->getDbUsername();
         $dbPassword = $this->getDbPassword() ? ':' . $this->getDbPassword() : '';
 

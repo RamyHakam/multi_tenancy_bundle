@@ -21,7 +21,7 @@ class DoctrineTenantConfigProvider implements TenantConfigProviderInterface
         $this->entityRepository = $entityManager->getRepository($this->dbClassName);
     }
 
-    public function getTenantConnectionConfig(?string $identifier): TenantConnectionConfigDTO
+    public function getTenantConnectionConfig(?int $identifier): TenantConnectionConfigDTO
     {
         $tenantDbConfig = $identifier ? $this->entityRepository->findOneBy([$this->dbIdentifier => $identifier]) :
             $this->entityRepository->findOneBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_MIGRATED]);
@@ -37,6 +37,7 @@ class DoctrineTenantConfigProvider implements TenantConfigProviderInterface
             [
                 'identifier' => $tenantDbConfig->getId() ?? '',
                 'driver' => $tenantDbConfig->getDriverType(),
+                'dbStatus' => $tenantDbConfig->getDatabaseStatus(),
                 'host' => $tenantDbConfig->getDbHost(),
                 'port' => $tenantDbConfig->getDbPort(),
                 'dbname' => $tenantDbConfig->getDbName(),
