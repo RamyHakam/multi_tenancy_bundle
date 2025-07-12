@@ -3,6 +3,7 @@
 namespace Hakam\MultiTenancyBundle\Tests\Unit\Adapter\Doctrine;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\EntityRepository;
 use Doctrine\Persistence\ObjectRepository;
 use Exception;
 use Hakam\MultiTenancyBundle\Adapter\Doctrine\DoctrineTenantDatabaseManager;
@@ -11,6 +12,7 @@ use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
 use Hakam\MultiTenancyBundle\Exception\MultiTenancyException;
 use Hakam\MultiTenancyBundle\Port\DoctrineDBALConnectionGeneratorInterface;
+use Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -26,7 +28,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
     protected function setUp(): void
     {
         $this->em = $this->createMock(EntityManagerInterface::class);
-        $this->repo = $this->createMock(ObjectRepository::class);
+        $this->repo = $this->createMock(EntityRepository::class);
         $this->connGen = $this->createMock(DoctrineDBALConnectionGeneratorInterface::class);
 
         // stub getRepository
@@ -44,8 +46,8 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
 
     public function testListDatabasesReturnsDtos(): void
     {
-        $entity1 = $this->createConfiguredMock(TenantDbConfig::class, [
-        'getId' => 't1',
+        $entity1 = $this->createConfiguredMock(TenantDbConfigurationInterface::class, [
+        'getId' => 12,
         'getDriverType' => DriverTypeEnum::MYSQL,
         'getDbHost' => 'h',
         'getDbPort' => 3306,
@@ -61,7 +63,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
         $result = $this->manager->listDatabases();
         $this->assertCount(1, $result);
         $dto = $result[0];
-        $this->assertSame('t1', $dto->identifier);
+        $this->assertSame(12, $dto->identifier);
         $this->assertSame('db', $dto->dbname);
     }
 
@@ -75,8 +77,8 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
 
     public function testListMissingDatabasesReturnsDtos(): void
     {
-        $entity = $this->createConfiguredMock(TenantDbConfig::class, [
-        'getId' => 't2',
+        $entity = $this->createConfiguredMock(TenantDbConfigurationInterface::class, [
+        'getId' => 11,
         'getDriverType' => DriverTypeEnum::MYSQL,
         'getDbHost' => 'h',
         'getDbPort' => 3306,
@@ -89,7 +91,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
         ->willReturn([$entity]);
         $result = $this->manager->listMissingDatabases();
         $this->assertCount(1, $result);
-        $this->assertSame('t2', $result[0]->identifier);
+        $this->assertSame(11, $result[0]->identifier);
     }
 
     public function testListMissingDatabasesThrowsIfEmpty(): void
@@ -102,8 +104,8 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
 
     public function testGetDefaultTenantIDatabaseReturnsDto(): void
     {
-        $entity = $this->createConfiguredMock(TenantDbConfig::class, [
-        'getId' => 'def',
+        $entity = $this->createConfiguredMock(TenantDbConfigurationInterface::class, [
+        'getId' => 13,
         'getDriverType' => DriverTypeEnum::MYSQL,
         'getDbHost' => 'h',
         'getDbPort' => 3306,
@@ -115,7 +117,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
         ->with(['databaseStatus' => DatabaseStatusEnum::DATABASE_CREATED])
         ->willReturn($entity);
         $dto = $this->manager->getDefaultTenantIDatabase();
-        $this->assertSame('def', $dto->identifier);
+        $this->assertSame(13, $dto->identifier);
     }
 
     public function testGetDefaultTenantIDatabaseThrowsIfNone(): void
@@ -129,7 +131,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
     public function testCreateTenantDatabaseWrapsExceptions(): void
     {
         $dto = TenantConnectionConfigDTO::fromArray([
-        'identifier' => 't',
+        'identifier' => 14,
         'driver' => DriverTypeEnum::MYSQL,
         'host' => 'h',
         'port' => 3306,
@@ -145,13 +147,13 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
 
     public function testUpdateTenantDatabaseStatus(): void
     {
-        $entity = $this->createConfiguredMock(TenantDbConfig::class, ['setDatabaseStatus' => null]);
+        $entity = $this->createMock(TenantDbConfigurationInterface::class);
         $this->repo->method('findOneBy')
-        ->with([self::IDENTIFIER_FIELD => 'tid'])
+        ->with([self::IDENTIFIER_FIELD => 130])
         ->willReturn($entity);
         $this->em->expects($this->once())->method('persist')->with($entity);
         $this->em->expects($this->once())->method('flush');
-        $result = $this->manager->updateTenantDatabaseStatus('tid', DatabaseStatusEnum::DATABASE_CREATED);
+        $result = $this->manager->updateTenantDatabaseStatus(130, DatabaseStatusEnum::DATABASE_CREATED);
         $this->assertTrue($result);
     }
 

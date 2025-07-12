@@ -77,7 +77,7 @@ class DbConfig implements TenantDbConfigurationInterface
     private string $dbName;
     private string $dbUsername;
     private ?string $dbPassword;
-    private ?string $dbPort;
+    private ?int $dbPort;
     private ?string $dbHost;
 
     public function getDbName(): string
@@ -129,7 +129,7 @@ class DbConfig implements TenantDbConfigurationInterface
     /**
      * Get the value of dbPort
      */
-    public function getDbPort(): null|string
+    public function getDbPort(): null|int
     {
         return $this->dbPort;
     }

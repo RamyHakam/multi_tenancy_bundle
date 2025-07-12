@@ -3,6 +3,7 @@
 namespace Hakam\MultiTenancyBundle\Services;
 
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
+use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
 
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
@@ -37,7 +38,7 @@ interface TenantDbConfigurationInterface
     /**
      * Tenant database port.
      */
-    public function getDbPort(): ?string;
+    public function getDbPort(): ?int;
 
     /**
      * Tenant database status.
@@ -50,4 +51,6 @@ interface TenantDbConfigurationInterface
     public function setDatabaseStatus(DatabaseStatusEnum $databaseStatus): self;
 
     public function getDsnUrl(): string;
+    
+    public function getDriverType(): DriverTypeEnum;
 }
