@@ -15,10 +15,10 @@ class DbSwitchEventListener implements EventSubscriberInterface
 {
 
     public function __construct(
-        private ContainerInterface            $container,
-        private TenantConfigProviderInterface $tenantConfigProvider,
-        private TenantEntityManager           $tenantEntityManager,
-        private string                        $databaseURL,
+        private readonly ContainerInterface            $container,
+        private readonly TenantConfigProviderInterface $tenantConfigProvider,
+        private readonly TenantEntityManager           $tenantEntityManager,
+        private readonly string                        $databaseURL,
     )
     {
     }

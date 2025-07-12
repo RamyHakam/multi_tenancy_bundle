@@ -4,7 +4,6 @@ namespace Hakam\MultiTenancyBundle\Command;
 
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -15,22 +14,20 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
  */
-class DiffCommand extends Command
+class DiffCommand extends TenantCommand
 {
-    use CommandTrait;
 
-    private ManagerRegistry $registry;
-
-    private ContainerInterface $container;
-
-    private EventDispatcherInterface $eventDispatcher;
-
-    public function __construct(ManagerRegistry $registry, ContainerInterface $container, EventDispatcherInterface $eventDispatcher)
+    public function __construct(
+        private readonly ManagerRegistry          $registry,
+        private readonly ContainerInterface       $container,
+        private readonly EventDispatcherInterface $eventDispatcher,
+    )
     {
-        parent::__construct();
-        $this->registry = $registry;
-        $this->container = $container;
-        $this->eventDispatcher = $eventDispatcher;
+        parent::__construct(
+            $registry,
+            $this->container,
+            $eventDispatcher
+        );
     }
 
     protected function configure(): void
