@@ -50,6 +50,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
         'getId' => 12,
         'getDriverType' => DriverTypeEnum::MYSQL,
         'getDbHost' => 'h',
+        'getDatabaseStatus' => DatabaseStatusEnum::DATABASE_MIGRATED,
         'getDbPort' => 3306,
         'getDbName' => 'db',
         'getDbUserName' => 'u',
@@ -57,7 +58,6 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
     ]);
         $this->repo->expects($this->once())
             ->method('findBy')
-        ->with(['databaseStatus' => DatabaseStatusEnum::DATABASE_MIGRATED])
         ->willReturn([$entity1]);
 
         $result = $this->manager->listDatabases();
@@ -80,6 +80,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
         $entity = $this->createConfiguredMock(TenantDbConfigurationInterface::class, [
         'getId' => 11,
         'getDriverType' => DriverTypeEnum::MYSQL,
+        'getDatabaseStatus' => DatabaseStatusEnum::DATABASE_NOT_CREATED,
         'getDbHost' => 'h',
         'getDbPort' => 3306,
         'getDbName' => 'db',
@@ -87,7 +88,6 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
         'getDbPassword' => 'p',
     ]);
         $this->repo->method('findBy')
-        ->with(['databaseStatus' => DatabaseStatusEnum::DATABASE_NOT_CREATED])
         ->willReturn([$entity]);
         $result = $this->manager->listMissingDatabases();
         $this->assertCount(1, $result);
@@ -108,6 +108,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
         'getId' => 13,
         'getDriverType' => DriverTypeEnum::MYSQL,
         'getDbHost' => 'h',
+        'getDatabaseStatus' => DatabaseStatusEnum::DATABASE_CREATED,
         'getDbPort' => 3306,
         'getDbName' => 'db',
         'getDbUserName' => 'u',
@@ -162,6 +163,6 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
     {
         $this->repo->method('findOneBy')->willReturn(null);
         $this->expectException(RuntimeException::class);
-        $this->manager->updateTenantDatabaseStatus('nope', DatabaseStatusEnum::DATABASE_CREATED);
+        $this->manager->updateTenantDatabaseStatus(10, DatabaseStatusEnum::DATABASE_CREATED);
     }
 }
