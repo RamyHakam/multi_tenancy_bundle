@@ -1,4 +1,13 @@
-
-* export-ignore
-
-!/dist/**
+/tests       export-ignore
+/phpunit.xml export-ignore
+/composer.lock export-ignore
+/.idea export-ignore
+/phpunit.xml.dist export-ignore
+/.gitignore  export-ignore
+/.github     export-ignore
+/.git        export-ignore
+/.gitattributes export-ignore
+/Makefile export-ignore
+/docs-site export-ignore
+/vendor export-ignore
+/build export-ignore
