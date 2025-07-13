@@ -2,7 +2,9 @@
 
 namespace Hakam\MultiTenancyBundle\DependencyInjection;
 
+use Hakam\MultiTenancyBundle\Adapter\Doctrine\DoctrineTenantConnectionManager;
 use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
+use Hakam\MultiTenancyBundle\Port\TenantConnectionManagerInterface;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -30,17 +32,14 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
 
         // set the required parameter
         $container->setParameter('hakam.tenant_db_credentials', ['db_url' => $configs['tenant_connection']['url']]);
-        $container->setParameter('hakam.tenant_db_list_entity', $configs['tenant_database_className']);
-        $container->setParameter('hakam.tenant_db_identifier', $configs['tenant_database_identifier']);
 
-        if ($configs['tenant_config_provider'] == 'hakam_tenant_config_provider.doctrine') {
-            // check if the tenant database className and identifier are set
+        if ($configs['tenant_connection_manager_type'] === 'doctrine') {
             if (empty($configs['tenant_database_className']) || empty($configs['tenant_database_identifier'])) {
-                throw new InvalidConfigurationException('You need to set tenant_database_className and tenant_database_identifier in your configuration');
+                throw new InvalidConfigurationException('You must define tenant_database_className and tenant_database_identifier when using DoctrineTenantConnectionManager');
             }
-            $tenantProviderDefinition = $container->getDefinition('hakam_tenant_config_provider.doctrine');
-            $tenantProviderDefinition->setArgument(1, $configs['tenant_database_className']);
-            $tenantProviderDefinition->setArgument(2, $configs['tenant_database_identifier']);
+
+            $container->setParameter('hakam.tenant_db_list_entity', $configs['tenant_database_className']);
+            $container->setParameter('hakam.tenant_db_identifier', $configs['tenant_database_identifier']);
         }
     }
 
@@ -48,6 +47,13 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
     {
         $configs = $container->getExtensionConfig($this->getAlias());
         $dbSwitcherConfig = $this->processConfiguration(new Configuration(), $configs);
+        $container->prependExtensionConfig('doctrine', [
+            'dbal' => [
+                'types' => [
+                    'tenant_identifier' => 'Hakam\MultiTenancyBundle\Doctrine\DBAL\Types\TenantDatabaseIdentifierType',
+                ],
+            ],
+        ]);
         if (6 === count($dbSwitcherConfig)) {
             $bundles = $container->getParameter('kernel.bundles');
 
@@ -65,6 +71,9 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
                         'wrapper_class' => TenantConnection::class,
                     ],
                 ],
+            ];
+            $tenantConnectionConfig['types'] = [
+                'tenant_identifier' => 'Hakam\MultiTenancyBundle\Doctrine\DBAL\Types\TenantDatabaseIdentifierType',
             ];
             $tenantEntityManagerConfig = [
                 'entity_managers' => [

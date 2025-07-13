@@ -9,7 +9,7 @@ use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener;
-use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
+use Hakam\MultiTenancyBundle\Port\TenantConnectionManagerInterface;
 use Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
@@ -21,7 +21,7 @@ class DbSwitchEventListenerTest extends TestCase
     {
         // mock the necessary dependencies
         $mockContainer = $this->createMock(ContainerInterface::class);
-        $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
+        $mockTenantDbConfigProvider = $this->createMock(TenantConnectionManagerInterface::class);
         $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
 
 
@@ -178,5 +178,10 @@ class DbConfig implements TenantDbConfigurationInterface
     public function getDriverType(): DriverTypeEnum
     {
         return DriverTypeEnum::MYSQL;
+    }
+
+    public function getTenantIdentifier(): string
+    {
+        return 'test_tenant';
     }
 }
