@@ -4,7 +4,7 @@ namespace Hakam\MultiTenancyBundle\EventListener;
 
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
-use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
+use Hakam\MultiTenancyBundle\Port\TenantConnectionManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -15,10 +15,10 @@ class DbSwitchEventListener implements EventSubscriberInterface
 {
 
     public function __construct(
-        private readonly ContainerInterface            $container,
-        private readonly TenantConfigProviderInterface $tenantConfigProvider,
-        private readonly TenantEntityManager           $tenantEntityManager,
-        private readonly string                        $databaseURL,
+        private readonly ContainerInterface               $container,
+        private readonly TenantConnectionManagerInterface $tenantConfigProvider,
+        private readonly TenantEntityManager              $tenantEntityManager,
+        private readonly string                           $databaseURL,
     )
     {
     }

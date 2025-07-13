@@ -53,4 +53,6 @@ interface TenantDbConfigurationInterface
     public function getDsnUrl(): string;
     
     public function getDriverType(): DriverTypeEnum;
+
+    public function getTenantIdentifier(): string;
 }

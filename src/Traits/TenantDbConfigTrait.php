@@ -5,6 +5,7 @@ namespace Hakam\MultiTenancyBundle\Traits;
 use Doctrine\ORM\Mapping as ORM;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
+use Hakam\MultiTenancyBundle\ValueObject\TenantDatabaseIdentifier;
 
 /**
  *  Trait to add tenant database configuration to an entity.
@@ -12,6 +13,9 @@ use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
  */
 trait TenantDbConfigTrait
 {
+    #[ORM\Column(type: 'tenant_identifier')]
+    protected TenantDatabaseIdentifier $tenantIdentifier;
+
     #[ORM\Column(type: 'string', length: 255)]
     protected string $dbName;
 
@@ -150,6 +154,16 @@ trait TenantDbConfigTrait
     public function getDbPort(): ?int
     {
         return $this->dbPort;
+    }
+
+    public function getTenantIdentifier(): TenantDatabaseIdentifier
+    {
+        return $this->tenantIdentifier;
+    }
+
+    public function setTenantIdentifier(TenantDatabaseIdentifier $tenantIdentifier): void
+    {
+        $this->tenantIdentifier = $tenantIdentifier;
     }
 
     public function getDsnUrl(): string
