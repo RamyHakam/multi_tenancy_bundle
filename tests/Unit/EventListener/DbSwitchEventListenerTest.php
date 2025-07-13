@@ -2,16 +2,18 @@
 
 namespace Hakam\MultiTenancyBundle\Tests\Unit\EventListener;
 
+use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
+use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
+use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
+use Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener;
+use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
 use Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface;
 use PHPUnit\Framework\TestCase;
-use Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener;
-use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Hakam\MultiTenancyBundle\Services\DbConfigService;
 
 class DbSwitchEventListenerTest extends TestCase
 {
@@ -19,26 +21,34 @@ class DbSwitchEventListenerTest extends TestCase
     {
         // mock the necessary dependencies
         $mockContainer = $this->createMock(ContainerInterface::class);
-        $mockDbConfigService = $this->createMock(DbConfigService::class);
+        $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
         $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
 
 
         // create a test instance of the listener
-        $listener = new DbSwitchEventListener($mockContainer, $mockDbConfigService, $mockTenantEntityManager,'test_database_url');
+        $listener = new DbSwitchEventListener($mockContainer, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
 
         // create a test event
         $testDbIndex = 1;
         $testEvent = new SwitchDbEvent($testDbIndex);
 
         // mock the expected behavior of the DbConfigService and ContainerInterface
-        $mockDbConfig = new DbConfig();
-        $mockDbConfig->setDbName('test_db_name');
-        $mockDbConfig->setDbUsername('test_username');
-        $mockDbConfig->setDbPassword('test_password');
-        $mockDbConfig->setDbHost('127.0.0.1');
-        $mockDbConfig->setDbPort('3306');
-        $mockDbConfigService->expects($this->once())
-            ->method('findDbConfig')
+
+
+        $mockDbConfig = TenantConnectionConfigDTO::fromArgs(
+
+            identifier: $testDbIndex,
+            driver: DriverTypeEnum::MYSQL,
+            dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
+            host: ' localhost',
+            port: '3306',
+            dbname: 'test_db_name',
+            user: 'test_username',
+            password: 'test_password'
+        );
+
+        $mockTenantDbConfigProvider->expects($this->once())
+            ->method('getTenantConnectionConfig')
             ->with($testDbIndex)
             ->willReturn($mockDbConfig);
         $mockTenantConnection = $this->createMock(TenantConnection::class);
@@ -67,7 +77,7 @@ class DbConfig implements TenantDbConfigurationInterface
     private string $dbName;
     private string $dbUsername;
     private ?string $dbPassword;
-    private ?string $dbPort;
+    private ?int $dbPort;
     private ?string $dbHost;
 
     public function getDbName(): string
@@ -107,20 +117,19 @@ class DbConfig implements TenantDbConfigurationInterface
 
     public function getDatabaseStatus(): DatabaseStatusEnum
     {
-         return DatabaseStatusEnum::DATABASE_CREATED;
+        return DatabaseStatusEnum::DATABASE_CREATED;
     }
 
     public function setDatabaseStatus(DatabaseStatusEnum $databaseStatus): TenantDbConfigurationInterface
     {
-       return $this;
+        return $this;
     }
-
 
 
     /**
      * Get the value of dbPort
-     */ 
-    public function getDbPort(): null|string
+     */
+    public function getDbPort(): null|int
     {
         return $this->dbPort;
     }
@@ -129,7 +138,7 @@ class DbConfig implements TenantDbConfigurationInterface
      * Set the value of dbPort
      *
      * @return  self
-     */ 
+     */
     public function setDbPort($dbPort)
     {
         $this->dbPort = $dbPort;
@@ -139,7 +148,7 @@ class DbConfig implements TenantDbConfigurationInterface
 
     /**
      * Get the value of dbHost
-     */ 
+     */
     public function getDbHost(): null|string
     {
         return $this->dbHost;
@@ -149,7 +158,7 @@ class DbConfig implements TenantDbConfigurationInterface
      * Set the value of dbHost
      *
      * @return  self
-     */ 
+     */
     public function setDbHost($dbHost)
     {
         $this->dbHost = $dbHost;
@@ -164,5 +173,10 @@ class DbConfig implements TenantDbConfigurationInterface
         $dbUsername = $this->getDbUsername();
         $dbPassword = $this->getDbPassword() ? ':' . $this->getDbPassword() : '';
         return sprintf('mysql://%s%s@%s:%s', $dbUsername, $dbPassword, $dbHost, $dbPort);
+    }
+
+    public function getDriverType(): DriverTypeEnum
+    {
+        return DriverTypeEnum::MYSQL;
     }
 }

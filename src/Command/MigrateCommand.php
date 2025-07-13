@@ -3,11 +3,11 @@
 namespace Hakam\MultiTenancyBundle\Command;
 
 use Doctrine\Persistence\ManagerRegistry;
+use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
-use Hakam\MultiTenancyBundle\Services\DbService;
+use Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\ExceptionInterface;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
@@ -25,21 +25,20 @@ use Throwable;
     name: 'tenant:migrations:migrate',
     description: 'Proxy to migrate the  existing tenant databases, or initialize the new tenant databases.',
 )]
-final class MigrateCommand extends Command
+final class MigrateCommand extends TenantCommand
 {
-    use CommandTrait;
 
     const MIGRATE_TYPE_INIT = 'init';
     const MIGRATE_TYPE_UPDATE = 'update';
 
     public function __construct(
-        private readonly ManagerRegistry          $registry,
-        private readonly ContainerInterface       $container,
-        private readonly EventDispatcherInterface $eventDispatcher,
-        private readonly DbService                $dbService,
+        private readonly ManagerRegistry                $registry,
+        private readonly ContainerInterface             $container,
+        private readonly EventDispatcherInterface       $eventDispatcher,
+        private readonly TenantDatabaseManagerInterface $tenantDatabaseManager,
     )
     {
-        parent::__construct();
+        parent::__construct($registry, $this->container, $eventDispatcher);
     }
 
     protected function configure(): void
@@ -63,7 +62,7 @@ final class MigrateCommand extends Command
             case self::MIGRATE_TYPE_INIT:
                 $io->note('Migrating the new databases');
                 $io->newLine();
-                $listOfDbsToMigrate = $this->dbService->getListOfNewCreatedDataBases();
+                $listOfDbsToMigrate = $this->tenantDatabaseManager->getTenantDbListByDatabaseStatus(DatabaseStatusEnum::DATABASE_CREATED);
                 break;
             case self::MIGRATE_TYPE_UPDATE:
                 $io->note('Migrating the existing databases');
@@ -76,18 +75,21 @@ final class MigrateCommand extends Command
         }
         $io->progressStart(count($listOfDbsToMigrate));
         $io->newLine();
+        /**
+         * @var int $kay
+         * @var   TenantConnectionConfigDTO $db
+         */
         foreach ($listOfDbsToMigrate as $kay => $db) {
             // set the dbId to the input argument
-            $input->setArgument('dbId', $db->getId());
+            $input->setArgument('dbId', $db->identifier);
             try {
-                $io->note(sprintf('Start Migrating database #%s, Database_Name: %s, Database_Host: %s '  ,$kay+1,$db->getDbName(), $db->getDbHost()));
+                $io->note(sprintf('Start Migrating database #%s, Database_Name: %s, Database_Host: %s ', $kay + 1, $db->dbname, $db->host));
                 $io->newLine();
                 $this->runMigrateCommand($input, $output);
-                if ($db->getDatabaseStatus() === DatabaseStatusEnum::DATABASE_CREATED) {
-                    $db->setDatabaseStatus(DatabaseStatusEnum::DATABASE_MIGRATED);
-                    $this->registry->getManager()->persist($db);
+                if ($db->dbStatus === DatabaseStatusEnum::DATABASE_CREATED) {
+                    $this->tenantDatabaseManager->updateTenantDatabaseStatus($db->identifier, DatabaseStatusEnum::DATABASE_MIGRATED);
                 }
-                $io->success(sprintf('Migrating database #%s, Database_Name: %s, Database_Host: %s '  ,$kay+1,$db->getDbName(), $db->getDbHost()));
+                $io->success(sprintf('Migrating database #%s, Database_Name: %s, Database_Host: %s ', $kay + 1, $db->dbname, $db->host));
                 $io->newLine();
                 $io->progressAdvance();
                 $this->registry->getManager()->flush();

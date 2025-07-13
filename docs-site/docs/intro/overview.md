@@ -23,6 +23,25 @@ The **Symfony Multi-Tenancy Bundle** is a battle-tested toolkit for building lar
 
 - **Custom Host & Credential Resolution**  
   Point different tenants to different database hosts, servers, or credentials based on data in your `TenantDbConfig`—perfect for sharding, geo-distribution, or cloud-managed clusters.
+- ## ✅ New in v3.0: Custom Provider & Manager Override
+
+In version 3.0, you can now completely override the default `TenantConfigProviderInterface` and `TenantDatabaseManagerInterface` with your own custom implementations.
+
+This allows you to:
+
+- Load tenant configs from APIs, ENV variables, Redis, or secret managers
+- Use custom logic to manage DB credentials (e.g. hash, encrypt, or rotate passwords)
+- Integrate with external service registries or dynamic provisioning tools
+
+To override, just use the `#[AsAlias(...)]` attribute:
+
+```php
+#[AsAlias(TenantConfigProviderInterface::class)]
+class MyCustomProvider implements TenantConfigProviderInterface
+{
+    // your custom implementation
+}
+```
 
 ## Key Benefits
 
