@@ -21,14 +21,22 @@ php bin/console tenant:database:create --dbid=5
 
 # Create all tenants defined in the main registry
 php bin/console tenant:database:create --all
+
+# Default behavior: create all missing tenant databases (backward compatible)
+php bin/console tenant:database:create
 ```
 
 **Options & Flags:**
 
-* `--dbid=<id>`   	✔️ Create or migrate only the tenant with the given ID.
-* `--all`        	✔️ Loop through and process **all** registered tenants.
-* `--force`      	⚠️ Skip confirmation prompts when running in interactive mode.
-* `--dry-run`    	🔍 Show SQL and actions without executing.
+- `--dbid=<id>`: Create database only for the tenant with the given ID.
+- `--all`: Explicitly create all missing tenant databases.
+- No options: Default behavior creates all missing databases (backward compatible).
+
+**Behavior:**
+
+- If a tenant database already exists (status `DATABASE_CREATED` or `DATABASE_MIGRATED`), the command will skip it with a notification.
+- Cannot use `--dbid` and `--all` options together.
+- Command will fail gracefully if tenant ID is not found or database creation fails.
 
 ## Schema Diff Generation (`tenant:migration:diff`)
 

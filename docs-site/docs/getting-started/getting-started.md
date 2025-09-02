@@ -119,11 +119,23 @@ Fetch the new `tenant_db_config` table to store tenant connection details.
 ### Create a Tenant DB
 
 ```bash
+# Create database for a specific tenant
 php bin/console tenant:database:create --dbid=<id>
+
+# Create all missing tenant databases
+php bin/console tenant:database:create --all
+
+# Default: create all missing databases (backward compatible)
+php bin/console tenant:database:create
 ```
 
-* Uses the `TenantDbConfig` record with that ID to provision a new database and run **init** migrations.
-* Or run with `--all` to provision every tenant in your registry.
+**Options:**
+
+- `--dbid=<id>`: Create database for a specific tenant ID
+- `--all`: Explicitly create all missing tenant databases
+- No options: Default behavior (creates all missing databases)
+
+The command uses the `TenantDbConfig` record with the specified ID to provision a new database and update its status to `DATABASE_CREATED`. If the database already exists, it will be skipped.
 
 ### Apply Migrations to Tenants
 
@@ -166,7 +178,7 @@ In your controller or service:
         // Now you can use the tenant entity manager to execute your queries.
       }
     }
-```    
+```
 
 ## Troubleshooting & Tips
 

@@ -35,6 +35,15 @@ interface TenantDatabaseManagerInterface
      * @return TenantConnectionConfigDTO[] An array of tenant database configurations matching the specified status.
      */
 
+    /**
+     * Get a tenant database configuration by its identifier.
+     *
+     * @param int $identifier The identifier of the tenant database.
+     * @return TenantConnectionConfigDTO The tenant database configuration.
+     * @throws RuntimeException If the tenant database is not found.
+     */
+    public function getTenantDatabaseById(int $identifier): TenantConnectionConfigDTO;
+
     public function getTenantDbListByDatabaseStatus(DatabaseStatusEnum $status): array;
 
     /**
@@ -63,11 +72,11 @@ interface TenantDatabaseManagerInterface
      */
     public function updateTenantDatabaseStatus(int $identifier, DatabaseStatusEnum $status): bool;
 
-//    /**
-//     * Delete a tenant database by its identifier.
-//     *
-//     * @param string $identifier The identifier of the tenant database to delete.
-//     * @return bool True if the database was deleted successfully, false otherwise.
-//     */
-//    public function deleteTenantDatabase(string $identifier): bool;
+    //    /**
+    //     * Delete a tenant database by its identifier.
+    //     *
+    //     * @param string $identifier The identifier of the tenant database to delete.
+    //     * @return bool True if the database was deleted successfully, false otherwise.
+    //     */
+    //    public function deleteTenantDatabase(string $identifier): bool;
 }

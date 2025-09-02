@@ -26,8 +26,7 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
         private readonly string                                   $tenantDbEntityClassName,
         #[Autowire('%hakam.tenant_db_identifier%')]
         private readonly string                                   $tenantDbIdentifier
-    )
-    {
+    ) {
         $this->tenantDatabaseRepository = $this->entityManager->getRepository($this->tenantDbEntityClassName);
     }
 
@@ -70,6 +69,14 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
             );
     }
 
+    public function getTenantDatabaseById(int $identifier): TenantConnectionConfigDTO
+    {
+        $tenantDbConfig = $this->tenantDatabaseRepository->findOneBy([$this->tenantDbIdentifier => $identifier]);
+        if (null === $tenantDbConfig) {
+            throw new RuntimeException(sprintf('Tenant database with identifier "%s" not found in repository "%s"', $identifier, get_class($this->tenantDatabaseRepository)));
+        }
+        return $this->convertToDTO($tenantDbConfig);
+    }
 
     public function getDefaultTenantIDatabase(): TenantConnectionConfigDTO
     {
@@ -93,11 +100,12 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
             $schemaManager->createDatabase($tenantConnectionConfigDTO->dbname);
             $tenantConnection->close();
             return 1;
-
         } catch (Throwable $e) {
-            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s',
-                $tenantConnectionConfigDTO->dbname
-                , $e->getMessage()), $e->getCode(), $e);
+            throw new MultiTenancyException(sprintf(
+                'Unable to create new tenant database %s: %s',
+                $tenantConnectionConfigDTO->dbname,
+                $e->getMessage()
+            ), $e->getCode(), $e);
         }
     }
 
@@ -139,7 +147,7 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
             dbStatus: $dbConfig->getDatabaseStatus(),
             host: $dbConfig->getDbHost(),
             port: $dbConfig->getDbPort(),
-            dbname : $dbConfig->getDbName(),
+            dbname: $dbConfig->getDbName(),
             user: $dbConfig->getDbUserName(),
             password: $dbConfig->getDbPassword()
         );
