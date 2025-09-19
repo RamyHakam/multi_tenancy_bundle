@@ -69,7 +69,7 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
             );
     }
 
-    public function getTenantDatabaseById(int $identifier): TenantConnectionConfigDTO
+    public function getTenantDatabaseById(mixed $identifier): TenantConnectionConfigDTO
     {
         $tenantDbConfig = $this->tenantDatabaseRepository->findOneBy([$this->tenantDbIdentifier => $identifier]);
         if (null === $tenantDbConfig) {
@@ -109,7 +109,7 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
         }
     }
 
-    public function updateTenantDatabaseStatus(int $identifier, DatabaseStatusEnum $status): bool
+    public function updateTenantDatabaseStatus(mixed $identifier, DatabaseStatusEnum $status): bool
     {
         $tenantDbConfig = $this->tenantDatabaseRepository->findOneBy([$this->tenantDbIdentifier => $identifier]);
         if (null === $tenantDbConfig) {
@@ -142,7 +142,7 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
     private function convertToDTO(TenantDbConfigurationInterface $dbConfig): TenantConnectionConfigDTO
     {
         return TenantConnectionConfigDTO::fromArgs(
-            identifier: $dbConfig->getId() ?? null,
+            identifier: $dbConfig->getIdentifierValue() ?? null,
             driver: $dbConfig->getDriverType(),
             dbStatus: $dbConfig->getDatabaseStatus(),
             host: $dbConfig->getDbHost(),

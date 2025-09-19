@@ -11,7 +11,7 @@ use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
 class TenantConnectionConfigDTO
 {
     private function __construct(
-        public ?int               $identifier,
+        public mixed              $identifier,
         public DriverTypeEnum     $driver,
         public DatabaseStatusEnum $dbStatus,
         public string             $host,
@@ -24,7 +24,7 @@ class TenantConnectionConfigDTO
     }
 
     public static function fromArgs(
-        ?int               $identifier,
+        mixed              $identifier,
         DriverTypeEnum     $driver,
         DatabaseStatusEnum $dbStatus,
         string             $host,
