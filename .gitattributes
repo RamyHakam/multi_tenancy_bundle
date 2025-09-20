@@ -1,13 +1,26 @@
-/tests       export-ignore
-/phpunit.xml export-ignore
-/composer.lock export-ignore
-/.idea export-ignore
-/phpunit.xml.dist export-ignore
-/.gitignore  export-ignore
-/.github     export-ignore
-/.git        export-ignore
-/.gitattributes export-ignore
-/Makefile export-ignore
-/docs-site export-ignore
-/vendor export-ignore
-/build export-ignore
+# Exclude development files from Composer archive
+# Only essential files (src/, composer.json, LICENSE, README.md) will be included
+
+# Development files
+tests/ export-ignore
+.github/ export-ignore
+docs/ export-ignore
+docs-site/ export-ignore
+.idea/ export-ignore
+.kiro/ export-ignore
+var/ export-ignore
+migrations/ export-ignore
+vendor/ export-ignore
+
+# Build and config files
+phpunit.xml.dist export-ignore
+Makefile export-ignore
+WARP.md export-ignore
+composer.lock export-ignore
+test-*.sh export-ignore
+release.sh export-ignore
+dist/ export-ignore
+
+# System files
+.DS_Store export-ignore
+.phpunit.result.cache export-ignore

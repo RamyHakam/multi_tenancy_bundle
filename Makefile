@@ -1,25 +1,26 @@
-DIST_DIR=dist
-SRC_DIR=src
-FILES_TO_COPY=composer.json LICENSE README.md
+# Simple Makefile for package management
+# No complex dist directory - uses .gitattributes for clean archives
 
-.PHONY: all clean build package
+.PHONY: test-archive clean help
 
-all: build
+help:
+	@echo "Available commands:"
+	@echo "  test-archive  - Create a test archive to see what users will get"
+	@echo "  clean        - Clean up test files"
+	@echo ""
+	@echo "The .gitattributes file handles excluding dev files from Composer installs"
+
+test-archive:
+	@echo "🧳 Creating test archive (simulates Composer download)..."
+	@git archive --format=zip --output=test-package.zip HEAD
+	@echo "📋 Extracting to see contents..."
+	@mkdir -p test-extract && cd test-extract && unzip -q ../test-package.zip
+	@echo "📊 Package contents (what users get):"
+	@find test-extract -type f | sort
+	@echo ""
+	@echo "Package size: $$(du -h test-package.zip | cut -f1)"
+	@echo "Total files: $$(find test-extract -type f | wc -l)"
 
 clean:
-	@echo "🧹 Cleaning dist folder..."
-	rm -rf $(DIST_DIR)
-
-build: clean
-	@echo "📦 Building dist folder..."
-	mkdir -p $(DIST_DIR)/$(SRC_DIR)
-
-	@echo "📁 Copying source code..."
-	cp -r $(SRC_DIR)/* $(DIST_DIR)/$(SRC_DIR)/
-
-	@echo "📄 Copying other necessary files..."
-	for file in $(FILES_TO_COPY); do cp $$file $(DIST_DIR)/; done
-
-package: build
-	@echo "📦 Creating composer archive..."
-	composer archive --dir=$(DIST_DIR) --format=zip
+	@echo "🧹 Cleaning test files..."
+	@rm -rf test-package.zip test-extract dist/
