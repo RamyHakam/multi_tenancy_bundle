@@ -4,10 +4,62 @@ title: Changelog
 
 ## [Unreleased]
 
+### Changed
+
+- Preparation for upcoming v3.0.0 with major architectural improvements
+
+## [2.9.0] – 20 Sep 2025
+
+### ⚠️ **BREAKING CHANGES**
+
+- **NEW REQUIRED METHOD**: Added `getIdentifierValue(): mixed` method to `TenantDbConfigurationInterface` - **ALL IMPLEMENTING CLASSES MUST BE UPDATED**
+- Migration commands now properly respect configured `tenant_database_identifier` field instead of hardcoding `getId()`
+
 ### Fixed
 
-- Fixed missing `--dbid` and `--all` options in `tenant:database:create` command
-- Command now supports creating databases for specific tenant IDs as documented
+- **Issue #64**: Fixed critical migration command identifier bug where `DoctrineTenantDatabaseManager::convertToDTO()` was hardcoding `getId()` instead of using the configured identifier field
+- **Issue #63**: Fixed missing `--dbid` and `--all` options in `tenant:database:create` command
+- Fixed `TenantConnectionConfigDTO` to accept mixed-type identifiers (strings, integers, etc.)
+- Fixed database switching isolation and Doctrine cache clearing
+
+### Added
+
+- **NEW INTERFACE METHOD**: `getIdentifierValue(): mixed` in `TenantDbConfigurationInterface` for explicit tenant identifier handling
+- New `getTenantDatabaseById()` method in `TenantDatabaseManagerInterface`
+- Enhanced test coverage for identifier resolution and database management
+- Improved package distribution with clean `.gitattributes` excluding development files
+
+### Improved
+
+- **Performance**: Enhanced database connection switching with proper Doctrine cache clearing
+- **Architecture**: More robust tenant identifier handling supporting mixed types
+- **DX**: Better error handling and validation in migration commands
+- **Distribution**: Cleaner Composer package installation (60% smaller for production)
+- **Testing**: Enhanced integration testing capabilities
+
+### Migration Guide v2.8.x → v2.9.0
+
+**REQUIRED**: Update your tenant entity to implement the new `getIdentifierValue()` method:
+
+```php
+class TenantDb implements TenantDbConfigurationInterface
+{
+    // ... existing properties and methods ...
+    
+    public function getIdentifierValue(): mixed
+    {
+        // For default 'id' field:
+        return $this->getId();
+        
+        // For custom identifier (e.g., 'tenant_code'):
+        return $this->getTenantCode();
+    }
+}
+```
+
+### Deprecated
+
+- The `--dbId` argument in migration commands is deprecated and will be removed in v3.0
 
 ## [2.8.3] – 18 Jun 2025
 
