@@ -1,0 +1,269 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches: [ master ]
+    paths:
+      - 'docs-site/**'
+      - '.github/workflows/docs-deploy.yml'
+  workflow_dispatch: # Allow manual triggering
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history for proper versioning
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: 'docs-site/package-lock.json'
+
+      - name: Setup Docusaurus project
+        run: |
+          echo "🏗️ Setting up Docusaurus project structure..."
+          cd docs-site
+          
+          # Check if package.json exists, if not create minimal Docusaurus setup
+          if [ ! -f "package.json" ]; then
+            echo "📦 Creating Docusaurus configuration..."
+            
+            # Create package.json
+            cat > package.json << 'EOF'
+          {
+            "name": "multi-tenancy-bundle-docs",
+            "version": "0.0.0",
+            "private": true,
+            "scripts": {
+              "docusaurus": "docusaurus",
+              "start": "docusaurus start",
+              "build": "docusaurus build",
+              "swizzle": "docusaurus swizzle",
+              "deploy": "docusaurus deploy",
+              "clear": "docusaurus clear",
+              "serve": "docusaurus serve",
+              "write-translations": "docusaurus write-translations",
+              "write-heading-ids": "docusaurus write-heading-ids"
+            },
+            "dependencies": {
+              "@docusaurus/core": "^3.0.0",
+              "@docusaurus/preset-classic": "^3.0.0",
+              "@mdx-js/react": "^3.0.0",
+              "clsx": "^2.0.0",
+              "prism-react-renderer": "^2.1.0",
+              "react": "^18.0.0",
+              "react-dom": "^18.0.0"
+            },
+            "devDependencies": {
+              "@docusaurus/module-type-aliases": "^3.0.0",
+              "@docusaurus/types": "^3.0.0"
+            },
+            "browserslist": {
+              "production": [
+                ">0.5%",
+                "not dead",
+                "not op_mini all"
+              ],
+              "development": [
+                "last 1 chrome version",
+                "last 1 firefox version",
+                "last 1 safari version"
+              ]
+            },
+            "engines": {
+              "node": ">=18.0"
+            }
+          }
+          EOF
+
+            # Create docusaurus.config.js
+            cat > docusaurus.config.js << 'EOF'
+          const {themes} = require('prism-react-renderer');
+          const lightTheme = themes.github;
+          const darkTheme = themes.dracula;
+
+          /** @type {import('@docusaurus/types').Config} */
+          const config = {
+            title: 'Multi Tenancy Bundle',
+            tagline: 'Symfony bundle to extend doctrine to support db switcher and multi tenants',
+            favicon: 'img/favicon.ico',
+            
+            url: 'https://ramyhakam.github.io',
+            baseUrl: '/multi_tenancy_bundle/',
+            
+            organizationName: 'RamyHakam',
+            projectName: 'multi_tenancy_bundle',
+            
+            onBrokenLinks: 'warn',
+            onBrokenMarkdownLinks: 'warn',
+            
+            i18n: {
+              defaultLocale: 'en',
+              locales: ['en'],
+            },
+            
+            presets: [
+              [
+                'classic',
+                /** @type {import('@docusaurus/preset-classic').Options} */
+                ({
+                  docs: {
+                    routeBasePath: '/',
+                    sidebarPath: './sidebars.js',
+                    editUrl: 'https://github.com/RamyHakam/multi_tenancy_bundle/tree/master/docs-site/',
+                  },
+                  blog: false,
+                  theme: {
+                    customCss: './src/css/custom.css',
+                  },
+                }),
+              ],
+            ],
+            
+            themeConfig:
+              /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
+              ({
+                image: 'img/logo.svg',
+                navbar: {
+                  title: 'Multi Tenancy Bundle',
+                  logo: {
+                    alt: 'Multi Tenancy Bundle logo',
+                    src: 'img/logo.svg',
+                  },
+                  items: [
+                    {
+                      type: 'docSidebar',
+                      sidebarId: 'tutorialSidebar',
+                      position: 'left',
+                      label: 'Overview',
+                    },
+                    {
+                      href: 'https://github.com/RamyHakam/multi_tenancy_bundle',
+                      label: 'GitHub',
+                      position: 'right',
+                    },
+                  ],
+                },
+                footer: {
+                  style: 'dark',
+                  copyright: `Copyright © ${new Date().getFullYear()} Ramy Hakam. Built with Docusaurus.`,
+                },
+                prism: {
+                  theme: lightTheme,
+                  darkTheme: darkTheme,
+                  additionalLanguages: ['php', 'yaml', 'bash'],
+                },
+              }),
+          };
+
+          module.exports = config;
+          EOF
+
+            # Create sidebars.js
+            cat > sidebars.js << 'EOF'
+          /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
+          const sidebars = {
+            tutorialSidebar: [
+              {
+                type: 'category',
+                label: 'Introduction',
+                items: ['intro/overview', 'intro/why-multi-tenancy', 'intro/architecture'],
+              },
+              'getting-started',
+              'concepts/core-concepts',
+              'usage',
+              'cli/cli-commands',
+              'customization',
+              'suggestions',
+              'contributing/contribution',
+              'changelog',
+              'license',
+            ],
+          };
+
+          module.exports = sidebars;
+          EOF
+
+            # Create src directory structure
+            mkdir -p src/css
+            cat > src/css/custom.css << 'EOF'
+          /**
+           * Any CSS included here will be global. The classic template
+           * bundles Infima by default. Infima is a CSS framework designed to
+           * work well for content-centric websites.
+           */
+
+          /* You can override the default Infima variables here. */
+          :root {
+            --ifm-color-primary: #2e8555;
+            --ifm-color-primary-dark: #29784c;
+            --ifm-color-primary-darker: #277148;
+            --ifm-color-primary-darkest: #205d3b;
+            --ifm-color-primary-light: #33925d;
+            --ifm-color-primary-lighter: #359962;
+            --ifm-color-primary-lightest: #3cad6e;
+            --ifm-code-font-size: 95%;
+            --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+          }
+
+          /* For readability concerns, you should choose a lighter palette in dark mode. */
+          [data-theme='dark'] {
+            --ifm-color-primary: #25c2a0;
+            --ifm-color-primary-dark: #21af90;
+            --ifm-color-primary-darker: #1fa588;
+            --ifm-color-primary-darkest: #1a8870;
+            --ifm-color-primary-light: #29d5b0;
+            --ifm-color-primary-lighter: #32d8b4;
+            --ifm-color-primary-lightest: #4fddbf;
+            --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+          }
+          EOF
+          fi
+
+      - name: Install dependencies
+        run: |
+          cd docs-site
+          npm ci
+
+      - name: Build documentation
+        run: |
+          cd docs-site
+          echo "🔨 Building documentation..."
+          npm run build
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'docs-site/build'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Summary
+        run: |
+          echo "🎉 Documentation deployed successfully!"
+          echo "📖 Visit: https://ramyhakam.github.io/multi_tenancy_bundle/"
+          echo "📝 Updated changelog with v2.9.0 release notes"
