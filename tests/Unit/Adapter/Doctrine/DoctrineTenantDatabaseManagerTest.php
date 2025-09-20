@@ -48,6 +48,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
     {
         $entity1 = $this->createConfiguredMock(TenantDbConfigurationInterface::class, [
             'getId' => 12,
+            'getIdentifierValue' => 12,
             'getDriverType' => DriverTypeEnum::MYSQL,
             'getDbHost' => 'h',
             'getDatabaseStatus' => DatabaseStatusEnum::DATABASE_MIGRATED,
@@ -79,6 +80,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
     {
         $entity = $this->createConfiguredMock(TenantDbConfigurationInterface::class, [
             'getId' => 11,
+            'getIdentifierValue' =>"Tenant ID",
             'getDriverType' => DriverTypeEnum::MYSQL,
             'getDatabaseStatus' => DatabaseStatusEnum::DATABASE_NOT_CREATED,
             'getDbHost' => 'h',
@@ -91,7 +93,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
             ->willReturn([$entity]);
         $result = $this->manager->listMissingDatabases();
         $this->assertCount(1, $result);
-        $this->assertSame(11, $result[0]->identifier);
+        $this->assertSame('Tenant ID', $result[0]->identifier);
     }
 
     public function testListMissingDatabasesThrowsIfEmpty(): void
@@ -106,6 +108,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
     {
         $entity = $this->createConfiguredMock(TenantDbConfigurationInterface::class, [
             'getId' => 13,
+            'getIdentifierValue' => 13,
             'getDriverType' => DriverTypeEnum::MYSQL,
             'getDbHost' => 'h',
             'getDatabaseStatus' => DatabaseStatusEnum::DATABASE_CREATED,
@@ -170,6 +173,7 @@ class DoctrineTenantDatabaseManagerTest extends TestCase
     {
         $entity = $this->createConfiguredMock(TenantDbConfigurationInterface::class, [
             'getId' => 42,
+            'getIdentifierValue' => 42,
             'getDriverType' => DriverTypeEnum::MYSQL,
             'getDbHost' => 'host',
             'getDatabaseStatus' => DatabaseStatusEnum::DATABASE_NOT_CREATED,

@@ -53,4 +53,10 @@ interface TenantDbConfigurationInterface
     public function getDsnUrl(): string;
     
     public function getDriverType(): DriverTypeEnum;
+
+    /**
+     * Get the tenant identifier value as configured in the system.
+     * This should return the value of the field specified in tenant_database_identifier config.
+     */
+    public function getIdentifierValue(): mixed;
 }

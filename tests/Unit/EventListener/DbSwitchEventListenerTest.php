@@ -85,6 +85,11 @@ class DbConfig implements TenantDbConfigurationInterface
         return $this->dbName;
     }
 
+    public function getIdentifierValue(): mixed
+    {
+        return 1;
+    }
+
     public function setDbName(string $dbName): void
     {
         $this->dbName = $dbName;

@@ -57,7 +57,36 @@ final class MigrateCommand extends TenantCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $dbId = $input->getArgument('dbId');
+        $migrationType = $input->getArgument('type');
         $io = new SymfonyStyle($input, $output);
+
+        if ($dbId !== null) {
+            $io->warning('DEPRECATION: The "dbId" argument is deprecated and will be removed in v4.0.');
+            $io->note(sprintf('Migrating specific database with identifier: %s', $dbId));
+            $io->newLine();
+
+            try {
+                $tenantDb = $this->tenantDatabaseManager->getTenantDatabaseById($dbId);
+
+                if ($migrationType === self::MIGRATE_TYPE_INIT && $tenantDb->dbStatus !== DatabaseStatusEnum::DATABASE_CREATED) {
+                    $io->error(sprintf('Database "%s" is not in CREATED status. Current status: %s', $dbId, $tenantDb->dbStatus->value));
+                    return 1;
+                }
+
+                if ($migrationType === self::MIGRATE_TYPE_UPDATE && $tenantDb->dbStatus !== DatabaseStatusEnum::DATABASE_MIGRATED) {
+                    $io->error(sprintf('Database "%s" is not in MIGRATED status. Current status: %s', $dbId, $tenantDb->dbStatus->value));
+                    return 1;
+                }
+
+                return $this->migrateSingleDB($input, $output, $io, $tenantDb);
+
+            } catch (\RuntimeException $e) {
+                $io->error(sprintf('Tenant database with identifier "%s" not found: %s', $dbId, $e->getMessage()));
+                return 1;
+            }
+        }
+        // Migrate all databases based on the type
         switch ($input->getArgument('type')) {
             case self::MIGRATE_TYPE_INIT:
                 $io->note('Migrating the new databases');
@@ -119,5 +148,32 @@ final class MigrateCommand extends TenantCommand
         $newInput->setInteractive($input->isInteractive());
         $otherCommand = new \Doctrine\Migrations\Tools\Console\Command\MigrateCommand($this->getDependencyFactory($input));
         $otherCommand->run($newInput, $output);
+    }
+
+    private function migrateSingleDB(InputInterface $input, OutputInterface $output, SymfonyStyle $io, TenantConnectionConfigDTO $tenantDb): int
+    {
+        try {
+            // we already checked that dbId is not null or add it  in the loop
+            $io->note(sprintf('Start Migrating database with identifier "%s" (Database: %s, Host: %s)', 
+                $tenantDb->identifier, $tenantDb->dbname, $tenantDb->host));
+            $io->newLine();
+            
+            $this->runMigrateCommand($input, $output);
+            
+            // Update database status if this was an init migration
+            if ($tenantDb->dbStatus === DatabaseStatusEnum::DATABASE_CREATED) {
+                $this->tenantDatabaseManager->updateTenantDatabaseStatus(
+                    $tenantDb->identifier, 
+                    DatabaseStatusEnum::DATABASE_MIGRATED
+                );
+                $this->registry->getManager()->flush();
+            }
+            
+            $io->success(sprintf('Database with identifier "%s" migrated successfully.', $tenantDb->identifier));
+            return 0;
+        } catch (Throwable $e) {
+            $io->error(sprintf('Failed to migrate database with identifier "%s": %s', $tenantDb->identifier, $e->getMessage()));
+            return 1;
+        }
     }
 }
