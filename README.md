@@ -6,7 +6,7 @@
 [![Total Downloads](https://img.shields.io/packagist/dt/hakam/multi-tenancy-bundle?style=flat-square)](https://packagist.org/packages/hakam/multi-tenancy-bundle)
 [![Symfony Flex](https://img.shields.io/badge/Symfony%20Flex-Recipe%20Available-brightgreen.svg?style=flat-square)](https://github.com/symfony/recipes-contrib)
 
-> 📚 **Full Documentation**: [https://ramyhakam.github.io/multi_tenancy_bundle/](https://ramyhakam.github.io/multi_tenancy_bundle/)
+> 📚 **Full Documentation**: [Documentation](https://ramyhakam.github.io/multi_tenancy_bundle/intro/overview)
 
 ---
 
