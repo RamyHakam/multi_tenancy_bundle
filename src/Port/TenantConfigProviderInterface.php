@@ -11,5 +11,5 @@ use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
  * */
 interface TenantConfigProviderInterface
 {
-    public function getTenantConnectionConfig( ?int $identifier): TenantConnectionConfigDTO;
+    public function getTenantConnectionConfig(mixed $identifier): TenantConnectionConfigDTO;
 }

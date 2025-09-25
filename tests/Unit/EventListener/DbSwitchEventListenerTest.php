@@ -29,7 +29,7 @@ class DbSwitchEventListenerTest extends TestCase
         $listener = new DbSwitchEventListener($mockContainer, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
 
         // create a test event
-        $testDbIndex = 1;
+        $testDbIndex = '1';
         $testEvent = new SwitchDbEvent($testDbIndex);
 
         // mock the expected behavior of the DbConfigService and ContainerInterface
