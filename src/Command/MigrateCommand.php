@@ -96,7 +96,7 @@ final class MigrateCommand extends TenantCommand
             case self::MIGRATE_TYPE_UPDATE:
                 $io->note('Migrating the existing databases');
                 $io->newLine();
-                $listOfDbsToMigrate = $this->dbService->getListOfTenantDataBases();
+                $listOfDbsToMigrate = $this->tenantDatabaseManager->getTenantDbListByDatabaseStatus(DatabaseStatusEnum::DATABASE_MIGRATED);
                 break;
             default:
                 $io->error('Invalid migration type');
