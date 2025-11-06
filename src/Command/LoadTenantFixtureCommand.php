@@ -7,6 +7,7 @@ use Doctrine\Bundle\FixturesBundle\Loader\SymfonyFixturesLoader;
 use Doctrine\ORM\EntityManagerInterface;
 use Hakam\MultiTenancyBundle\Purger\TenantORMPurgerFactory;
 use Hakam\MultiTenancyBundle\Services\TenantFixtureLoader;
+use Symfony\Bridge\Doctrine\DataFixtures\ContainerAwareLoader;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
@@ -27,14 +28,17 @@ class LoadTenantFixtureCommand  extends TenantCommand
     private  array $purgerFactories= [];
 
     public function __construct(
-    private readonly ManagerRegistry          $registry,
-   private readonly ContainerInterface        $container,
-    private readonly EventDispatcherInterface $eventDispatcher,
-   private    readonly TenantFixtureLoader    $tenantFixtureLoader,
-    )
-    {
+        private readonly ManagerRegistry $registry,
+        private readonly ContainerInterface $container,
+        private readonly EventDispatcherInterface $eventDispatcher,
+        private readonly TenantFixtureLoader $tenantFixtureLoader,
+    ) {
         parent::__construct($registry, $container, $eventDispatcher);
-        $this->fixturesLoader = new SymfonyFixturesLoader();
+        if (class_exists(ContainerAwareLoader::class)) {
+            $this->fixturesLoader = new SymfonyFixturesLoader($container);
+        } else {
+            $this->fixturesLoader = new SymfonyFixturesLoader();
+        }
     }
 
     protected function configure(): void
@@ -51,7 +55,6 @@ class LoadTenantFixtureCommand  extends TenantCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-
         $doctrineFixturesCommand = new LoadDataFixturesDoctrineCommand(
             $this->fixturesLoader,
             $this->registry,
