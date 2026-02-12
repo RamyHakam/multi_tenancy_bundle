@@ -5,6 +5,7 @@ namespace Hakam\MultiTenancyBundle\Command;
 use Doctrine\Bundle\FixturesBundle\Command\LoadDataFixturesDoctrineCommand;
 use Doctrine\Bundle\FixturesBundle\Loader\SymfonyFixturesLoader;
 use Doctrine\ORM\EntityManagerInterface;
+use Hakam\MultiTenancyBundle\Event\TenantBootstrappedEvent;
 use Hakam\MultiTenancyBundle\Purger\TenantORMPurgerFactory;
 use Hakam\MultiTenancyBundle\Services\TenantFixtureLoader;
 use Symfony\Bridge\Doctrine\DataFixtures\ContainerAwareLoader;
@@ -73,7 +74,22 @@ class LoadTenantFixtureCommand  extends TenantCommand
         $newInput = new ArrayInput($args);
         $newInput->setInteractive($input->isInteractive());
 
-        return $doctrineFixturesCommand->run($newInput, $output);
+        $result = $doctrineFixturesCommand->run($newInput, $output);
+
+        // Dispatch TenantBootstrappedEvent after successful fixture loading
+        if ($result === 0) {
+            $loadedFixtures = array_map(
+                fn($fixture) => get_class($fixture),
+                iterator_to_array($this->tenantFixtureLoader->getFixtures())
+            );
+            $this->eventDispatcher->dispatch(new TenantBootstrappedEvent(
+                $input->getArgument('dbId'),
+                null,
+                $loadedFixtures
+            ));
+        }
+
+        return $result;
     }
 
     protected function initialize(InputInterface $input, OutputInterface $output): void

@@ -4,7 +4,9 @@ namespace Hakam\MultiTenancyBundle\EventListener;
 
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
+use Hakam\MultiTenancyBundle\Event\TenantSwitchedEvent;
 use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -14,12 +16,14 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class DbSwitchEventListener implements EventSubscriberInterface
 {
     private ?string $currentTenantDbName = null;
+    private ?string $currentTenantIdentifier = null;
 
     public function __construct(
         private readonly ContainerInterface            $container,
         private readonly TenantConfigProviderInterface $tenantConfigProvider,
         private readonly TenantEntityManager           $tenantEntityManager,
         private readonly string                        $databaseURL,
+        private readonly ?EventDispatcherInterface     $eventDispatcher = null,
     )
     {
     }
@@ -41,6 +45,10 @@ class DbSwitchEventListener implements EventSubscriberInterface
             return;
         }
 
+        // Store previous tenant info for the event
+        $previousTenantIdentifier = $this->currentTenantIdentifier;
+        $previousDatabaseName = $this->currentTenantDbName;
+
         $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
 
         $params = [
@@ -56,6 +64,17 @@ class DbSwitchEventListener implements EventSubscriberInterface
 
         $tenantConnection->switchConnection($params);
         $this->currentTenantDbName = $tenantDbConfigDTO->dbname;
+        $this->currentTenantIdentifier = $switchDbEvent->getDbIndex();
+
+        // Dispatch TenantSwitchedEvent after successful connection switch
+        if ($this->eventDispatcher !== null) {
+            $this->eventDispatcher->dispatch(new TenantSwitchedEvent(
+                $switchDbEvent->getDbIndex(),
+                $tenantDbConfigDTO,
+                $previousTenantIdentifier,
+                $previousDatabaseName
+            ));
+        }
     }
 
     private function parseDatabaseUrl(string $databaseURL): array

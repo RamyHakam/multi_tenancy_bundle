@@ -5,6 +5,7 @@ namespace Hakam\MultiTenancyBundle\Command;
 use Doctrine\Persistence\ManagerRegistry;
 use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
+use Hakam\MultiTenancyBundle\Event\TenantMigratedEvent;
 use Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -115,9 +116,18 @@ final class MigrateCommand extends TenantCommand
                 $io->note(sprintf('Start Migrating database #%s, Database_Name: %s, Database_Host: %s ', $kay + 1, $db->dbname, $db->host));
                 $io->newLine();
                 $this->runMigrateCommand($input, $output);
+                $migrationType = $db->dbStatus === DatabaseStatusEnum::DATABASE_CREATED 
+                    ? TenantMigratedEvent::TYPE_INIT 
+                    : TenantMigratedEvent::TYPE_UPDATE;
                 if ($db->dbStatus === DatabaseStatusEnum::DATABASE_CREATED) {
                     $this->tenantDatabaseManager->updateTenantDatabaseStatus($db->identifier, DatabaseStatusEnum::DATABASE_MIGRATED);
                 }
+                $this->eventDispatcher->dispatch(new TenantMigratedEvent(
+                    $db->identifier,
+                    $db,
+                    $migrationType,
+                    $input->getArgument('version')
+                ));
                 $io->success(sprintf('Migrating database #%s, Database_Name: %s, Database_Host: %s ', $kay + 1, $db->dbname, $db->host));
                 $io->newLine();
                 $io->progressAdvance();
@@ -160,6 +170,11 @@ final class MigrateCommand extends TenantCommand
             
             $this->runMigrateCommand($input, $output);
             
+            // Determine migration type based on database status
+            $migrationType = $tenantDb->dbStatus === DatabaseStatusEnum::DATABASE_CREATED 
+                ? TenantMigratedEvent::TYPE_INIT 
+                : TenantMigratedEvent::TYPE_UPDATE;
+            
             // Update database status if this was an init migration
             if ($tenantDb->dbStatus === DatabaseStatusEnum::DATABASE_CREATED) {
                 $this->tenantDatabaseManager->updateTenantDatabaseStatus(
@@ -168,6 +183,14 @@ final class MigrateCommand extends TenantCommand
                 );
                 $this->registry->getManager()->flush();
             }
+            
+            // Dispatch TenantMigratedEvent after successful migration
+            $this->eventDispatcher->dispatch(new TenantMigratedEvent(
+                $tenantDb->identifier,
+                $tenantDb,
+                $migrationType,
+                $input->getArgument('version')
+            ));
             
             $io->success(sprintf('Database with identifier "%s" migrated successfully.', $tenantDb->identifier));
             return 0;

@@ -11,6 +11,7 @@ use Doctrine\ORM\Tools\SchemaTool;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
+use Hakam\MultiTenancyBundle\Event\TenantDeletedEvent;
 use Hakam\MultiTenancyBundle\Exception\MultiTenancyException;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -88,9 +89,10 @@ class DbService
      * Drops the specified database.
      *
      * @param string $dbName The name of the database to drop.
+     * @param mixed $tenantIdentifier Optional tenant identifier for event dispatching.
      * @throws MultiTenancyException|Exception If the database does not exist or cannot be dropped.
      */
-    public function dropDatabase(string $dbName): void
+    public function dropDatabase(string $dbName, mixed $tenantIdentifier = null): void
     {
         $connection = $this->tenantEntityManager->getConnection();
 
@@ -111,10 +113,13 @@ class DbService
         try {
             $schemaManager->dropDatabase($dbName);
         } catch (\Exception $e) {
-            throw new MultiTenancyException(sprintf('Unable to create new tenant database %s: %s', $dbName, $e->getMessage()), $e->getCode(), $e);
+            throw new MultiTenancyException(sprintf('Unable to drop tenant database %s: %s', $dbName, $e->getMessage()), $e->getCode(), $e);
         }
 
         $tmpConnection->close();
+
+        // Dispatch TenantDeletedEvent after successful deletion
+        $this->eventDispatcher->dispatch(new TenantDeletedEvent($tenantIdentifier ?? $dbName, $dbName));
     }
 
     private function onboardNewDatabaseConfig(string $dbname): int
