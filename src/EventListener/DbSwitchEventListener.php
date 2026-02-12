@@ -36,6 +36,12 @@ class DbSwitchEventListener implements EventSubscriberInterface
         $tenantDbConfigDTO = $this->tenantConfigProvider->getTenantConnectionConfig($switchDbEvent->getDbIndex());
         $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
 
+        // Skip if already connected to the same tenant database
+        $currentParams = $tenantConnection->getParams();
+        if (isset($currentParams['dbname']) && $currentParams['dbname'] === $tenantDbConfigDTO->dbname) {
+            return;
+        }
+
         $params = [
             'dbname' => $tenantDbConfigDTO->dbname,
             'user' => $tenantDbConfigDTO->user ?? $this->parseDatabaseUrl($this->databaseURL)['user'],
