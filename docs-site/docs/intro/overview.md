@@ -15,7 +15,10 @@ The **Symfony Multi-Tenancy Bundle** is a battle-tested toolkit for building lar
 - **Seamless Runtime Switching**  
   Dispatch a single event (`SwitchDbEvent`) and the bundle automatically reconnects the EntityManager to the correct database for the duration of your request or console command.
 
-- **Independent Migration Pipelines**  
+- **Automatic Tenant Resolution** *(New in v3.0)*  
+  Automatically determine the current tenant from HTTP requests using subdomain, path, header, or custom strategies—no manual event dispatching required.
+
+- **Independent Migration Pipelines**
   Keep your main application schema and each tenant’s schema in separate migration directories. Run or roll back migrations globally or per-tenant in one command.
 
 - **Fixture Loading per Tenant**  
@@ -23,9 +26,33 @@ The **Symfony Multi-Tenancy Bundle** is a battle-tested toolkit for building lar
 
 - **Custom Host & Credential Resolution**  
   Point different tenants to different database hosts, servers, or credentials based on data in your `TenantDbConfig`—perfect for sharding, geo-distribution, or cloud-managed clusters.
-- ## ✅ New in v3.0: Custom Provider & Manager Override
+## ✅ New in v3.0
 
-In version 3.0, you can now completely override the default `TenantConfigProviderInterface` and `TenantDatabaseManagerInterface` with your own custom implementations.
+### Automatic Tenant Resolution
+
+Eliminate boilerplate by letting the bundle automatically resolve tenants from HTTP requests:
+
+```yaml
+hakam_multi_tenancy:
+    resolver:
+        enabled: true
+        strategy: subdomain  # or: header, path, host, chain
+        options:
+            base_domain: 'myapp.com'
+```
+
+Supported strategies:
+- **subdomain**: `tenant1.myapp.com` → tenant ID: `tenant1`
+- **header**: `X-Tenant-ID: tenant1` → tenant ID: `tenant1`
+- **path**: `/tenant1/dashboard` → tenant ID: `tenant1`
+- **host**: Map custom domains to tenants
+- **chain**: Combine strategies with fallback support
+
+[Learn more about Automatic Tenant Resolution →](/docs/resolver/automatic-resolution)
+
+### Custom Provider & Manager Override
+
+Completely override the default `TenantConfigProviderInterface` and `TenantDatabaseManagerInterface` with your own custom implementations.
 
 This allows you to:
 
