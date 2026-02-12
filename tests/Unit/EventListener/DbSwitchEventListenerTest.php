@@ -52,6 +52,8 @@ class DbSwitchEventListenerTest extends TestCase
             ->with($testDbIndex)
             ->willReturn($mockDbConfig);
         $mockTenantConnection = $this->createMock(TenantConnection::class);
+        $mockTenantConnection->method('getParams')
+            ->willReturn(['dbname' => 'different_db']);
         $mockTenantConnection->expects($this->once())
             ->method('switchConnection');
         $mockDoctrine = $this->createMock(ManagerRegistry::class);
@@ -68,6 +70,57 @@ class DbSwitchEventListenerTest extends TestCase
             ->method('clear');
 
         // trigger the event and test the result
+        $listener->onHakamMultiTenancyBundleEventSwitchDbEvent($testEvent);
+    }
+
+    public function testSkipsSwitchWhenAlreadyConnectedToSameTenant(): void
+    {
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
+        $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
+
+        $listener = new DbSwitchEventListener($mockContainer, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
+
+        $testDbIndex = '1';
+        $testEvent = new SwitchDbEvent($testDbIndex);
+
+        $mockDbConfig = TenantConnectionConfigDTO::fromArgs(
+            identifier: $testDbIndex,
+            driver: DriverTypeEnum::MYSQL,
+            dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
+            host: 'localhost',
+            port: '3306',
+            dbname: 'test_db_name',
+            user: 'test_username',
+            password: 'test_password'
+        );
+
+        $mockTenantDbConfigProvider->expects($this->once())
+            ->method('getTenantConnectionConfig')
+            ->with($testDbIndex)
+            ->willReturn($mockDbConfig);
+
+        $mockTenantConnection = $this->createMock(TenantConnection::class);
+        // Return the same dbname as the DTO to simulate already-connected state
+        $mockTenantConnection->method('getParams')
+            ->willReturn(['dbname' => 'test_db_name']);
+        $mockTenantConnection->expects($this->never())
+            ->method('switchConnection');
+
+        $mockDoctrine = $this->createMock(ManagerRegistry::class);
+        $mockDoctrine->expects($this->once())
+            ->method('getConnection')
+            ->with('tenant')
+            ->willReturn($mockTenantConnection);
+
+        $mockContainer->expects($this->once())
+            ->method('get')
+            ->with('doctrine')
+            ->willReturn($mockDoctrine);
+
+        $mockTenantEntityManager->expects($this->never())
+            ->method('clear');
+
         $listener->onHakamMultiTenancyBundleEventSwitchDbEvent($testEvent);
     }
 }
