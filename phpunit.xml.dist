@@ -14,6 +14,8 @@
         <ini name="intl.error_level" value="0"/>
         <ini name="memory_limit" value="-1"/>
         <env name="SYMFONY_DEPRECATIONS_HELPER" value="max[self]=0"/>
+        <env name="APP_DEBUG" value="1"/>
+        <env name="DATABASE_URL" value="mysql://root:@localhost:3306/main_db"/>
     </php>
     <testsuites>
         <testsuite name="unit">
@@ -21,6 +23,9 @@
         </testsuite>
         <testsuite name="functional">
             <directory>tests/Functional</directory>
+        </testsuite>
+        <testsuite name="integration">
+            <directory>tests/Integration</directory>
         </testsuite>
     </testsuites>
 </phpunit>

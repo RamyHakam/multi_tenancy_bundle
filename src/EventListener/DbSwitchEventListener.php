@@ -13,6 +13,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class DbSwitchEventListener implements EventSubscriberInterface
 {
+    private ?string $currentTenantDbName = null;
 
     public function __construct(
         private readonly ContainerInterface            $container,
@@ -34,13 +35,13 @@ class DbSwitchEventListener implements EventSubscriberInterface
     public function onHakamMultiTenancyBundleEventSwitchDbEvent(SwitchDbEvent $switchDbEvent): void
     {
         $tenantDbConfigDTO = $this->tenantConfigProvider->getTenantConnectionConfig($switchDbEvent->getDbIndex());
-        $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
 
         // Skip if already connected to the same tenant database
-        $currentParams = $tenantConnection->getParams();
-        if (isset($currentParams['dbname']) && $currentParams['dbname'] === $tenantDbConfigDTO->dbname) {
+        if ($this->currentTenantDbName !== null && $this->currentTenantDbName === $tenantDbConfigDTO->dbname) {
             return;
         }
+
+        $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
 
         $params = [
             'dbname' => $tenantDbConfigDTO->dbname,
@@ -54,6 +55,7 @@ class DbSwitchEventListener implements EventSubscriberInterface
         $this->tenantEntityManager->clear();
 
         $tenantConnection->switchConnection($params);
+        $this->currentTenantDbName = $tenantDbConfigDTO->dbname;
     }
 
     private function parseDatabaseUrl(string $databaseURL): array
