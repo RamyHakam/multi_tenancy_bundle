@@ -45,8 +45,7 @@ class TenantDBALConnectionGeneratorTest extends TestCase
         $this->assertInstanceOf(Connection::class, $connection);
 
         // Assert that the platform is SQLite
-        $platformName = $connection->getDatabasePlatform()->getName();
-        $this->assertSame('sqlite', $platformName);
+        $this->assertInstanceOf(\Doctrine\DBAL\Platforms\SQLitePlatform::class, $connection->getDatabasePlatform());
     }
 
     public function testGenerateMaintenanceConnectionReturnsSqliteMemoryConnection(): void
@@ -73,8 +72,7 @@ class TenantDBALConnectionGeneratorTest extends TestCase
         $this->assertInstanceOf(Connection::class, $connection);
 
         // Assert that the platform is SQLite
-        $platformName = $connection->getDatabasePlatform()->getName();
-        $this->assertSame('sqlite', $platformName);
+        $this->assertInstanceOf(\Doctrine\DBAL\Platforms\SQLitePlatform::class, $connection->getDatabasePlatform());
     }
 }
 
