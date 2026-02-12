@@ -52,8 +52,6 @@ class DbSwitchEventListenerTest extends TestCase
             ->with($testDbIndex)
             ->willReturn($mockDbConfig);
         $mockTenantConnection = $this->createMock(TenantConnection::class);
-        $mockTenantConnection->method('getParams')
-            ->willReturn(['dbname' => 'different_db']);
         $mockTenantConnection->expects($this->once())
             ->method('switchConnection');
         $mockDoctrine = $this->createMock(ManagerRegistry::class);
@@ -82,7 +80,6 @@ class DbSwitchEventListenerTest extends TestCase
         $listener = new DbSwitchEventListener($mockContainer, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
 
         $testDbIndex = '1';
-        $testEvent = new SwitchDbEvent($testDbIndex);
 
         $mockDbConfig = TenantConnectionConfigDTO::fromArgs(
             identifier: $testDbIndex,
@@ -95,33 +92,35 @@ class DbSwitchEventListenerTest extends TestCase
             password: 'test_password'
         );
 
-        $mockTenantDbConfigProvider->expects($this->once())
+        // First call: should switch (sets currentTenantDbName)
+        $mockTenantDbConfigProvider->expects($this->exactly(2))
             ->method('getTenantConnectionConfig')
             ->with($testDbIndex)
             ->willReturn($mockDbConfig);
 
         $mockTenantConnection = $this->createMock(TenantConnection::class);
-        // Return the same dbname as the DTO to simulate already-connected state
-        $mockTenantConnection->method('getParams')
-            ->willReturn(['dbname' => 'test_db_name']);
-        $mockTenantConnection->expects($this->never())
+        // switchConnection should only be called once (first call), not on the second
+        $mockTenantConnection->expects($this->once())
             ->method('switchConnection');
 
         $mockDoctrine = $this->createMock(ManagerRegistry::class);
-        $mockDoctrine->expects($this->once())
-            ->method('getConnection')
+        $mockDoctrine->method('getConnection')
             ->with('tenant')
             ->willReturn($mockTenantConnection);
 
-        $mockContainer->expects($this->once())
-            ->method('get')
+        $mockContainer->method('get')
             ->with('doctrine')
             ->willReturn($mockDoctrine);
 
-        $mockTenantEntityManager->expects($this->never())
+        // clear() should only be called once (first call)
+        $mockTenantEntityManager->expects($this->once())
             ->method('clear');
 
-        $listener->onHakamMultiTenancyBundleEventSwitchDbEvent($testEvent);
+        // First dispatch: should switch
+        $listener->onHakamMultiTenancyBundleEventSwitchDbEvent(new SwitchDbEvent($testDbIndex));
+
+        // Second dispatch to same tenant: should skip
+        $listener->onHakamMultiTenancyBundleEventSwitchDbEvent(new SwitchDbEvent($testDbIndex));
     }
 }
 
