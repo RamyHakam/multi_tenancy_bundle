@@ -38,8 +38,8 @@
                  public="false"/>
 
         <service id="Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener">
-            <tag name="kernel.event_listener" event="Hakam\MultiTenancyBundle\Event\SwitchDbEvent"/>
-            <argument type="service" id="service_container"/>
+            <tag name="kernel.event_listener" event="Hakam\MultiTenancyBundle\Event\SwitchDbEvent" method="onSwitchDb"/>
+            <argument type="service" id="doctrine"/>
             <argument type="service" id="Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface"/>
             <argument type="service" id="tenant_entity_manager"/>
             <argument type="string">%env(DATABASE_URL)%</argument>
