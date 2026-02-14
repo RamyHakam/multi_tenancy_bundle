@@ -20,7 +20,7 @@
         "doctrine/doctrine-bundle": "^2.7",
         "doctrine/orm": "^2.15 || ^3.0",
         "doctrine/doctrine-migrations-bundle": "^3.0",
-        "symfony/var-exporter": "^8.0"
+        "symfony/var-exporter": "^6.4|^7.0|^8.0"
     },
 
     "autoload": {
