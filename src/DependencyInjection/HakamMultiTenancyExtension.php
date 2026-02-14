@@ -3,12 +3,21 @@
 namespace Hakam\MultiTenancyBundle\DependencyInjection;
 
 use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
+use Hakam\MultiTenancyBundle\EventListener\TenantResolutionListener;
+use Hakam\MultiTenancyBundle\Port\TenantResolverInterface;
+use Hakam\MultiTenancyBundle\Resolver\ChainResolver;
+use Hakam\MultiTenancyBundle\Resolver\HeaderResolver;
+use Hakam\MultiTenancyBundle\Resolver\HostResolver;
+use Hakam\MultiTenancyBundle\Resolver\PathResolver;
+use Hakam\MultiTenancyBundle\Resolver\SubdomainResolver;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -42,6 +51,119 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
             $tenantProviderDefinition->setArgument(1, $configs['tenant_database_className']);
             $tenantProviderDefinition->setArgument(2, $configs['tenant_database_identifier']);
         }
+
+        // Configure tenant resolver if enabled
+        $this->configureResolver($configs, $container);
+    }
+
+    private function configureResolver(array $configs, ContainerBuilder $container): void
+    {
+        $resolverConfig = $configs['resolver'] ?? [];
+
+        if (!($resolverConfig['enabled'] ?? false)) {
+            return;
+        }
+
+        $strategy = $resolverConfig['strategy'] ?? 'subdomain';
+        $options = $resolverConfig['options'] ?? [];
+        $throwOnMissing = $resolverConfig['throw_on_missing'] ?? false;
+        $excludedPaths = $resolverConfig['excluded_paths'] ?? [];
+
+        // Create resolver based on strategy
+        $resolverServiceId = $this->createResolverService($strategy, $options, $container);
+
+        // Create the TenantResolutionListener
+        $listenerDefinition = new Definition(TenantResolutionListener::class);
+        $listenerDefinition->setArguments([
+            new Reference($resolverServiceId),
+            new Reference('event_dispatcher'),
+            $throwOnMissing,
+            $excludedPaths,
+        ]);
+        $listenerDefinition->addTag('kernel.event_subscriber');
+        $container->setDefinition(TenantResolutionListener::class, $listenerDefinition);
+
+        // Create alias for TenantResolverInterface
+        $container->setAlias(TenantResolverInterface::class, $resolverServiceId)->setPublic(false);
+    }
+
+    private function createResolverService(string $strategy, array $options, ContainerBuilder $container): string
+    {
+        $serviceId = 'hakam.tenant_resolver.' . $strategy;
+
+        $resolverClass = match ($strategy) {
+            'subdomain' => SubdomainResolver::class,
+            'host' => HostResolver::class,
+            'path' => PathResolver::class,
+            'header' => HeaderResolver::class,
+            'chain' => ChainResolver::class,
+            default => throw new InvalidConfigurationException(sprintf('Unknown resolver strategy "%s"', $strategy)),
+        };
+
+        if ($strategy === 'chain') {
+            $definition = $this->createChainResolverDefinition($options, $container);
+        } else {
+            $resolverOptions = $this->getResolverOptions($strategy, $options);
+            $definition = new Definition($resolverClass);
+            $definition->setArgument(0, $resolverOptions);
+        }
+
+        $definition->setPublic(false);
+        $container->setDefinition($serviceId, $definition);
+
+        return $serviceId;
+    }
+
+    private function createChainResolverDefinition(array $options, ContainerBuilder $container): Definition
+    {
+        $chainOrder = $options['chain_order'] ?? ['header', 'subdomain', 'path'];
+        $resolvers = [];
+
+        foreach ($chainOrder as $subStrategy) {
+            $subServiceId = 'hakam.tenant_resolver.' . $subStrategy . '.sub';
+            $subOptions = $this->getResolverOptions($subStrategy, $options);
+
+            $subClass = match ($subStrategy) {
+                'subdomain' => SubdomainResolver::class,
+                'host' => HostResolver::class,
+                'path' => PathResolver::class,
+                'header' => HeaderResolver::class,
+                default => throw new InvalidConfigurationException(sprintf('Unknown resolver strategy "%s" in chain', $subStrategy)),
+            };
+
+            $subDefinition = new Definition($subClass);
+            $subDefinition->setArgument(0, $subOptions);
+            $subDefinition->setPublic(false);
+            $container->setDefinition($subServiceId, $subDefinition);
+
+            $resolvers[] = new Reference($subServiceId);
+        }
+
+        $definition = new Definition(ChainResolver::class);
+        $definition->setArgument(0, $resolvers);
+
+        return $definition;
+    }
+
+    private function getResolverOptions(string $strategy, array $options): array
+    {
+        return match ($strategy) {
+            'subdomain' => [
+                'subdomain_position' => $options['subdomain_position'] ?? 0,
+                'base_domain' => $options['base_domain'] ?? null,
+            ],
+            'host' => [
+                'host_map' => $options['host_map'] ?? [],
+            ],
+            'path' => [
+                'path_segment' => $options['path_segment'] ?? 0,
+                'excluded_paths' => $options['excluded_paths'] ?? [],
+            ],
+            'header' => [
+                'header_name' => $options['header_name'] ?? 'X-Tenant-ID',
+            ],
+            default => [],
+        };
     }
 
     public function prepend(ContainerBuilder $container): void
