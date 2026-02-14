@@ -5,8 +5,10 @@ namespace Hakam\MultiTenancyBundle\Command;
 use Exception;
 use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
+use Hakam\MultiTenancyBundle\Event\TenantCreatedEvent;
 use Hakam\MultiTenancyBundle\Exception\MultiTenancyException;
 use Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,7 +24,8 @@ final class CreateDatabaseCommand extends Command
     use CommandTrait;
 
     public function __construct(
-        private readonly TenantDatabaseManagerInterface $tenantDatabaseManager
+        private readonly TenantDatabaseManagerInterface $tenantDatabaseManager,
+        private readonly EventDispatcherInterface $eventDispatcher,
     ) {
         parent::__construct();
     }
@@ -72,6 +75,7 @@ final class CreateDatabaseCommand extends Command
                 }
                 $output->writeln(sprintf('Database %s created successfully', $newDb->dbname));
                 $this->tenantDatabaseManager->updateTenantDatabaseStatus($newDb->identifier, DatabaseStatusEnum::DATABASE_CREATED);
+                $this->eventDispatcher->dispatch(new TenantCreatedEvent($newDb->identifier, $newDb, $newDb->dbname));
             }
             $output->writeln('The new List of Databases created successfully');
             return 0;
@@ -99,6 +103,7 @@ final class CreateDatabaseCommand extends Command
             }
             $output->writeln(sprintf('Database %s created successfully for tenant ID %d', $dbConfig->dbname, $dbId));
             $this->tenantDatabaseManager->updateTenantDatabaseStatus($dbId, DatabaseStatusEnum::DATABASE_CREATED);
+            $this->eventDispatcher->dispatch(new TenantCreatedEvent($dbId, $dbConfig, $dbConfig->dbname));
             return 0;
         } catch (Exception $e) {
             $output->writeln(sprintf('Failed to create database for tenant ID %d: %s', $dbId, $e->getMessage()));

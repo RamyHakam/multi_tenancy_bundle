@@ -8,6 +8,7 @@ use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
 use Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
 use Exception;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -16,12 +17,14 @@ use Symfony\Component\Console\Output\BufferedOutput;
 class CreateDatabaseCommandTest extends TestCase
 {
     private TenantDatabaseManagerInterface $mockManager;
+    private EventDispatcherInterface $mockEventDispatcher;
     private CreateDatabaseCommand $command;
 
     protected function setUp(): void
     {
         $this->mockManager = $this->createMock(TenantDatabaseManagerInterface::class);
-        $this->command = new CreateDatabaseCommand($this->mockManager);
+        $this->mockEventDispatcher = $this->createMock(EventDispatcherInterface::class);
+        $this->command = new CreateDatabaseCommand($this->mockManager, $this->mockEventDispatcher);
     }
 
     public function testCreateDatabaseWithDbidOption(): void

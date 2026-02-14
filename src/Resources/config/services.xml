@@ -43,6 +43,7 @@
             <argument type="service" id="Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface"/>
             <argument type="service" id="tenant_entity_manager"/>
             <argument type="string">%env(DATABASE_URL)%</argument>
+            <argument type="service" id="event_dispatcher"/>
         </service>
 
         <service id="Hakam\MultiTenancyBundle\Command\DiffCommand">
@@ -57,6 +58,7 @@
         <service id="Hakam\MultiTenancyBundle\Command\CreateDatabaseCommand">
             <tag name="console.command"/>
             <argument type="service" id="Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface"/>
+            <argument type="service" id="event_dispatcher"/>
         </service>
         <service id="Hakam\MultiTenancyBundle\Command\MigrateCommand">
             <tag name="console.command"/>

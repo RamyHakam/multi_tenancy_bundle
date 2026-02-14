@@ -4,7 +4,9 @@ namespace Hakam\MultiTenancyBundle\EventListener;
 
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
+use Hakam\MultiTenancyBundle\Event\TenantSwitchedEvent;
 use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -14,12 +16,15 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 class DbSwitchEventListener implements EventSubscriberInterface
 {
     private ?array $currentTenantParams = null;
+    private ?string $currentTenantDbName = null;
+    private ?string $currentTenantIdentifier = null;
 
     public function __construct(
         private readonly ContainerInterface            $container,
         private readonly TenantConfigProviderInterface $tenantConfigProvider,
         private readonly TenantEntityManager           $tenantEntityManager,
         private readonly string                        $databaseURL,
+        private readonly ?EventDispatcherInterface     $eventDispatcher = null,
     )
     {
     }
@@ -36,6 +41,9 @@ class DbSwitchEventListener implements EventSubscriberInterface
     {
         $tenantDbConfigDTO = $this->tenantConfigProvider->getTenantConnectionConfig($switchDbEvent->getDbIndex());
 
+        $previousTenantIdentifier = $this->currentTenantIdentifier;
+        $previousDatabaseName = $this->currentTenantDbName;
+
         $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
 
         $params = [
@@ -51,11 +59,22 @@ class DbSwitchEventListener implements EventSubscriberInterface
             return;
         }
 
-        //clear the current entity manager to avoid Doctrine cache issues
         $this->tenantEntityManager->clear();
 
         $tenantConnection->switchConnection($params);
+        $this->currentTenantDbName = $tenantDbConfigDTO->dbname;
+        $this->currentTenantIdentifier = $switchDbEvent->getDbIndex();
         $this->currentTenantParams = $params;
+
+        if ($this->eventDispatcher !== null) {
+            $this->eventDispatcher->dispatch(new TenantSwitchedEvent(
+                $switchDbEvent->getDbIndex(),
+                $tenantDbConfigDTO,
+                $previousTenantIdentifier,
+                $previousDatabaseName
+
+            ));
+        }
     }
 
     private function parseDatabaseUrl(string $databaseURL): array
