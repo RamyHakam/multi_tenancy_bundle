@@ -17,16 +17,16 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class DbSwitchEventListenerTest extends TestCase
 {
-    public function testOnHakamMultiTenancyBundleEventSwitchDbEvent()
+    public function testOnSwitchDb()
     {
         // mock the necessary dependencies
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $connectionRegistry = $this->createMock(ManagerRegistry::class);
         $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
         $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
 
 
         // create a test instance of the listener
-        $listener = new DbSwitchEventListener($mockContainer, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
+        $listener = new DbSwitchEventListener($connectionRegistry, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
 
         // create a test event
         $testDbIndex = '1';
@@ -54,30 +54,25 @@ class DbSwitchEventListenerTest extends TestCase
         $mockTenantConnection = $this->createMock(TenantConnection::class);
         $mockTenantConnection->expects($this->once())
             ->method('switchConnection');
-        $mockDoctrine = $this->createMock(ManagerRegistry::class);
-        $mockDoctrine->expects($this->once())
+        $connectionRegistry->expects($this->once())
             ->method('getConnection')
             ->with('tenant')
             ->willReturn($mockTenantConnection);
-        $mockContainer->expects($this->once())
-            ->method('get')
-            ->with('doctrine')
-            ->willReturn($mockDoctrine);
 
         $mockTenantEntityManager->expects($this->once())
             ->method('clear');
 
         // trigger the event and test the result
-        $listener->onHakamMultiTenancyBundleEventSwitchDbEvent($testEvent);
+        $listener->onSwitchDb($testEvent);
     }
 
     public function testSkipsSwitchWhenAlreadyConnectedToSameTenant(): void
     {
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $connectionRegistry = $this->createMock(ManagerRegistry::class);
         $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
         $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
 
-        $listener = new DbSwitchEventListener($mockContainer, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
+        $listener = new DbSwitchEventListener($connectionRegistry, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
 
         $testDbIndex = '1';
 
@@ -92,8 +87,7 @@ class DbSwitchEventListenerTest extends TestCase
             password: 'test_password'
         );
 
-        // First call: should switch (sets currentTenantDbName)
-        $mockTenantDbConfigProvider->expects($this->exactly(2))
+        $mockTenantDbConfigProvider->expects($this->once())
             ->method('getTenantConnectionConfig')
             ->with($testDbIndex)
             ->willReturn($mockDbConfig);
@@ -103,33 +97,28 @@ class DbSwitchEventListenerTest extends TestCase
         $mockTenantConnection->expects($this->once())
             ->method('switchConnection');
 
-        $mockDoctrine = $this->createMock(ManagerRegistry::class);
-        $mockDoctrine->method('getConnection')
+        $connectionRegistry->method('getConnection')
             ->with('tenant')
             ->willReturn($mockTenantConnection);
-
-        $mockContainer->method('get')
-            ->with('doctrine')
-            ->willReturn($mockDoctrine);
 
         // clear() should only be called once (first call)
         $mockTenantEntityManager->expects($this->once())
             ->method('clear');
 
         // First dispatch: should switch
-        $listener->onHakamMultiTenancyBundleEventSwitchDbEvent(new SwitchDbEvent($testDbIndex));
+        $listener->onSwitchDb(new SwitchDbEvent($testDbIndex));
 
         // Second dispatch to same tenant: should skip
-        $listener->onHakamMultiTenancyBundleEventSwitchDbEvent(new SwitchDbEvent($testDbIndex));
+        $listener->onSwitchDb(new SwitchDbEvent($testDbIndex));
     }
 
     public function testSwitchesWhenSameDbNameButDifferentHost(): void
     {
-        $mockContainer = $this->createMock(ContainerInterface::class);
+        $connectionRegistry = $this->createMock(ManagerRegistry::class);
         $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
         $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
 
-        $listener = new DbSwitchEventListener($mockContainer, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
+        $listener = new DbSwitchEventListener($connectionRegistry, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
 
         $configOnHost1 = TenantConnectionConfigDTO::fromArgs(
             identifier: '1',
@@ -162,24 +151,19 @@ class DbSwitchEventListenerTest extends TestCase
         $mockTenantConnection->expects($this->exactly(2))
             ->method('switchConnection');
 
-        $mockDoctrine = $this->createMock(ManagerRegistry::class);
-        $mockDoctrine->method('getConnection')
+        $connectionRegistry->method('getConnection')
             ->with('tenant')
             ->willReturn($mockTenantConnection);
-
-        $mockContainer->method('get')
-            ->with('doctrine')
-            ->willReturn($mockDoctrine);
 
         // clear() should be called twice
         $mockTenantEntityManager->expects($this->exactly(2))
             ->method('clear');
 
         // First dispatch: host-a
-        $listener->onHakamMultiTenancyBundleEventSwitchDbEvent(new SwitchDbEvent('1'));
+        $listener->onSwitchDb(new SwitchDbEvent('1'));
 
         // Second dispatch: same dbname but different host → should still switch
-        $listener->onHakamMultiTenancyBundleEventSwitchDbEvent(new SwitchDbEvent('2'));
+        $listener->onSwitchDb(new SwitchDbEvent('2'));
     }
 }
 
