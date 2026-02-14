@@ -20,13 +20,112 @@ Ideal for **SaaS platforms**, **region-based services**, and **multi-vendor e-co
 * Independent schema and migrations
 * Configurable connection parameters (host, driver, credentials)
 
-It integrates seamlessly with Doctrine and Symfony’s service container, offering:
+It integrates seamlessly with Doctrine and Symfony's service container, offering:
 
 * Automatic tenant database switching at runtime via `SwitchDbEvent`
+* **Automatic tenant resolution** from HTTP requests (subdomain, path, header, or custom)
 * Separate migration and fixture paths for main vs. tenant databases
 * Dedicated `TenantEntityManager` service for runtime isolation
 
 For full usage examples and advanced configuration, see the [documentation](https://ramyhakam.github.io/multi_tenancy_bundle/).
+
+---
+
+## 🔄 Automatic Tenant Resolution (v3.0.0+)
+
+Automatically resolve the current tenant from incoming HTTP requests — no manual event dispatching required.
+
+### Supported Strategies
+
+| Strategy | Example | Description |
+|----------|---------|-------------|
+| `subdomain` | `tenant1.example.com` | Extracts tenant from subdomain |
+| `path` | `/tenant1/dashboard` | Extracts tenant from URL path segment |
+| `header` | `X-Tenant-ID: tenant1` | Extracts tenant from HTTP header |
+| `host` | `client.com → tenant1` | Maps full hostname to tenant |
+| `chain` | Multiple strategies | Tries resolvers in order with fallback |
+
+### Quick Configuration
+
+```yaml
+# config/packages/hakam_multi_tenancy.yaml
+hakam_multi_tenancy:
+    resolver:
+        enabled: true
+        strategy: subdomain  # subdomain | path | header | host | chain
+        options:
+            base_domain: 'example.com'  # for subdomain strategy
+```
+
+### Strategy Examples
+
+**Subdomain-based** (e.g., `acme.myapp.com`):
+```yaml
+resolver:
+    enabled: true
+    strategy: subdomain
+    options:
+        base_domain: 'myapp.com'
+```
+
+**Header-based** (for APIs):
+```yaml
+resolver:
+    enabled: true
+    strategy: header
+    options:
+        header_name: 'X-Tenant-ID'
+```
+
+**Path-based** (e.g., `/acme/dashboard`):
+```yaml
+resolver:
+    enabled: true
+    strategy: path
+    excluded_paths: ['/api/public', '/health']
+```
+
+**Chain strategy** (fallback support):
+```yaml
+resolver:
+    enabled: true
+    strategy: chain
+    options:
+        chain_order: [header, subdomain, path]
+```
+
+### Accessing Resolved Tenant
+
+The resolved tenant ID is available in request attributes:
+
+```php
+// In a controller
+$tenantId = $request->attributes->get('_tenant');
+```
+
+### Custom Resolver
+
+Implement `TenantResolverInterface` for custom logic:
+
+```php
+use Hakam\MultiTenancyBundle\Port\TenantResolverInterface;
+
+class CustomResolver implements TenantResolverInterface
+{
+    public function resolve(Request $request): ?string
+    {
+        // Your custom logic
+        return $request->cookies->get('tenant_id');
+    }
+
+    public function supports(Request $request): bool
+    {
+        return $request->cookies->has('tenant_id');
+    }
+}
+```
+
+> **Note:** Automatic resolution is disabled by default for backward compatibility. Manual `SwitchDbEvent` dispatching continues to work.
 
 ---
 

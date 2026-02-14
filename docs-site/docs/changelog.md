@@ -2,11 +2,23 @@
 title: Changelog
 ---
 
-## [Unreleased]
+## [3.0.0] – 12 Feb 2026
+
+### Added
+
+- **Automatic Tenant Resolution**: New pluggable system to automatically resolve tenants from HTTP requests
+  - `TenantResolverInterface` for custom resolution logic
+  - Built-in resolvers: `SubdomainResolver`, `HeaderResolver`, `PathResolver`, `HostResolver`, `ChainResolver`
+  - `TenantResolutionListener` automatically switches database context on `kernel.request`
+  - Configurable via `hakam_multi_tenancy.resolver` with strategies: `subdomain`, `header`, `path`, `host`, `chain`
+  - Excluded paths support for public routes
+  - Resolved tenant available via `$request->attributes->get('_tenant')`
+- New configuration options for resolver customization (see documentation)
 
 ### Changed
 
-- Preparation for upcoming v3.0.0 with major architectural improvements
+- Major architectural improvements for v3.0.0
+- Resolver feature is disabled by default for backward compatibility
 
 ## [2.9.0] – 20 Sep 2025
 

@@ -15,6 +15,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class DbSwitchEventListener implements EventSubscriberInterface
 {
+    private ?array $currentTenantParams = null;
     private ?string $currentTenantDbName = null;
     private ?string $currentTenantIdentifier = null;
 
@@ -40,12 +41,6 @@ class DbSwitchEventListener implements EventSubscriberInterface
     {
         $tenantDbConfigDTO = $this->tenantConfigProvider->getTenantConnectionConfig($switchDbEvent->getDbIndex());
 
-        // Skip if already connected to the same tenant database
-        if ($this->currentTenantDbName !== null && $this->currentTenantDbName === $tenantDbConfigDTO->dbname) {
-            return;
-        }
-
-        // Store previous tenant info for the event
         $previousTenantIdentifier = $this->currentTenantIdentifier;
         $previousDatabaseName = $this->currentTenantDbName;
 
@@ -59,20 +54,25 @@ class DbSwitchEventListener implements EventSubscriberInterface
             'port' => $tenantDbConfigDTO->port ?? $this->parseDatabaseUrl($this->databaseURL)['port'],
         ];
 
-        //clear the current entity manager to avoid Doctrine cache issues
+        // Skip if already connected with the same parameters
+        if ($this->currentTenantParams !== null && $this->currentTenantParams === $params) {
+            return;
+        }
+
         $this->tenantEntityManager->clear();
 
         $tenantConnection->switchConnection($params);
         $this->currentTenantDbName = $tenantDbConfigDTO->dbname;
         $this->currentTenantIdentifier = $switchDbEvent->getDbIndex();
+        $this->currentTenantParams = $params;
 
-        // Dispatch TenantSwitchedEvent after successful connection switch
         if ($this->eventDispatcher !== null) {
             $this->eventDispatcher->dispatch(new TenantSwitchedEvent(
                 $switchDbEvent->getDbIndex(),
                 $tenantDbConfigDTO,
                 $previousTenantIdentifier,
                 $previousDatabaseName
+
             ));
         }
     }

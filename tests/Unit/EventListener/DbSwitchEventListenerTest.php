@@ -122,6 +122,65 @@ class DbSwitchEventListenerTest extends TestCase
         // Second dispatch to same tenant: should skip
         $listener->onHakamMultiTenancyBundleEventSwitchDbEvent(new SwitchDbEvent($testDbIndex));
     }
+
+    public function testSwitchesWhenSameDbNameButDifferentHost(): void
+    {
+        $mockContainer = $this->createMock(ContainerInterface::class);
+        $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
+        $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
+
+        $listener = new DbSwitchEventListener($mockContainer, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
+
+        $configOnHost1 = TenantConnectionConfigDTO::fromArgs(
+            identifier: '1',
+            driver: DriverTypeEnum::MYSQL,
+            dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
+            host: 'host-a',
+            port: '3306',
+            dbname: 'same_db',
+            user: 'test_user',
+            password: 'test_pass'
+        );
+
+        $configOnHost2 = TenantConnectionConfigDTO::fromArgs(
+            identifier: '2',
+            driver: DriverTypeEnum::MYSQL,
+            dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
+            host: 'host-b',
+            port: '3306',
+            dbname: 'same_db',
+            user: 'test_user',
+            password: 'test_pass'
+        );
+
+        $mockTenantDbConfigProvider->expects($this->exactly(2))
+            ->method('getTenantConnectionConfig')
+            ->willReturnOnConsecutiveCalls($configOnHost1, $configOnHost2);
+
+        $mockTenantConnection = $this->createMock(TenantConnection::class);
+        // switchConnection should be called twice since host differs
+        $mockTenantConnection->expects($this->exactly(2))
+            ->method('switchConnection');
+
+        $mockDoctrine = $this->createMock(ManagerRegistry::class);
+        $mockDoctrine->method('getConnection')
+            ->with('tenant')
+            ->willReturn($mockTenantConnection);
+
+        $mockContainer->method('get')
+            ->with('doctrine')
+            ->willReturn($mockDoctrine);
+
+        // clear() should be called twice
+        $mockTenantEntityManager->expects($this->exactly(2))
+            ->method('clear');
+
+        // First dispatch: host-a
+        $listener->onHakamMultiTenancyBundleEventSwitchDbEvent(new SwitchDbEvent('1'));
+
+        // Second dispatch: same dbname but different host → should still switch
+        $listener->onHakamMultiTenancyBundleEventSwitchDbEvent(new SwitchDbEvent('2'));
+    }
 }
 
 class DbConfig implements TenantDbConfigurationInterface
