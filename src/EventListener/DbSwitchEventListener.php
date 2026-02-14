@@ -13,7 +13,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class DbSwitchEventListener implements EventSubscriberInterface
 {
-    private ?string $currentTenantDbName = null;
+    private ?array $currentTenantParams = null;
 
     public function __construct(
         private readonly ContainerInterface            $container,
@@ -36,11 +36,6 @@ class DbSwitchEventListener implements EventSubscriberInterface
     {
         $tenantDbConfigDTO = $this->tenantConfigProvider->getTenantConnectionConfig($switchDbEvent->getDbIndex());
 
-        // Skip if already connected to the same tenant database
-        if ($this->currentTenantDbName !== null && $this->currentTenantDbName === $tenantDbConfigDTO->dbname) {
-            return;
-        }
-
         $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
 
         $params = [
@@ -51,11 +46,16 @@ class DbSwitchEventListener implements EventSubscriberInterface
             'port' => $tenantDbConfigDTO->port ?? $this->parseDatabaseUrl($this->databaseURL)['port'],
         ];
 
+        // Skip if already connected with the same parameters
+        if ($this->currentTenantParams !== null && $this->currentTenantParams === $params) {
+            return;
+        }
+
         //clear the current entity manager to avoid Doctrine cache issues
         $this->tenantEntityManager->clear();
 
         $tenantConnection->switchConnection($params);
-        $this->currentTenantDbName = $tenantDbConfigDTO->dbname;
+        $this->currentTenantParams = $params;
     }
 
     private function parseDatabaseUrl(string $databaseURL): array
