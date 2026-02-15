@@ -2,90 +2,107 @@
 
 namespace Hakam\MultiTenancyBundle\EventListener;
 
+use Doctrine\Persistence\ManagerRegistry;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Hakam\MultiTenancyBundle\Event\TenantSwitchedEvent;
 use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Contracts\Service\ResetInterface;
 
-/**
- * @author Ramy Hakam <pencilsoft1@gmail.com>
- */
-class DbSwitchEventListener implements EventSubscriberInterface
+final class DbSwitchEventListener implements EventSubscriberInterface, ResetInterface
 {
-    private ?array $currentTenantParams = null;
-    private ?string $currentTenantDbName = null;
     private ?string $currentTenantIdentifier = null;
+    private ?string $currentTenantDbName = null;
 
     public function __construct(
-        private readonly ContainerInterface            $container,
+        private readonly ManagerRegistry $doctrine,
         private readonly TenantConfigProviderInterface $tenantConfigProvider,
-        private readonly TenantEntityManager           $tenantEntityManager,
-        private readonly string                        $databaseURL,
-        private readonly ?EventDispatcherInterface     $eventDispatcher = null,
-    )
-    {
+        private readonly TenantEntityManager $tenantEntityManager,
+        private readonly string $databaseURL,
+        private readonly ?EventDispatcherInterface $eventDispatcher = null,
+    ) {
     }
 
     public static function getSubscribedEvents(): array
     {
-        return
-            [
-                SwitchDbEvent::class => 'onHakamMultiTenancyBundleEventSwitchDbEvent',
-            ];
+        return [
+            SwitchDbEvent::class => 'onSwitchDb',
+        ];
     }
 
-    public function onHakamMultiTenancyBundleEventSwitchDbEvent(SwitchDbEvent $switchDbEvent): void
+    public function onSwitchDb(SwitchDbEvent $event): void
     {
-        $tenantDbConfigDTO = $this->tenantConfigProvider->getTenantConnectionConfig($switchDbEvent->getDbIndex());
+        $tenantIdentifier = $event->getDbIndex();
+
+        if ($this->currentTenantIdentifier === $tenantIdentifier) {
+            return;
+        }
+
+        $tenantConfig = $this->tenantConfigProvider
+            ->getTenantConnectionConfig($tenantIdentifier);
 
         $previousTenantIdentifier = $this->currentTenantIdentifier;
         $previousDatabaseName = $this->currentTenantDbName;
 
-        $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
+        $params = $this->buildConnectionParams($tenantConfig);
 
-        $params = [
-            'dbname' => $tenantDbConfigDTO->dbname,
-            'user' => $tenantDbConfigDTO->user ?? $this->parseDatabaseUrl($this->databaseURL)['user'],
-            'password' => $tenantDbConfigDTO->password ?? $this->parseDatabaseUrl($this->databaseURL)['password'],
-            'host' => $tenantDbConfigDTO->host ?? $this->parseDatabaseUrl($this->databaseURL)['host'],
-            'port' => $tenantDbConfigDTO->port ?? $this->parseDatabaseUrl($this->databaseURL)['port'],
-        ];
+        $connection = $this->doctrine->getConnection('tenant');
 
-        // Skip if already connected with the same parameters
-        if ($this->currentTenantParams !== null && $this->currentTenantParams === $params) {
-            return;
-        }
-
+        // Clear EM before switching
         $this->tenantEntityManager->clear();
 
-        $tenantConnection->switchConnection($params);
-        $this->currentTenantDbName = $tenantDbConfigDTO->dbname;
-        $this->currentTenantIdentifier = $switchDbEvent->getDbIndex();
-        $this->currentTenantParams = $params;
+        $connection->switchConnection($params);
+
+        $this->currentTenantIdentifier = $tenantIdentifier;
+        $this->currentTenantDbName = $tenantConfig->dbname;
 
         if ($this->eventDispatcher !== null) {
-            $this->eventDispatcher->dispatch(new TenantSwitchedEvent(
-                $switchDbEvent->getDbIndex(),
-                $tenantDbConfigDTO,
-                $previousTenantIdentifier,
-                $previousDatabaseName
-
-            ));
+            $this->eventDispatcher->dispatch(
+                new TenantSwitchedEvent(
+                    $tenantIdentifier,
+                    $tenantConfig,
+                    $previousTenantIdentifier,
+                    $previousDatabaseName
+                )
+            );
         }
+    }
+
+    private function buildConnectionParams(object $tenantConfig): array
+    {
+        $defaults = $this->parseDatabaseUrl($this->databaseURL);
+
+        $params = [
+            'dbname'   => (string) $tenantConfig->dbname,
+            'user'     => (string) ($tenantConfig->user ?? $defaults['user']),
+            'password' => (string) ($tenantConfig->password ?? $defaults['password']),
+            'host'     => (string) ($tenantConfig->host ?? $defaults['host']),
+            'port'     => (string) ($tenantConfig->port ?? $defaults['port']),
+        ];
+
+        ksort($params);
+
+        return $params;
     }
 
     private function parseDatabaseUrl(string $databaseURL): array
     {
         $url = parse_url($databaseURL);
+
         return [
-            'dbname' => substr($url['path'], 1),
-            'user' => $url['user'],
-            'password' => $url['pass'],
-            'host' => $url['host'],
-            'port' => $url['port'],
+            'dbname'   => isset($url['path']) ? ltrim($url['path'], '/') : null,
+            'user'     => $url['user'] ?? null,
+            'password' => $url['pass'] ?? null,
+            'host'     => $url['host'] ?? null,
+            'port'     => $url['port'] ?? null,
         ];
+    }
+
+    public function reset(): void
+    {
+        $this->currentTenantIdentifier = null;
+        $this->currentTenantDbName = null;
     }
 }

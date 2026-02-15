@@ -55,6 +55,8 @@ class IntegrationTestKernel extends Kernel
                 'orm' => [
                     'default_entity_manager' => 'default',
                     'auto_generate_proxy_classes' => true,
+                    'enable_lazy_ghost_objects' => true,
+                    'enable_native_lazy_objects' => true,
                     'entity_managers' => [
                         'default' => [
                             'connection' => 'default',
