@@ -4,10 +4,14 @@ namespace Hakam\MultiTenancyBundle\Tests\Integration;
 
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
-use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
+use Hakam\MultiTenancyBundle\Test\TenantTestTrait;
 
 class TenantConnectionSwitchingTest extends IntegrationTestCase
 {
+    use TenantTestTrait {
+        getTenantEntityManager as traitGetTenantEntityManager;
+    }
+
     public function testSwitchingToTenantDatabaseViaEvent(): void
     {
         $tenant = $this->insertTenantConfig(
@@ -16,10 +20,8 @@ class TenantConnectionSwitchingTest extends IntegrationTestCase
             driver: DriverTypeEnum::SQLITE,
         );
 
-        $dispatcher = $this->getContainer()->get('event_dispatcher');
-
         // Should not throw - the switch event is handled by the listener
-        $dispatcher->dispatch(new SwitchDbEvent((string) $tenant->getId()));
+        $this->switchToTenant((string) $tenant->getId());
 
         // Verify the tenant connection is still valid after switching
         $tenantConnection = $this->getContainer()->get('doctrine')->getConnection('tenant');
@@ -37,11 +39,9 @@ class TenantConnectionSwitchingTest extends IntegrationTestCase
             status: DatabaseStatusEnum::DATABASE_MIGRATED,
         );
 
-        $dispatcher = $this->getContainer()->get('event_dispatcher');
-
         // Switch to tenant 1 then tenant 2 without errors
-        $dispatcher->dispatch(new SwitchDbEvent((string) $tenant1->getId()));
-        $dispatcher->dispatch(new SwitchDbEvent((string) $tenant2->getId()));
+        $this->switchToTenant((string) $tenant1->getId());
+        $this->switchToTenant((string) $tenant2->getId());
 
         $this->assertTrue(true, 'Switching between tenants completed without error');
     }
@@ -53,14 +53,12 @@ class TenantConnectionSwitchingTest extends IntegrationTestCase
             status: DatabaseStatusEnum::DATABASE_MIGRATED,
         );
 
-        $dispatcher = $this->getContainer()->get('event_dispatcher');
-
         // First switch
-        $dispatcher->dispatch(new SwitchDbEvent((string) $tenant->getId()));
+        $this->switchToTenant((string) $tenant->getId());
 
         // Second switch to same tenant should not throw or cause issues
         // (the listener tracks the current db and skips redundant switches)
-        $dispatcher->dispatch(new SwitchDbEvent((string) $tenant->getId()));
+        $this->switchToTenant((string) $tenant->getId());
 
         $this->assertTrue(true, 'Double switch to same tenant completed without error');
     }
@@ -85,8 +83,7 @@ class TenantConnectionSwitchingTest extends IntegrationTestCase
             status: DatabaseStatusEnum::DATABASE_MIGRATED,
         );
 
-        $dispatcher = $this->getContainer()->get('event_dispatcher');
-        $dispatcher->dispatch(new SwitchDbEvent((string) $tenant->getId()));
+        $this->switchToTenant((string) $tenant->getId());
 
         // After switch, entity manager should be cleared
         $this->assertFalse($tenantEM->contains($product));
@@ -96,8 +93,7 @@ class TenantConnectionSwitchingTest extends IntegrationTestCase
     {
         $this->expectException(\RuntimeException::class);
 
-        $dispatcher = $this->getContainer()->get('event_dispatcher');
-        $dispatcher->dispatch(new SwitchDbEvent('999999'));
+        $this->switchToTenant('999999');
     }
 
     public function testSwitchEventTriggersListener(): void
@@ -112,11 +108,9 @@ class TenantConnectionSwitchingTest extends IntegrationTestCase
             password: 'my_pass',
         );
 
-        $dispatcher = $this->getContainer()->get('event_dispatcher');
-
         // Dispatching the event should work without errors
         // The listener resolves the config, clears the EM, and switches the connection
-        $dispatcher->dispatch(new SwitchDbEvent((string) $tenant->getId()));
+        $this->switchToTenant((string) $tenant->getId());
 
         // Verify the tenant entity manager was cleared (can't contain previous entities)
         $tenantEM = $this->getTenantEntityManager();
