@@ -6,10 +6,14 @@ use Hakam\MultiTenancyBundle\Adapter\Doctrine\DoctrineTenantDatabaseManager;
 use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
-use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
+use Hakam\MultiTenancyBundle\Test\TenantTestTrait;
 
 class TenantConnectionConfigDTOFlowTest extends IntegrationTestCase
 {
+    use TenantTestTrait {
+        getTenantEntityManager as traitGetTenantEntityManager;
+    }
+
     public function testDTOFromEntityPreservesAllFields(): void
     {
         $tenant = $this->insertTenantConfig(
@@ -114,15 +118,14 @@ class TenantConnectionConfigDTOFlowTest extends IntegrationTestCase
 
         // Full end-to-end: config provider -> event listener -> connection switch
         // Verifies the entire DTO flow works without errors
-        $dispatcher = $this->getContainer()->get('event_dispatcher');
-        $dispatcher->dispatch(new SwitchDbEvent((string) $tenant->getId()));
+        $this->switchToTenant((string) $tenant->getId());
 
         // After switch, EM identity map should be cleared
         $tenantEM = $this->getTenantEntityManager();
         $this->assertNotNull($tenantEM);
 
-        // Second dispatch to same tenant should be a no-op (tracked by listener)
-        $dispatcher->dispatch(new SwitchDbEvent((string) $tenant->getId()));
+        // Second switch to same tenant should be a no-op (tracked by listener)
+        $this->switchToTenant((string) $tenant->getId());
         $this->assertTrue(true, 'Full DTO -> switch flow completed without error');
     }
 }
