@@ -1,5 +1,6 @@
 ---
 title: Overview
+slug: /
 ---
 
 The **Symfony Multi-Tenancy Bundle** is a battle-tested toolkit for building large-scale, production-ready multi-tenant applications on Symfony. Whether you’re running a global SaaS, a country-specific service, or a multi-vendor marketplace, this bundle gives you all the wiring you need to keep each tenant’s data completely isolated, highly performant, and easy to manage.
@@ -24,8 +25,11 @@ The **Symfony Multi-Tenancy Bundle** is a battle-tested toolkit for building lar
 - **Fixture Loading per Tenant**  
   Annotate fixtures with `#[TenantFixture]` and load test or demo data on a per-tenant basis, complete with dependency ordering and groups.
 
-- **Custom Host & Credential Resolution**  
+- **Custom Host & Credential Resolution**
   Point different tenants to different database hosts, servers, or credentials based on data in your `TenantDbConfig`—perfect for sharding, geo-distribution, or cloud-managed clusters.
+
+- **Tenant-Aware Cache Isolation** *(New in v3.0)*
+  Automatically prefix cache keys with the active tenant's identifier, preventing cross-tenant data leakage through shared cache backends like Redis or Memcached.
 ## ✅ New in v3.0
 
 ### Automatic Tenant Resolution
@@ -48,7 +52,21 @@ Supported strategies:
 - **host**: Map custom domains to tenants
 - **chain**: Combine strategies with fallback support
 
-[Learn more about Automatic Tenant Resolution →](/docs/resolver/automatic-resolution)
+[Learn more about Automatic Tenant Resolution →](/resolver/automatic-resolution)
+
+### Tenant-Aware Cache Isolation
+
+Prevent cross-tenant data leakage through shared cache backends:
+
+```yaml
+hakam_multi_tenancy:
+    cache:
+        enabled: true
+```
+
+When enabled, all `cache.app` operations are automatically scoped to the active tenant. No code changes required — the bundle transparently prefixes cache keys with the tenant identifier.
+
+[Learn more about Cache Isolation →](/cache/cache-isolation)
 
 ### Custom Provider & Manager Override
 
@@ -78,6 +96,7 @@ class MyCustomProvider implements TenantConfigProviderInterface
 | Runtime DB Switching            | One-line event-driven switch—no manual connection hoops                                 |
 | Modular Migrations & Fixtures   | Version and seed each tenant independently, or run bulk operations across all tenants  |
 | Flexible Configuration          | Per-tenant overrides for host, driver, server version, credentials                     |
+| Cache Isolation                 | Automatic tenant-scoped cache keys prevent cross-tenant data leakage                   |
 | Horizontal Scalability          | Distribute tenant databases across multiple servers or regions                          |
 | Compliance & GDPR-Ready         | Keep data in the right legal boundary by isolating at the database level                |
 

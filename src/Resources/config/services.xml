@@ -95,5 +95,14 @@
         <service id="hakam.tenant_purger_factory" class="Hakam\MultiTenancyBundle\Purger\TenantORMPurgerFactory">
             <tag name="doctrine.fixtures.purger_factory" alias="tenant_default"/>
         </service>
+
+        <service id="Hakam\MultiTenancyBundle\Context\TenantContext" public="true">
+            <tag name="kernel.event_listener"
+                 event="Hakam\MultiTenancyBundle\Event\TenantSwitchedEvent"
+                 method="onTenantSwitched"/>
+            <tag name="kernel.reset" method="reset"/>
+        </service>
+        <service id="Hakam\MultiTenancyBundle\Context\TenantContextInterface"
+                 alias="Hakam\MultiTenancyBundle\Context\TenantContext" public="true"/>
     </services>
 </container>

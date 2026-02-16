@@ -229,6 +229,10 @@ Dispatched when the active tenant database connection is switched.
 * Clear tenant-specific caches
 * Log tenant access for auditing/security
 
+:::tip Built-in Listener
+The bundle's `TenantContext` service already listens to this event and tracks the current tenant identity. When [Cache Isolation](/cache/cache-isolation) is enabled, cache keys are automatically scoped based on this context.
+:::
+
 ```php
 use Hakam\MultiTenancyBundle\Event\TenantSwitchedEvent;
 

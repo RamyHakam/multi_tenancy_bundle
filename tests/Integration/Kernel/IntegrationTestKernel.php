@@ -15,11 +15,14 @@ use Symfony\Component\HttpKernel\Kernel;
 class IntegrationTestKernel extends Kernel
 {
     private array $multiTenancyConfig;
+    /** @var callable|null */
+    private $serviceRegistrar;
 
-    public function __construct(array $multiTenancyConfig = [])
+    public function __construct(array $multiTenancyConfig = [], ?callable $serviceRegistrar = null)
     {
         parent::__construct('test', true);
         $this->multiTenancyConfig = $multiTenancyConfig;
+        $this->serviceRegistrar = $serviceRegistrar;
     }
 
     public function registerBundles(): array
@@ -107,6 +110,10 @@ class IntegrationTestKernel extends Kernel
                     ],
                 ],
             ], $this->multiTenancyConfig));
+
+            if ($this->serviceRegistrar !== null) {
+                ($this->serviceRegistrar)($container);
+            }
         });
     }
 
