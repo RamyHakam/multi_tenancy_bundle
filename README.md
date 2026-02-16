@@ -5,6 +5,8 @@
 ![Action Status](https://github.com/RamyHakam/multi_tenancy_bundle/workflows/action_status/badge.svg?style=flat-square)
 [![Total Downloads](https://img.shields.io/packagist/dt/hakam/multi-tenancy-bundle?style=flat-square)](https://packagist.org/packages/hakam/multi-tenancy-bundle)
 [![Symfony Flex](https://img.shields.io/badge/Symfony%20Flex-Recipe%20Available-brightgreen.svg?style=flat-square)](https://github.com/symfony/recipes-contrib)
+[![codecov](https://codecov.io/gh/RamyHakam/multi_tenancy_bundle/branch/master/graph/badge.svg)](https://codecov.io/gh/RamyHakam/multi_tenancy_bundle)
+
 
 > 📚 **Full Documentation**: [Documentation](https://ramyhakam.github.io/multi_tenancy_bundle/intro/overview)
 
