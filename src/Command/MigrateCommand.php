@@ -147,7 +147,7 @@ final class MigrateCommand extends TenantCommand
     /**
      * @throws ExceptionInterface
      */
-    private function runMigrateCommand(InputInterface $input, OutputInterface $output): void
+    protected function runMigrateCommand(InputInterface $input, OutputInterface $output): void
     {
         $newInput = new ArrayInput([
             'version' => $input->getArgument('version'),
