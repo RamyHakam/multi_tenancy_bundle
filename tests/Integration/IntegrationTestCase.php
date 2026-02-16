@@ -23,9 +23,14 @@ abstract class IntegrationTestCase extends TestCase
         return [];
     }
 
+    protected function getServiceRegistrar(): ?callable
+    {
+        return null;
+    }
+
     protected function bootKernel(): void
     {
-        static::$kernel = new IntegrationTestKernel($this->getKernelConfig());
+        static::$kernel = new IntegrationTestKernel($this->getKernelConfig(), $this->getServiceRegistrar());
         static::$kernel->boot();
         // Use test.service_container for access to private services
         static::$container = static::$kernel->getContainer()->has('test.service_container')

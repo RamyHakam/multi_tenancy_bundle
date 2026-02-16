@@ -2,6 +2,8 @@
 
 namespace Hakam\MultiTenancyBundle\DependencyInjection;
 
+use Hakam\MultiTenancyBundle\Cache\TenantAwareCacheDecorator;
+use Hakam\MultiTenancyBundle\Context\TenantContextInterface;
 use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
 use Hakam\MultiTenancyBundle\EventListener\TenantResolutionListener;
 use Hakam\MultiTenancyBundle\Port\TenantResolverInterface;
@@ -11,6 +13,7 @@ use Hakam\MultiTenancyBundle\Resolver\HostResolver;
 use Hakam\MultiTenancyBundle\Resolver\PathResolver;
 use Hakam\MultiTenancyBundle\Resolver\SubdomainResolver;
 use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
+use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -42,7 +45,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         $container->setParameter('hakam.tenant_db_list_entity', $configs['tenant_database_className']);
         $container->setParameter('hakam.tenant_db_identifier', $configs['tenant_database_identifier']);
 
-        if ($configs['tenant_config_provider'] == 'hakam_tenant_config_provider.doctrine') {
+        if ($configs['tenant_config_provider'] === 'hakam_tenant_config_provider.doctrine') {
             // check if the tenant database className and identifier are set
             if (empty($configs['tenant_database_className']) || empty($configs['tenant_database_identifier'])) {
                 throw new InvalidConfigurationException('You need to set tenant_database_className and tenant_database_identifier in your configuration');
@@ -50,10 +53,16 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
             $tenantProviderDefinition = $container->getDefinition('hakam_tenant_config_provider.doctrine');
             $tenantProviderDefinition->setArgument(1, $configs['tenant_database_className']);
             $tenantProviderDefinition->setArgument(2, $configs['tenant_database_identifier']);
+        } else {
+            $container->setAlias(TenantConfigProviderInterface::class, $configs['tenant_config_provider'])
+                ->setPublic(false);
         }
 
         // Configure tenant resolver if enabled
         $this->configureResolver($configs, $container);
+
+        // Configure tenant-aware cache if enabled
+        $this->configureCache($configs, $container);
     }
 
     private function configureResolver(array $configs, ContainerBuilder $container): void
@@ -166,11 +175,35 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         };
     }
 
+    private function configureCache(array $configs, ContainerBuilder $container): void
+    {
+        $cacheConfig = $configs['cache'] ?? [];
+
+        if (!($cacheConfig['enabled'] ?? false)) {
+            return;
+        }
+
+        $separator = $cacheConfig['prefix_separator'] ?? '__';
+
+        $definition = new Definition(TenantAwareCacheDecorator::class);
+        $definition->setDecoratedService('cache.app');
+        $definition->setArguments([
+            new Reference(TenantAwareCacheDecorator::class . '.inner'),
+            new Reference(TenantContextInterface::class),
+            $separator,
+        ]);
+        $container->setDefinition(TenantAwareCacheDecorator::class, $definition);
+    }
+
     public function prepend(ContainerBuilder $container): void
     {
         $configs = $container->getExtensionConfig($this->getAlias());
         $dbSwitcherConfig = $this->processConfiguration(new Configuration(), $configs);
-        if (6 === count($dbSwitcherConfig)) {
+        $requiredKeys = ['tenant_database_className', 'tenant_database_identifier',
+            'tenant_config_provider', 'tenant_connection',
+            'tenant_migration', 'tenant_entity_manager'];
+        $hasAllRequired = count(array_intersect_key($dbSwitcherConfig, array_flip($requiredKeys))) === 6;
+        if ($hasAllRequired) {
             $bundles = $container->getParameter('kernel.bundles');
 
             $this->checkDir($container->getParameter('kernel.project_dir'), $dbSwitcherConfig['tenant_entity_manager']['mapping']['dir']);

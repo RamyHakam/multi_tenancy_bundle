@@ -5,7 +5,7 @@ sidebar\_label: Customization
 description: Learn how to override the default Doctrine-based provider and manager with your own logic
 ---
 
-# 🔧 Customizing Tenant Configuration & Management
+# Customizing Tenant Configuration & Management
 
 Starting with version `3.0.0`, the Multi-Tenancy Bundle supports **plug-and-play customization** for the core tenant configuration and database management logic.
 
@@ -18,7 +18,7 @@ But this is **fully overrideable** with your own custom implementations.
 
 ---
 
-## 🥉 Why Override?
+## Why Override?
 
 Overriding is useful when:
 
@@ -37,28 +37,43 @@ Overriding is useful when:
 * You want to decouple tenant database management from Doctrine (e.g., serverless environments or multi-region DBs).
 * You want to support **dynamic tenant creation workflows** (e.g., provisioning on signup).
 
-This allows maximum flexibility for integrating your own infrastructure and security model while still using the bundle’s powerful multi-tenancy engine.
+This allows maximum flexibility for integrating your own infrastructure and security model while still using the bundle's powerful multi-tenancy engine.
 
 ---
 
-## ✅ How It Works
+## How It Works
 
 The bundle uses the following **interfaces** internally:
 
 * `TenantConfigProviderInterface` — returns `TenantConnectionConfigDTO` for a given tenant.
 * `TenantDatabaseManagerInterface` — responsible for creating, listing, and updating tenant DBs.
 
-The default implementation uses Doctrine, but you can override it by implementing your own services and using:
+There are **two approaches** to override these services:
+
+### Approach 1: `#[AsAlias]` Attribute (Recommended)
+
+This is the idiomatic Symfony way. Simply implement the interface and annotate your class with `#[AsAlias]`. Symfony's autoconfigure will automatically replace the default service.
+
+Works for **both** `TenantConfigProviderInterface` and `TenantDatabaseManagerInterface`.
 
 ```php
+use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
+
 #[AsAlias(TenantConfigProviderInterface::class)]
 class MyCustomConfigProvider implements TenantConfigProviderInterface
 {
-    // your implementation
+    public function getTenantConnectionConfig(mixed $identifier): TenantConnectionConfigDTO
+    {
+        // your custom logic
+    }
 }
 ```
 
 ```php
+use Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface;
+use Symfony\Component\DependencyInjection\Attribute\AsAlias;
+
 #[AsAlias(TenantDatabaseManagerInterface::class)]
 class MyCustomDatabaseManager implements TenantDatabaseManagerInterface
 {
@@ -66,15 +81,30 @@ class MyCustomDatabaseManager implements TenantDatabaseManagerInterface
 }
 ```
 
-> ✅ No need to use `services.yaml` — just use `#[AsAlias(...)]` and your class will be auto-wired as a replacement.
+> No need to touch `services.yaml` — just use `#[AsAlias(...)]` and your class will be auto-wired as a replacement.
+
+### Approach 2: Config-based Override (Provider Only)
+
+For the `TenantConfigProviderInterface`, you can also use the bundle configuration to point to a custom service ID:
+
+```yaml
+# config/packages/hakam_multi_tenancy.yaml
+hakam_multi_tenancy:
+    tenant_config_provider: App\Service\MyCustomConfigProvider
+    # ...
+```
+
+When set to a value other than the default `hakam_tenant_config_provider.doctrine`, the bundle will alias `TenantConfigProviderInterface` to your service. The Doctrine-specific `tenant_database_className` and `tenant_database_identifier` settings are skipped in this case.
+
+> **Note:** Your service must be registered in the container (either via `services.yaml` or autoconfigure).
 
 ---
 
-## 💡 Example: Config from ENV or Secrets Manager
+## Example: Config from ENV or Secrets Manager
 
 ```php
 use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
-use Hakam\MultiTenancyBundle\Config\TenantConfigProviderInterface;
+use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Symfony\Component\DependencyInjection\Attribute\AsAlias;
@@ -82,7 +112,7 @@ use Symfony\Component\DependencyInjection\Attribute\AsAlias;
 #[AsAlias(TenantConfigProviderInterface::class)]
 class EnvTenantConfigProvider implements TenantConfigProviderInterface
 {
-    public function getTenantConnectionConfig(?string $identifier): TenantConnectionConfigDTO
+    public function getTenantConnectionConfig(mixed $identifier): TenantConnectionConfigDTO
     {
         return TenantConnectionConfigDTO::fromArgs(
             identifier: (int) ($_ENV['TENANT_ID'] ?? 1),
@@ -100,7 +130,7 @@ class EnvTenantConfigProvider implements TenantConfigProviderInterface
 
 ---
 
-## 💡 Example: Dummy Manager (No Doctrine)
+## Example: Dummy Manager (No Doctrine)
 
 ```php
 use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
@@ -143,7 +173,22 @@ class DummyTenantDatabaseManager implements TenantDatabaseManagerInterface
         return true; // or call external API to provision the DB
     }
 
-    public function updateTenantDatabaseStatus(string $identifier, DatabaseStatusEnum $status): bool
+    public function getTenantDatabaseById(mixed $identifier): TenantConnectionConfigDTO
+    {
+        return $this->listDatabases()[0];
+    }
+
+    public function getTenantDbListByDatabaseStatus(DatabaseStatusEnum $status): array
+    {
+        return [];
+    }
+
+    public function addNewTenantDbConfig(TenantConnectionConfigDTO $dto): TenantConnectionConfigDTO
+    {
+        return $dto;
+    }
+
+    public function updateTenantDatabaseStatus(mixed $identifier, DatabaseStatusEnum $status): bool
     {
         return true;
     }
@@ -152,7 +197,7 @@ class DummyTenantDatabaseManager implements TenantDatabaseManagerInterface
 
 ---
 
-## 🥪 Use with Custom Security
+## Use with Custom Security
 
 By combining this with custom tenant resolvers or identity mapping, you can securely:
 
@@ -163,8 +208,13 @@ By combining this with custom tenant resolvers or identity mapping, you can secu
 
 ---
 
-## 🧵 Summary
+## Summary
 
-You can now fully override the tenant data source and management layer by swapping two services.
+You can fully override the tenant data source and management layer by swapping two services.
+
+| Interface | `#[AsAlias]` | Config-based |
+|---|---|---|
+| `TenantConfigProviderInterface` | Supported | `tenant_config_provider: your.service.id` |
+| `TenantDatabaseManagerInterface` | Supported | N/A |
 
 This keeps the bundle **flexible**, **lightweight**, and **agnostic** to your infrastructure — while still offering a powerful and scalable multi-tenant foundation.

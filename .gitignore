@@ -4,4 +4,7 @@
 *.log
 *.tmp
 /vendor/
+/docs/
 /var/
+/.phpunit.result.cache
+/composer.lock

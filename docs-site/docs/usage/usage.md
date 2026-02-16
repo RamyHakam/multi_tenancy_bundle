@@ -164,4 +164,58 @@ class TenantDbConfig implements TenantDbConfigurationInterface
 
 ---
 
-With these usage patterns and examples, you’ll harness the full power of the Symfony Multi-Tenancy Bundle to build robust, scalable, and secure multi-tenant applications.
+## Cache Isolation
+
+Prevent cross-tenant cache collisions when sharing a backend like Redis or Memcached.
+
+```yaml
+# config/packages/hakam_multi_tenancy.yaml
+hakam_multi_tenancy:
+    cache:
+        enabled: true
+```
+
+Once enabled, all `cache.app` operations are automatically scoped to the active tenant. No code changes needed:
+
+```php
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
+
+class ReportService
+{
+    public function __construct(
+        private CacheInterface $cache,
+        private TenantEntityManager $tenantEm
+    ) {}
+
+    public function getMonthlyStats(): array
+    {
+        // Key is automatically prefixed with the tenant ID
+        return $this->cache->get('monthly_stats', function (ItemInterface $item) {
+            $item->expiresAfter(3600);
+
+            return $this->tenantEm->getRepository(Order::class)
+                ->getMonthlyStats();
+        });
+    }
+}
+```
+
+**How It Works**
+
+* The bundle decorates `cache.app` with `TenantAwareCacheDecorator`
+* Keys are prefixed: `{tenantId}__key` (e.g., `acme__monthly_stats`)
+* When no tenant is active, keys pass through unprefixed
+* The `TenantContext` service tracks the current tenant and resets between requests
+
+**Key Points**
+
+* Enable with `cache.enabled: true` — disabled by default, fully backward-compatible.
+* Works with PSR-6 (`CacheItemPoolInterface`) and Symfony Contracts (`CacheInterface`).
+* Pairs naturally with [Automatic Tenant Resolution](/resolver/automatic-resolution).
+
+[Full Cache Isolation documentation →](/cache/cache-isolation)
+
+---
+
+With these usage patterns and examples, you'll harness the full power of the Symfony Multi-Tenancy Bundle to build robust, scalable, and secure multi-tenant applications.

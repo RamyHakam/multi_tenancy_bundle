@@ -2,6 +2,7 @@
 
 namespace Hakam\MultiTenancyBundle\Test;
 
+use Hakam\MultiTenancyBundle\Context\TenantContextInterface;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener;
@@ -58,6 +59,11 @@ trait TenantTestTrait
 
         try {
             $container->get(DbSwitchEventListener::class)->reset();
+        } catch (\Throwable) {
+        }
+
+        try {
+            $container->get(TenantContextInterface::class)->reset();
         } catch (\Throwable) {
         }
     }

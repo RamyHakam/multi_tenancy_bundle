@@ -180,6 +180,22 @@ In your controller or service:
     }
 ```
 
+## 7. Enable Cache Isolation (Optional)
+
+If your tenants share a cache backend (Redis, Memcached, filesystem), enable tenant-aware cache isolation to prevent cross-tenant data leakage:
+
+```yaml
+# config/packages/hakam_multi_tenancy.yaml
+hakam_multi_tenancy:
+    # ... existing configuration ...
+    cache:
+        enabled: true
+```
+
+This automatically prefixes all `cache.app` keys with the active tenant's identifier. No code changes required.
+
+[Learn more about Cache Isolation →](/cache/cache-isolation)
+
 ## Troubleshooting & Tips
 
 * **Connection Refused**: Verify your tenant host/port credentials in `TenantDbConfig`.
