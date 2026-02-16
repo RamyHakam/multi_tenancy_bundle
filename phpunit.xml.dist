@@ -7,6 +7,9 @@
         <include>
             <directory>./src</directory>
         </include>
+        <report>
+            <clover outputFile="coverage.xml"/>
+        </report>
     </coverage>
     <php>
         <ini name="error_reporting" value="-1"/>
