@@ -146,6 +146,7 @@ final class MigrateCommand extends TenantCommand
 
     /**
      * @throws ExceptionInterface
+     * @codeCoverageIgnore Thin delegation to Doctrine MigrateCommand; overridden in unit tests
      */
     protected function runMigrateCommand(InputInterface $input, OutputInterface $output): void
     {
