@@ -52,6 +52,15 @@ class MigrateCommandTest extends TestCase
     }
 
     /**
+     * Normalize console output by collapsing all whitespace (including newlines
+     * from SymfonyStyle line-wrapping) into single spaces.
+     */
+    private function normalizeOutput(string $output): string
+    {
+        return preg_replace('/\s+/', ' ', $output);
+    }
+
+    /**
      * Test that dbId argument is now respected and shows deprecation warning
      */
     public function testDbIdArgumentIsRespectedWithDeprecationWarning(): void
@@ -94,18 +103,18 @@ class MigrateCommandTest extends TestCase
 
         $result = $command->run($input, $output);
 
-        $outputContent = $output->fetch();
-        
+        $normalized = $this->normalizeOutput($output->fetch());
+
         // Verify the command succeeded
         $this->assertEquals(0, $result);
-        
+
         // Verify deprecation warning is shown
-        $this->assertStringContainsString('DEPRECATION: The "dbId" argument is deprecated', $outputContent);
-        $this->assertStringContainsString('will be removed in v4.0', $outputContent);
-        
+        $this->assertStringContainsString('DEPRECATION: The "dbId" argument is deprecated', $normalized);
+        $this->assertStringContainsString('will be removed in v4.0', $normalized);
+
         // Verify the specific database was targeted
-        $this->assertStringContainsString('Migrating specific database with identifier: TENANT_123', $outputContent);
-        $this->assertStringContainsString('Database with identifier "TENANT_123" migrated successfully', $outputContent);
+        $this->assertStringContainsString('Migrating specific database with identifier: TENANT_123', $normalized);
+        $this->assertStringContainsString('Database with identifier "TENANT_123" migrated successfully', $normalized);
     }
 
     /**
@@ -136,14 +145,14 @@ class MigrateCommandTest extends TestCase
 
         $result = $command->run($input, $output);
 
-        $outputContent = $output->fetch();
-        
+        $normalized = $this->normalizeOutput($output->fetch());
+
         // Verify the command failed
         $this->assertEquals(1, $result);
-        
+
         // Verify error message is shown
-        $this->assertStringContainsString('Database "TENANT_456" is not in CREATED status', $outputContent);
-        $this->assertStringContainsString('Current status: DATABASE_MIGRATED', $outputContent);
+        $this->assertStringContainsString('Database "TENANT_456" is not in CREATED status', $normalized);
+        $this->assertStringContainsString('Current status: DATABASE_MIGRATED', $normalized);
     }
 
     /**
@@ -174,14 +183,14 @@ class MigrateCommandTest extends TestCase
 
         $result = $command->run($input, $output);
 
-        $outputContent = $output->fetch();
-        
+        $normalized = $this->normalizeOutput($output->fetch());
+
         // Verify the command failed
         $this->assertEquals(1, $result);
-        
+
         // Verify error message is shown
-        $this->assertStringContainsString('Database "TENANT_789" is not in MIGRATED status', $outputContent);
-        $this->assertStringContainsString('Current status: DATABASE_CREATED', $outputContent);
+        $this->assertStringContainsString('Database "TENANT_789" is not in MIGRATED status', $normalized);
+        $this->assertStringContainsString('Current status: DATABASE_CREATED', $normalized);
     }
 
     /**
@@ -201,14 +210,14 @@ class MigrateCommandTest extends TestCase
 
         $result = $command->run($input, $output);
 
-        $outputContent = $output->fetch();
-        
+        $normalized = $this->normalizeOutput($output->fetch());
+
         // Verify the command failed
         $this->assertEquals(1, $result);
-        
+
         // Verify error message is shown
-        $this->assertStringContainsString('Tenant database with identifier "NON_EXISTENT" not found', $outputContent);
-        $this->assertStringContainsString('Tenant database not found', $outputContent);
+        $this->assertStringContainsString('Tenant database with identifier "NON_EXISTENT" not found', $normalized);
+        $this->assertStringContainsString('Tenant database not found', $normalized);
     }
 
     /**
