@@ -119,11 +119,16 @@ class IntegrationTestKernel extends Kernel
 
     public function getCacheDir(): string
     {
-        return sys_get_temp_dir() . '/hakam_integration_' . spl_object_id($this) . '/cache';
+        return sys_get_temp_dir() . '/hakam_integration_' . $this->getConfigHash() . '/cache';
     }
 
     public function getLogDir(): string
     {
-        return sys_get_temp_dir() . '/hakam_integration_' . spl_object_id($this) . '/log';
+        return sys_get_temp_dir() . '/hakam_integration_' . $this->getConfigHash() . '/log';
+    }
+
+    private function getConfigHash(): string
+    {
+        return spl_object_id($this) . '_' . substr(md5(serialize($this->multiTenancyConfig)), 0, 8);
     }
 }

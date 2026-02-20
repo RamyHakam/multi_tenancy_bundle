@@ -19,6 +19,12 @@
         <env name="SYMFONY_DEPRECATIONS_HELPER" value="max[self]=0"/>
         <env name="APP_DEBUG" value="1"/>
         <env name="DATABASE_URL" value="mysql://root:@localhost:3306/main_db"/>
+        <env name="TENANT_DB_DRIVER" value=""/>
+        <env name="TENANT_DB_HOST" value=""/>
+        <env name="TENANT_DB_PORT" value=""/>
+        <env name="TENANT_DB_USER" value=""/>
+        <env name="TENANT_DB_PASSWORD" value=""/>
+        <env name="TENANT_DB_SERVER_VERSION" value=""/>
     </php>
     <testsuites>
         <testsuite name="unit">
