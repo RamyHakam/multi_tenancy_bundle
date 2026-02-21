@@ -2,7 +2,7 @@
 title: Changelog
 ---
 
-## [3.0.0] – 12 Feb 2026
+## [3.0.0] – 21 Feb 2026
 
 ### Added
 
@@ -13,12 +13,24 @@ title: Changelog
   - Configurable via `hakam_multi_tenancy.resolver` with strategies: `subdomain`, `header`, `path`, `host`, `chain`
   - Excluded paths support for public routes
   - Resolved tenant available via `$request->attributes->get('_tenant')`
-- New configuration options for resolver customization (see documentation)
+- **`TenantContextInterface`**: Access the current tenant ID from any service without coupling to the request
+- **`#[TenantShared]` attribute**: Mark entities as shared across tenants, with optional `excludeTenants` and `group` parameters
+- **`TenantConfigProviderInterface`**: Pluggable tenant configuration source — use Doctrine (default), Redis, static arrays, or any custom backend
+- **`TenantAwareCacheDecorator`**: Automatic cache key isolation per tenant, wraps any PSR-6 cache pool
+- **`TenantTestTrait`**: PHPUnit helper with `runInTenant()` for cleaner test setup
+- **15 usage examples** in `examples/` directory covering every bundle feature
+- **Comprehensive documentation site** with examples page, architecture guide, and getting-started tutorial
 
 ### Changed
 
-- Major architectural improvements for v3.0.0
-- Resolver feature is disabled by default for backward compatibility
+- Resolver feature is disabled by default for backward compatibility — manual `SwitchDbEvent` dispatching continues to work
+- Upgraded test infrastructure: 345 tests (216 unit, 106 integration, 23 functional) with zero failures
+- Functional tests run against real MySQL and PostgreSQL databases
+
+### Removed
+
+- **`DbService`**: Removed legacy database service (158 lines). Superseded by `DoctrineTenantDatabaseManager` since v2.5. If you were using `DbService` directly, switch to `TenantDatabaseManagerInterface`
+- **`UpdateSchemaCommand`** (`tenant:schema:update`): Removed command that hardcoded `App\Entity\Main\Tenant`. Use `tenant:migrations:migrate` instead for schema management
 
 ## [2.9.0] – 20 Sep 2025
 
