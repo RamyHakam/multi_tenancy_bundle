@@ -158,6 +158,32 @@ Then register in `config/bundles.php`, copy the example `hakam_multi_tenancy.yam
 
 ---
 
+## 📖 Examples
+
+The [`examples/`](examples/) directory contains **15 ready-to-use code examples** covering every feature of the bundle:
+
+| # | Example | Feature |
+|---|---------|---------|
+| 01 | [Entity Setup](examples/01-entity-setup.php) | `TenantDbConfig` entity with `TenantDbConfigTrait` |
+| 02 | [Bundle Configuration](examples/02-bundle-configuration.php) | Full YAML config reference |
+| 03 | [Tenant Entities](examples/03-tenant-entities.php) | Tenant-scoped entities (Product, Order) |
+| 04 | [Database Lifecycle](examples/04-database-lifecycle.php) | Create DB, switch, CRUD, CLI commands |
+| 05 | [Tenant Migrations](examples/05-tenant-migrations.php) | Platform-agnostic migrations with Schema API |
+| 06 | [Resolvers](examples/06-resolvers.php) | All 5 resolution strategies + controller usage |
+| 07 | [Lifecycle Events](examples/07-events.php) | All 6 events with subscriber pattern |
+| 08 | [Custom Config Provider](examples/08-custom-config-provider.php) | Redis, static, and in-memory providers |
+| 09 | [Tenant Fixtures](examples/09-tenant-fixtures.php) | `#[TenantFixture]` attribute + CLI |
+| 10 | [Cache Isolation](examples/10-tenant-aware-cache.php) | `TenantAwareCacheDecorator` usage |
+| 11 | [Tenant Context](examples/11-tenant-context.php) | `TenantContextInterface` in services, Twig, listeners |
+| 12 | [Testing](examples/12-testing.php) | `TenantTestTrait` with `runInTenant()` |
+| 13 | [Shared Entities](examples/13-shared-entities.php) | `#[TenantShared]` with exclusions |
+| 14 | [Custom Resolver](examples/14-custom-resolver.php) | JWT, query param, API key resolvers |
+| 15 | [Full Onboarding Flow](examples/15-full-onboarding-flow.php) | Complete end-to-end tenant onboarding |
+
+> See also the [Examples documentation page](https://ramyhakam.github.io/multi_tenancy_bundle/examples/examples) for detailed explanations.
+
+---
+
 ## 🔗 Useful Links
 
 * **Full Documentation:** \[[https://ramyhakam.github.io/multi\_tenancy\_bundle/](https://ramyhakam.github.io/multi_tenancy_bundle/)]

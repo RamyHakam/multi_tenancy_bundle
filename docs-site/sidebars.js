@@ -15,6 +15,7 @@ const sidebars = {
     'cache/cache-isolation',
     'customization/customization',
     'suggestions/suggestions',
+    'examples/examples',
     'contributing/contribution',
     'changelog',
     'license',

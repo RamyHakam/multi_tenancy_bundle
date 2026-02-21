@@ -20,7 +20,7 @@ class IntegrationTestKernel extends Kernel
 
     public function __construct(array $multiTenancyConfig = [], ?callable $serviceRegistrar = null)
     {
-        parent::__construct('test', true);
+        parent::__construct('test', false);
         $this->multiTenancyConfig = $multiTenancyConfig;
         $this->serviceRegistrar = $serviceRegistrar;
     }
