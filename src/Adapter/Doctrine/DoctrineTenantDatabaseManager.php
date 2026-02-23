@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ObjectRepository;
 use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
+use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
 use Hakam\MultiTenancyBundle\Exception\MultiTenancyException;
 use Hakam\MultiTenancyBundle\Port\DoctrineDBALConnectionGeneratorInterface;
 use Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface;
@@ -107,6 +108,52 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
                 $e->getMessage()
             ), $e->getCode(), $e);
         }
+    }
+
+    public function createSharedSchema(TenantConnectionConfigDTO $dto, string $schemaName): bool
+    {
+        if ($dto->driver === DriverTypeEnum::SQLITE) {
+            return true; // SQLite has no schema concept
+        }
+
+        try {
+            if ($dto->driver === DriverTypeEnum::MYSQL) {
+                return $this->createMysqlSharedDatabase($dto, $schemaName);
+            }
+            return $this->createPostgresSharedSchema($dto, $schemaName);
+        } catch (Throwable $e) {
+            throw new MultiTenancyException(sprintf(
+                'Unable to create shared schema "%s": %s',
+                $schemaName,
+                $e->getMessage()
+            ), $e->getCode(), $e);
+        }
+    }
+
+    private function createMysqlSharedDatabase(TenantConnectionConfigDTO $dto, string $schemaName): bool
+    {
+        $connection = $this->doctrineDBALConnectionGenerator->generateMaintenanceConnection($dto);
+        $schemaManager = method_exists($connection, 'createSchemaManager')
+            ? $connection->createSchemaManager()
+            : $connection->getSchemaManager();
+
+        $existing = $schemaManager->listDatabases();
+        if (!in_array($schemaName, $existing, true)) {
+            $schemaManager->createDatabase($schemaName);
+        }
+        $connection->close();
+        return true;
+    }
+
+    private function createPostgresSharedSchema(TenantConnectionConfigDTO $dto, string $schemaName): bool
+    {
+        $connection = $this->doctrineDBALConnectionGenerator->generate($dto);
+        $connection->executeStatement(sprintf(
+            'CREATE SCHEMA IF NOT EXISTS %s',
+            $connection->quoteIdentifier($schemaName)
+        ));
+        $connection->close();
+        return true;
     }
 
     public function updateTenantDatabaseStatus(mixed $identifier, DatabaseStatusEnum $status): bool

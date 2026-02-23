@@ -62,6 +62,19 @@ interface TenantDatabaseManagerInterface
 
     public function addNewTenantDbConfig(TenantConnectionConfigDTO $dto): TenantConnectionConfigDTO;
 
+    /**
+     * Create the shared schema (MySQL: separate database; PostgreSQL: schema inside the app DB).
+     * Idempotent — safe to call when the schema already exists.
+     * SQLite does not have schemas; returns true immediately.
+     *
+     * @param TenantConnectionConfigDTO $dto Credentials used to reach the database server.
+     *   For MySQL any tenant DTO suffices (a maintenance connection is opened).
+     *   For PostgreSQL the DTO must point at the application database (parse DATABASE_URL).
+     * @param string $schemaName The shared schema / database name.
+     * @return bool True on success.
+     */
+    public function createSharedSchema(TenantConnectionConfigDTO $dto, string $schemaName): bool;
+
     // update Db Status
     /**
      * Update the status of a tenant database.

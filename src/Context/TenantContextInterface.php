@@ -7,4 +7,6 @@ namespace Hakam\MultiTenancyBundle\Context;
 interface TenantContextInterface
 {
     public function getTenantId(): ?string;
+
+    public function getSchema(): string;
 }

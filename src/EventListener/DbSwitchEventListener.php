@@ -50,8 +50,10 @@ final class DbSwitchEventListener implements EventSubscriberInterface, ResetInte
 
         $connection = $this->doctrine->getConnection('tenant');
 
-        // Clear EM before switching
+        // Clear EM identity map and metadata cache before switching so the
+        // TenantMetadataListener re-evaluates every entity for the new tenant.
         $this->tenantEntityManager->clear();
+        $this->resetTenantMetadataCache();
 
         $connection->switchConnection($params);
 
@@ -98,6 +100,33 @@ final class DbSwitchEventListener implements EventSubscriberInterface, ResetInte
             'host'     => $url['host'] ?? null,
             'port'     => $url['port'] ?? null,
         ];
+    }
+
+    /**
+     * Clear the in-process Doctrine metadata cache so that TenantMetadataListener
+     * re-evaluates every entity class for the newly active tenant.
+     *
+     * $loadedMetadata is declared private in AbstractClassMetadataFactory, so we
+     * walk the class hierarchy until we find the class that declares the property.
+     */
+    private function resetTenantMetadataCache(): void
+    {
+        $factory = $this->tenantEntityManager->getMetadataFactory();
+        $class = new \ReflectionClass($factory);
+
+        do {
+            $privateNames = array_map(
+                static fn(\ReflectionProperty $p) => $p->getName(),
+                $class->getProperties(\ReflectionProperty::IS_PRIVATE)
+            );
+
+            if (in_array('loadedMetadata', $privateNames, true)) {
+                $prop = $class->getProperty('loadedMetadata');
+                $prop->setAccessible(true);
+                $prop->setValue($factory, []);
+                return;
+            }
+        } while ($class = $class->getParentClass());
     }
 
     public function reset(): void

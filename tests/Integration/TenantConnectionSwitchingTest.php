@@ -89,6 +89,60 @@ class TenantConnectionSwitchingTest extends IntegrationTestCase
         $this->assertFalse($tenantEM->contains($product));
     }
 
+    public function testMetadataCacheIsResetOnTenantSwitch(): void
+    {
+        $tenant1 = $this->insertTenantConfig(
+            dbName: 'meta_tenant_one',
+            status: DatabaseStatusEnum::DATABASE_MIGRATED,
+        );
+        $tenant2 = $this->insertTenantConfig(
+            dbName: 'meta_tenant_two',
+            status: DatabaseStatusEnum::DATABASE_MIGRATED,
+        );
+
+        $tenantEM = $this->getTenantEntityManager();
+
+        // Switch to tenant1 and warm up the in-process metadata cache
+        $this->switchToTenant((string) $tenant1->getId());
+        $tenantEM->getMetadataFactory()->getAllMetadata();
+
+        // $loadedMetadata is private in AbstractClassMetadataFactory; walk the hierarchy.
+        $factory = $tenantEM->getMetadataFactory();
+        $prop = $this->findLoadedMetadataProperty($factory);
+
+        $this->assertNotEmpty(
+            $prop->getValue($factory),
+            'Metadata cache should be warm after first tenant switch and getAllMetadata() call'
+        );
+
+        // Switch to tenant2 — DbSwitchEventListener must clear $loadedMetadata
+        $this->switchToTenant((string) $tenant2->getId());
+
+        $this->assertEmpty(
+            $prop->getValue($factory),
+            'Metadata cache should be empty immediately after switching to a different tenant'
+        );
+    }
+
+    private function findLoadedMetadataProperty(object $factory): \ReflectionProperty
+    {
+        $class = new \ReflectionClass($factory);
+
+        do {
+            $names = array_map(
+                static fn(\ReflectionProperty $p) => $p->getName(),
+                $class->getProperties(\ReflectionProperty::IS_PRIVATE)
+            );
+            if (in_array('loadedMetadata', $names, true)) {
+                $prop = $class->getProperty('loadedMetadata');
+                $prop->setAccessible(true);
+                return $prop;
+            }
+        } while ($class = $class->getParentClass());
+
+        $this->fail('Could not locate $loadedMetadata property on the metadata factory');
+    }
+
     public function testSwitchEventWithInvalidIdThrowsException(): void
     {
         $this->expectException(\RuntimeException::class);

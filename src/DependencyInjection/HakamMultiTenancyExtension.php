@@ -44,6 +44,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
         $container->setParameter('hakam.tenant_db_credentials', ['db_url' => $configs['tenant_connection']['url']]);
         $container->setParameter('hakam.tenant_db_list_entity', $configs['tenant_database_className']);
         $container->setParameter('hakam.tenant_db_identifier', $configs['tenant_database_identifier']);
+        $container->setParameter('hakam.shared_schema_name', $configs['shared_schema_name']);
 
         if ($configs['tenant_config_provider'] === 'hakam_tenant_config_provider.doctrine') {
             // check if the tenant database className and identifier are set
@@ -246,6 +247,12 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
                     $dbSwitcherConfig['tenant_migration']['tenant_migration_namespace'] => $dbSwitcherConfig['tenant_migration']['tenant_migration_path'],
                 ];
 
+            $this->checkDir($container->getParameter('kernel.project_dir'), $dbSwitcherConfig['tenant_migration']['shared_migration_path']);
+            $sharedDoctrineMigrationPath =
+                [
+                    $dbSwitcherConfig['tenant_migration']['shared_migration_namespace'] => $dbSwitcherConfig['tenant_migration']['shared_migration_path'],
+                ];
+
             if (!isset($bundles['doctrine'])) {
                 $container->prependExtensionConfig('doctrine', ['dbal' => $tenantConnectionConfig, 'orm' => $tenantEntityManagerConfig]);
             } else {
@@ -255,6 +262,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
             if (!isset($bundles['doctrine_migrations'])) {
                 //    $container->prependExtensionConfig('doctrine_migrations', ['migrations_paths' => $tenantDoctrineMigrationPath]);
                 $container->setParameter('tenant_doctrine_migration', ['migrations_paths' => $tenantDoctrineMigrationPath]);
+                $container->setParameter('tenant_shared_doctrine_migration', ['migrations_paths' => $sharedDoctrineMigrationPath]);
             } else {
                 throw new InvalidConfigurationException('You need to enable Doctrine Migration Bundle to be able to use MultiTenancy Bundle');
             }

@@ -66,6 +66,30 @@
             <argument type="service" id="Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface"/>
         </service>
 
+        <service id="Hakam\MultiTenancyBundle\Command\CreateSchemaCommand">
+            <tag name="console.command"/>
+            <argument type="service" id="Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface"/>
+            <argument type="string">%hakam.shared_schema_name%</argument>
+            <argument type="string">%env(DATABASE_URL)%</argument>
+        </service>
+
+        <service id="Hakam\MultiTenancyBundle\Command\SharedMigrateCommand">
+            <tag name="console.command"/>
+            <argument type="service" id="Hakam\MultiTenancyBundle\Adapter\Doctrine\TenantDBALConnectionGenerator"/>
+            <argument type="string">%hakam.shared_schema_name%</argument>
+            <argument type="string">%env(DATABASE_URL)%</argument>
+            <argument>%tenant_shared_doctrine_migration%</argument>
+        </service>
+
+        <service id="Hakam\MultiTenancyBundle\Command\SharedDiffCommand">
+            <tag name="console.command"/>
+            <argument type="service" id="doctrine"/>
+            <argument type="service" id="Hakam\MultiTenancyBundle\Adapter\Doctrine\TenantDBALConnectionGenerator"/>
+            <argument type="string">%hakam.shared_schema_name%</argument>
+            <argument type="string">%env(DATABASE_URL)%</argument>
+            <argument>%tenant_shared_doctrine_migration%</argument>
+        </service>
+
         <service id="Hakam\MultiTenancyBundle\Command\LoadTenantFixtureCommand">
             <tag name="console.command"/>
             <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
@@ -86,6 +110,12 @@
 
         <service id="hakam.tenant_purger_factory" class="Hakam\MultiTenancyBundle\Purger\TenantORMPurgerFactory">
             <tag name="doctrine.fixtures.purger_factory" alias="tenant_default"/>
+        </service>
+
+        <service id="Hakam\MultiTenancyBundle\EventListener\TenantMetadataListener" public="false">
+            <tag name="doctrine.event_listener" event="loadClassMetadata" connection="tenant"/>
+            <argument type="service" id="Hakam\MultiTenancyBundle\Context\TenantContextInterface"/>
+            <argument type="string">%hakam.shared_schema_name%</argument>
         </service>
 
         <service id="Hakam\MultiTenancyBundle\Context\TenantContext" public="true">

@@ -2,6 +2,7 @@
 
 namespace Hakam\MultiTenancyBundle\Tests\Unit\EventListener;
 
+use Doctrine\ORM\Mapping\ClassMetadataFactory;
 use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
@@ -17,12 +18,25 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class DbSwitchEventListenerTest extends TestCase
 {
+    /**
+     * Returns a TenantEntityManager mock with getMetadataFactory() pre-wired.
+     * Required because DbSwitchEventListener::resetTenantMetadataCache() calls
+     * getMetadataFactory() on every tenant switch.
+     */
+    private function mockEntityManager(): TenantEntityManager
+    {
+        $mockFactory = $this->createMock(ClassMetadataFactory::class);
+        $mock = $this->createMock(TenantEntityManager::class);
+        $mock->method('getMetadataFactory')->willReturn($mockFactory);
+        return $mock;
+    }
+
     public function testOnSwitchDb()
     {
         // mock the necessary dependencies
         $connectionRegistry = $this->createMock(ManagerRegistry::class);
         $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
-        $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
+        $mockTenantEntityManager = $this->mockEntityManager();
 
 
         // create a test instance of the listener
@@ -70,7 +84,7 @@ class DbSwitchEventListenerTest extends TestCase
     {
         $connectionRegistry = $this->createMock(ManagerRegistry::class);
         $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
-        $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
+        $mockTenantEntityManager = $this->mockEntityManager();
 
         $listener = new DbSwitchEventListener($connectionRegistry, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
 
@@ -116,7 +130,7 @@ class DbSwitchEventListenerTest extends TestCase
     {
         $connectionRegistry = $this->createMock(ManagerRegistry::class);
         $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
-        $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
+        $mockTenantEntityManager = $this->mockEntityManager();
 
         $listener = new DbSwitchEventListener($connectionRegistry, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
 
