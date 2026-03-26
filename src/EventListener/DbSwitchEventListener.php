@@ -2,34 +2,26 @@
 
 namespace Hakam\MultiTenancyBundle\EventListener;
 
-use Doctrine\Persistence\ManagerRegistry;
+use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnectionSwitcher;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Hakam\MultiTenancyBundle\Event\TenantSwitchedEvent;
 use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Contracts\Service\ResetInterface;
 
-final class DbSwitchEventListener implements EventSubscriberInterface, ResetInterface
+final class DbSwitchEventListener implements ResetInterface
 {
     private ?string $currentTenantIdentifier = null;
     private ?string $currentTenantDbName = null;
 
     public function __construct(
-        private readonly ManagerRegistry $doctrine,
+        private readonly TenantConnectionSwitcher $connectionSwitcher,
         private readonly TenantConfigProviderInterface $tenantConfigProvider,
         private readonly TenantEntityManager $tenantEntityManager,
         private readonly string $databaseURL,
         private readonly ?EventDispatcherInterface $eventDispatcher = null,
     ) {
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            SwitchDbEvent::class => 'onSwitchDb',
-        ];
     }
 
     public function onSwitchDb(SwitchDbEvent $event): void
@@ -48,12 +40,10 @@ final class DbSwitchEventListener implements EventSubscriberInterface, ResetInte
 
         $params = $this->buildConnectionParams($tenantConfig);
 
-        $connection = $this->doctrine->getConnection('tenant');
-
         // Clear EM before switching
         $this->tenantEntityManager->clear();
 
-        $connection->switchConnection($params);
+        $this->connectionSwitcher->switchConnection($params);
 
         $this->currentTenantIdentifier = $tenantIdentifier;
         $this->currentTenantDbName = $tenantConfig->dbname;

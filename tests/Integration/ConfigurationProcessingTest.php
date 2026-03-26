@@ -2,7 +2,7 @@
 
 namespace Hakam\MultiTenancyBundle\Tests\Integration;
 
-use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
+use Doctrine\DBAL\Connection;
 use Hakam\MultiTenancyBundle\Tests\Integration\Fixtures\Entity\TenantDbConfig;
 
 class ConfigurationProcessingTest extends IntegrationTestCase
@@ -29,7 +29,7 @@ class ConfigurationProcessingTest extends IntegrationTestCase
     public function testPrependCreatesTenantDoctrineConnection(): void
     {
         $connection = $this->getContainer()->get('doctrine')->getConnection('tenant');
-        $this->assertInstanceOf(TenantConnection::class, $connection);
+        $this->assertInstanceOf(Connection::class, $connection);
     }
 
     public function testPrependCreatesTenantEntityManager(): void

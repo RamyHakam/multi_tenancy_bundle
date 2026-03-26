@@ -3,7 +3,7 @@
 namespace Hakam\MultiTenancyBundle\Tests\Integration;
 
 use Hakam\MultiTenancyBundle\Adapter\Doctrine\DoctrineTenantDatabaseManager;
-use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
+use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnectionSwitcher;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface;
 
@@ -63,10 +63,10 @@ class ServiceWiringIntegrationTest extends IntegrationTestCase
         $this->assertInstanceOf(\Hakam\MultiTenancyBundle\Services\TenantFixtureLoader::class, $loader);
     }
 
-    public function testTenantConnectionIsOfCorrectWrapperClass(): void
+    public function testTenantConnectionSwitcherIsRegistered(): void
     {
-        $connection = $this->getContainer()->get('doctrine')->getConnection('tenant');
-        $this->assertInstanceOf(TenantConnection::class, $connection);
+        $switcher = $this->getContainer()->get(TenantConnectionSwitcher::class);
+        $this->assertInstanceOf(TenantConnectionSwitcher::class, $switcher);
     }
 
     public function testCommandsAreRegistered(): void

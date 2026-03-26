@@ -27,7 +27,6 @@ abstract class RealDatabaseTestCase extends TestCase
     protected int $port;
     protected string $user;
     protected string $password;
-    protected string $serverVersion;
     protected DriverTypeEnum $driverType;
 
     /** @var string[] Database names created during the test, to be dropped in tearDown */
@@ -45,7 +44,6 @@ abstract class RealDatabaseTestCase extends TestCase
         $this->port = (int) (getenv('TENANT_DB_PORT') ?: ($_ENV['TENANT_DB_PORT'] ?? '3306'));
         $this->user = getenv('TENANT_DB_USER') ?: ($_ENV['TENANT_DB_USER'] ?? 'root');
         $this->password = getenv('TENANT_DB_PASSWORD') ?: ($_ENV['TENANT_DB_PASSWORD'] ?? '');
-        $this->serverVersion = getenv('TENANT_DB_SERVER_VERSION') ?: ($_ENV['TENANT_DB_SERVER_VERSION'] ?? '8.0');
 
         $this->driverType = match ($this->driver) {
             'pdo_mysql' => DriverTypeEnum::MYSQL,
@@ -66,11 +64,14 @@ abstract class RealDatabaseTestCase extends TestCase
             static::$kernel = null;
             static::$container = null;
         }
+
+        restore_exception_handler();
+        restore_error_handler();
     }
 
     protected function bootKernel(): void
     {
-        $tenantBootDbName = $this->driver === 'pdo_pgsql' ? 'postgres' : '';
+        $tenantBootDbName = $this->driver === 'pdo_pgsql' ? 'postgres' : $this->ensureBootDatabase();
         $pass = $this->password !== '' ? ':' . $this->password : '';
         $scheme = $this->driver === 'pdo_pgsql' ? 'pgsql' : 'mysql';
         $dsn = sprintf(
@@ -90,7 +91,6 @@ abstract class RealDatabaseTestCase extends TestCase
                 'host' => $this->host,
                 'port' => (string) $this->port,
                 'charset' => 'utf8',
-                'server_version' => $this->serverVersion,
             ],
         ];
 
@@ -166,6 +166,29 @@ abstract class RealDatabaseTestCase extends TestCase
         return $config;
     }
 
+    /**
+     * Ensures a writable boot database exists for the tenant DBAL connection.
+     * DBAL 4's Connection::getDatabase() reads from immutable params, so it must
+     * be non-null and writable for SchemaTool operations to work.
+     */
+    protected function ensureBootDatabase(): string
+    {
+        $dbName = 'hakam_tenant_boot';
+
+        try {
+            $dsnParser = new DsnParser(['mysql' => 'pdo_mysql']);
+            $pass = $this->password !== '' ? ':' . $this->password : '';
+            $dsn = sprintf('mysql://%s%s@%s:%d/', $this->user, $pass, $this->host, $this->port);
+            $conn = DriverManager::getConnection($dsnParser->parse($dsn));
+            $conn->createSchemaManager()->createDatabase($dbName);
+            $conn->close();
+        } catch (\Throwable) {
+            // Already exists — that's fine
+        }
+
+        return $dbName;
+    }
+
     private function dropCreatedDatabases(): void
     {
         if (empty($this->createdDatabases)) {
@@ -192,9 +215,7 @@ abstract class RealDatabaseTestCase extends TestCase
             );
 
             $conn = DriverManager::getConnection($dsnParser->parse($maintenanceDsn));
-            $schemaManager = method_exists($conn, 'createSchemaManager')
-                ? $conn->createSchemaManager()
-                : $conn->getSchemaManager();
+            $schemaManager = $conn->createSchemaManager();
 
             foreach ($this->createdDatabases as $dbName) {
                 try {

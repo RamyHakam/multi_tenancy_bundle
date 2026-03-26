@@ -4,7 +4,6 @@ namespace Hakam\MultiTenancyBundle\Tests\Functional;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Hakam\MultiTenancyBundle\HakamMultiTenancyBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -29,11 +28,9 @@ class MultiTenancyBundleTestingKernel extends Kernel
         ];
     }
 
-    public function registerContainerConfiguration(LoaderInterface $loader)
+    public function registerContainerConfiguration(LoaderInterface $loader): void
     {
         $loader->load(function (ContainerBuilder $container) {
-
-            $container->register('annotation_reader', AnnotationReader::class);
             $container->loadFromExtension('hakam_multi_tenancy', $this->multiTenancyConfig);
         });
     }

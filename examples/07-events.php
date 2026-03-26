@@ -4,7 +4,7 @@
  * Example 7: Lifecycle Events
  *
  * The bundle dispatches events at key points in the tenant lifecycle.
- * Subscribe to these events to hook in your own business logic.
+ * Use #[AsEventListener] attributes to hook in your own business logic.
  *
  * Events:
  * - SwitchDbEvent          → triggers a database switch
@@ -15,7 +15,7 @@
  * - TenantDeletedEvent     → fires AFTER a database is dropped
  */
 
-namespace App\EventSubscriber;
+namespace App\EventListener;
 
 use Hakam\MultiTenancyBundle\Event\TenantCreatedEvent;
 use Hakam\MultiTenancyBundle\Event\TenantDeletedEvent;
@@ -23,28 +23,18 @@ use Hakam\MultiTenancyBundle\Event\TenantMigratedEvent;
 use Hakam\MultiTenancyBundle\Event\TenantBootstrappedEvent;
 use Hakam\MultiTenancyBundle\Event\TenantSwitchedEvent;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-class TenantLifecycleSubscriber implements EventSubscriberInterface
+class TenantLifecycleListener
 {
     public function __construct(
         private readonly LoggerInterface $logger,
     ) {}
 
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            TenantCreatedEvent::class => 'onTenantCreated',
-            TenantMigratedEvent::class => 'onTenantMigrated',
-            TenantBootstrappedEvent::class => 'onTenantBootstrapped',
-            TenantSwitchedEvent::class => 'onTenantSwitched',
-            TenantDeletedEvent::class => 'onTenantDeleted',
-        ];
-    }
-
     /**
      * Fires after tenant:database:create successfully creates a database.
      */
+    #[AsEventListener(event: TenantCreatedEvent::class)]
     public function onTenantCreated(TenantCreatedEvent $event): void
     {
         $this->logger->info('Tenant database created', [
@@ -60,6 +50,7 @@ class TenantLifecycleSubscriber implements EventSubscriberInterface
      * Fires after tenant:migrations:migrate completes.
      * Check migrationType to distinguish init vs update.
      */
+    #[AsEventListener(event: TenantMigratedEvent::class)]
     public function onTenantMigrated(TenantMigratedEvent $event): void
     {
         if ($event->isInitialMigration()) {
@@ -82,6 +73,7 @@ class TenantLifecycleSubscriber implements EventSubscriberInterface
     /**
      * Fires after tenant:fixtures:load completes.
      */
+    #[AsEventListener(event: TenantBootstrappedEvent::class)]
     public function onTenantBootstrapped(TenantBootstrappedEvent $event): void
     {
         $this->logger->info('Tenant fixtures loaded', [
@@ -96,6 +88,7 @@ class TenantLifecycleSubscriber implements EventSubscriberInterface
      * Fires every time the active tenant changes.
      * Useful for per-request tracking and audit logging.
      */
+    #[AsEventListener(event: TenantSwitchedEvent::class)]
     public function onTenantSwitched(TenantSwitchedEvent $event): void
     {
         $this->logger->debug('Tenant switched', [
@@ -110,6 +103,7 @@ class TenantLifecycleSubscriber implements EventSubscriberInterface
     /**
      * Fires after a tenant database is dropped.
      */
+    #[AsEventListener(event: TenantDeletedEvent::class)]
     public function onTenantDeleted(TenantDeletedEvent $event): void
     {
         $this->logger->warning('Tenant database deleted', [

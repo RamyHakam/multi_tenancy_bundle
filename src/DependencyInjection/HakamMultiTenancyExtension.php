@@ -4,7 +4,7 @@ namespace Hakam\MultiTenancyBundle\DependencyInjection;
 
 use Hakam\MultiTenancyBundle\Cache\TenantAwareCacheDecorator;
 use Hakam\MultiTenancyBundle\Context\TenantContextInterface;
-use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
+use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantDriverMiddleware;
 use Hakam\MultiTenancyBundle\EventListener\TenantResolutionListener;
 use Hakam\MultiTenancyBundle\Port\TenantResolverInterface;
 use Hakam\MultiTenancyBundle\Resolver\ChainResolver;
@@ -19,7 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -33,8 +33,8 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
-        $loader->load('services.xml');
+        $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader->load('services.php');
 
         $configuration = $this->getConfiguration($configs, $container);
 
@@ -89,7 +89,11 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
             $throwOnMissing,
             $excludedPaths,
         ]);
-        $listenerDefinition->addTag('kernel.event_subscriber');
+        $listenerDefinition->addTag('kernel.event_listener', [
+            'event' => 'kernel.request',
+            'method' => 'onKernelRequest',
+            'priority' => 32,
+        ]);
         $container->setDefinition(TenantResolutionListener::class, $listenerDefinition);
 
         // Create alias for TenantResolverInterface
@@ -213,11 +217,7 @@ class HakamMultiTenancyExtension extends Extension implements PrependExtensionIn
                     'tenant' => [
                         'driver' => $dbSwitcherConfig['tenant_connection']['driver'],
                         'url' => $dbSwitcherConfig['tenant_connection']['url'],
-                        'host' => $dbSwitcherConfig['tenant_connection']['host'],
-                        'port' => $dbSwitcherConfig['tenant_connection']['port'],
                         'charset' => $dbSwitcherConfig['tenant_connection']['charset'],
-                        'server_version' => $dbSwitcherConfig['tenant_connection']['server_version'],
-                        'wrapper_class' => TenantConnection::class,
                     ],
                 ],
             ];

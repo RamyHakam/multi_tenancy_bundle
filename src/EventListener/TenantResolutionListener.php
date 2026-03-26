@@ -5,9 +5,9 @@ namespace Hakam\MultiTenancyBundle\EventListener;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Hakam\MultiTenancyBundle\Port\TenantResolverInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
  * Listens to kernel.request events and automatically resolves the tenant.
@@ -17,7 +17,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  *
  * @author Ramy Hakam <pencilsoft1@gmail.com>
  */
-class TenantResolutionListener implements EventSubscriberInterface
+#[AsEventListener(event: KernelEvents::REQUEST, method: 'onKernelRequest', priority: 32)]
+class TenantResolutionListener
 {
     public const REQUEST_ATTRIBUTE_TENANT = '_tenant';
     public const REQUEST_ATTRIBUTE_TENANT_RESOLVED = '_tenant_resolved';
@@ -28,13 +29,6 @@ class TenantResolutionListener implements EventSubscriberInterface
         private readonly bool $throwOnMissing = false,
         private readonly array $excludedPaths = [],
     ) {
-    }
-
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            KernelEvents::REQUEST => ['onKernelRequest', 32],
-        ];
     }
 
     public function onKernelRequest(RequestEvent $event): void

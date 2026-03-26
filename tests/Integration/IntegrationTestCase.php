@@ -51,6 +51,9 @@ abstract class IntegrationTestCase extends TestCase
             static::$kernel = null;
             static::$container = null;
         }
+
+        restore_exception_handler();
+        restore_error_handler();
     }
 
     protected function createMainSchema(): void
