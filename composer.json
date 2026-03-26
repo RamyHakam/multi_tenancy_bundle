@@ -22,7 +22,7 @@
         "doctrine/dbal": "^4.0",
         "doctrine/orm": "^3.0",
         "doctrine/doctrine-bundle": "^3.0",
-        "doctrine/doctrine-migrations-bundle": "^3.4",
+        "doctrine/doctrine-migrations-bundle": "^3.4 || ^4.0",
         "psr/cache": "^3.0"
     },
 
