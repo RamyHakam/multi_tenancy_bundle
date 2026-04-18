@@ -8,7 +8,7 @@
 [![codecov](https://codecov.io/gh/RamyHakam/multi_tenancy_bundle/branch/master/graph/badge.svg)](https://codecov.io/gh/RamyHakam/multi_tenancy_bundle)
 
 
-> 📚 **Full Documentation**: [Documentation](https://ramyhakam.github.io/multi_tenancy_bundle/intro/overview)
+> 📚 **Full Documentation**: [Documentation](https://ramyhakam.github.io/multi_tenancy_bundle/)
 
 ---
 
