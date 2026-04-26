@@ -3,7 +3,7 @@
 namespace Hakam\MultiTenancyBundle\Tests\Unit\EventListener;
 
 use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
-use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnection;
+use Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnectionSwitcher;
 use Hakam\MultiTenancyBundle\Doctrine\ORM\TenantEntityManager;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
@@ -12,21 +12,19 @@ use Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener;
 use Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface;
 use Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface;
 use PHPUnit\Framework\TestCase;
-use Symfony\Bridge\Doctrine\ManagerRegistry;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class DbSwitchEventListenerTest extends TestCase
 {
     public function testOnSwitchDb()
     {
         // mock the necessary dependencies
-        $connectionRegistry = $this->createMock(ManagerRegistry::class);
+        $mockConnectionSwitcher = $this->createMock(TenantConnectionSwitcher::class);
         $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
         $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
 
 
         // create a test instance of the listener
-        $listener = new DbSwitchEventListener($connectionRegistry, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
+        $listener = new DbSwitchEventListener($mockConnectionSwitcher, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
 
         // create a test event
         $testDbIndex = '1';
@@ -51,13 +49,8 @@ class DbSwitchEventListenerTest extends TestCase
             ->method('getTenantConnectionConfig')
             ->with($testDbIndex)
             ->willReturn($mockDbConfig);
-        $mockTenantConnection = $this->createMock(TenantConnection::class);
-        $mockTenantConnection->expects($this->once())
+        $mockConnectionSwitcher->expects($this->once())
             ->method('switchConnection');
-        $connectionRegistry->expects($this->once())
-            ->method('getConnection')
-            ->with('tenant')
-            ->willReturn($mockTenantConnection);
 
         $mockTenantEntityManager->expects($this->once())
             ->method('clear');
@@ -68,11 +61,11 @@ class DbSwitchEventListenerTest extends TestCase
 
     public function testSkipsSwitchWhenAlreadyConnectedToSameTenant(): void
     {
-        $connectionRegistry = $this->createMock(ManagerRegistry::class);
+        $mockConnectionSwitcher = $this->createMock(TenantConnectionSwitcher::class);
         $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
         $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
 
-        $listener = new DbSwitchEventListener($connectionRegistry, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
+        $listener = new DbSwitchEventListener($mockConnectionSwitcher, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
 
         $testDbIndex = '1';
 
@@ -92,14 +85,9 @@ class DbSwitchEventListenerTest extends TestCase
             ->with($testDbIndex)
             ->willReturn($mockDbConfig);
 
-        $mockTenantConnection = $this->createMock(TenantConnection::class);
         // switchConnection should only be called once (first call), not on the second
-        $mockTenantConnection->expects($this->once())
+        $mockConnectionSwitcher->expects($this->once())
             ->method('switchConnection');
-
-        $connectionRegistry->method('getConnection')
-            ->with('tenant')
-            ->willReturn($mockTenantConnection);
 
         // clear() should only be called once (first call)
         $mockTenantEntityManager->expects($this->once())
@@ -114,11 +102,11 @@ class DbSwitchEventListenerTest extends TestCase
 
     public function testSwitchesWhenSameDbNameButDifferentHost(): void
     {
-        $connectionRegistry = $this->createMock(ManagerRegistry::class);
+        $mockConnectionSwitcher = $this->createMock(TenantConnectionSwitcher::class);
         $mockTenantDbConfigProvider = $this->createMock(TenantConfigProviderInterface::class);
         $mockTenantEntityManager = $this->createMock(TenantEntityManager::class);
 
-        $listener = new DbSwitchEventListener($connectionRegistry, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
+        $listener = new DbSwitchEventListener($mockConnectionSwitcher, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
 
         $configOnHost1 = TenantConnectionConfigDTO::fromArgs(
             identifier: '1',
@@ -146,14 +134,9 @@ class DbSwitchEventListenerTest extends TestCase
             ->method('getTenantConnectionConfig')
             ->willReturnOnConsecutiveCalls($configOnHost1, $configOnHost2);
 
-        $mockTenantConnection = $this->createMock(TenantConnection::class);
         // switchConnection should be called twice since host differs
-        $mockTenantConnection->expects($this->exactly(2))
+        $mockConnectionSwitcher->expects($this->exactly(2))
             ->method('switchConnection');
-
-        $connectionRegistry->method('getConnection')
-            ->with('tenant')
-            ->willReturn($mockTenantConnection);
 
         // clear() should be called twice
         $mockTenantEntityManager->expects($this->exactly(2))

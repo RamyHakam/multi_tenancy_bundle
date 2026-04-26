@@ -20,7 +20,7 @@ The [`examples/`](https://github.com/RamyHakam/multi_tenancy_bundle/tree/master/
 | 04 | [`database-lifecycle.php`](#4-database-lifecycle) | Create DB, switch, CRUD, list/filter |
 | 05 | [`tenant-migrations.php`](#5-tenant-migrations) | Platform-agnostic migrations |
 | 06 | [`resolvers.php`](#6-tenant-resolvers) | All 5 resolver strategies |
-| 07 | [`events.php`](#7-lifecycle-events) | All 6 lifecycle event subscribers |
+| 07 | [`events.php`](#7-lifecycle-events) | All 6 lifecycle event listeners |
 | 08 | [`custom-config-provider.php`](#8-custom-config-provider) | Redis, static, in-memory providers |
 | 09 | [`tenant-fixtures.php`](#9-tenant-fixtures) | `#[TenantFixture]` attribute + CLI |
 | 10 | [`tenant-aware-cache.php`](#10-tenant-aware-cache) | Cache isolation |
@@ -86,7 +86,6 @@ hakam_multi_tenancy:
         port: '3306'
         driver: pdo_mysql
         charset: utf8
-        server_version: '8.0'
 
     tenant_migration:
         tenant_migration_namespace: DoctrineMigrations\Tenant
@@ -270,33 +269,27 @@ class ProductController extends AbstractController
 
 ## 7. Lifecycle Events
 
-Subscribe to events fired during tenant operations:
+Listen to events fired during tenant operations using `#[AsEventListener]`:
 
 ```php
-class TenantLifecycleSubscriber implements EventSubscriberInterface
-{
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            TenantCreatedEvent::class     => 'onCreated',   // DB created
-            TenantMigratedEvent::class    => 'onMigrated',  // Migrations applied
-            TenantBootstrappedEvent::class=> 'onBootstrapped', // Fixtures loaded
-            TenantSwitchedEvent::class    => 'onSwitched',  // Connection switched
-            TenantDeletedEvent::class     => 'onDeleted',   // DB dropped
-        ];
-    }
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
+class TenantLifecycleListener
+{
+    #[AsEventListener]
     public function onCreated(TenantCreatedEvent $event): void
     {
         // $event->getDatabaseName(), $event->getTenantIdentifier()
     }
 
+    #[AsEventListener]
     public function onMigrated(TenantMigratedEvent $event): void
     {
         // $event->getMigrationType() — 'init' or 'update'
         // $event->isInitialMigration(), $event->getToVersion()
     }
 
+    #[AsEventListener]
     public function onSwitched(TenantSwitchedEvent $event): void
     {
         // $event->getPreviousTenantIdentifier(), $event->hadPreviousTenant()

@@ -52,9 +52,7 @@ class DsnGenerationTest extends RealDatabaseTestCase
         $connGenerator = $this->getContainer()->get(TenantDBALConnectionGenerator::class);
         $maintenanceConn = $connGenerator->generateMaintenanceConnection($dto);
 
-        $schemaManager = method_exists($maintenanceConn, 'createSchemaManager')
-            ? $maintenanceConn->createSchemaManager()
-            : $maintenanceConn->getSchemaManager();
+        $schemaManager = $maintenanceConn->createSchemaManager();
 
         $schemaManager->createDatabase($dbName);
         $this->trackDatabase($dbName);

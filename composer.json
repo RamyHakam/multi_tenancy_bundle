@@ -13,16 +13,17 @@
 
     "require": {
         "php": "^8.2",
-        "symfony/config": "^6.4|^7.0",
-        "symfony/dependency-injection": "^6.4|^7.0",
-        "symfony/http-kernel": "^6.4|^7.0",
-        "symfony/filesystem": "^6.4|^7.0",
-        "doctrine/doctrine-bundle": "^2.7",
-        "doctrine/orm": "^2.15 || ^3.0",
-        "doctrine/doctrine-migrations-bundle": "^3.0",
-        "symfony/var-exporter": "^6.4|^7.0|^8.0",
-        "psr/cache": "^3.0",
-        "symfony/cache-contracts": "^3.0"
+        "symfony/config": "^8.0",
+        "symfony/dependency-injection": "^8.0",
+        "symfony/http-kernel": "^8.0",
+        "symfony/filesystem": "^8.0",
+        "symfony/var-exporter": "^8.0",
+        "symfony/cache-contracts": "^3.0",
+        "doctrine/dbal": "^4.0",
+        "doctrine/orm": "^3.0",
+        "doctrine/doctrine-bundle": "^3.0",
+        "doctrine/doctrine-migrations-bundle": "^3.4 || ^4.0",
+        "psr/cache": "^3.0"
     },
 
     "autoload": {
@@ -38,15 +39,15 @@
     },
 
     "require-dev": {
-        "symfony/phpunit-bridge": "^6.4|^7.0",
-        "phpunit/phpunit": "^10.0",
-        "doctrine/doctrine-fixtures-bundle": "^3.6",
+        "symfony/phpunit-bridge": "^8.0",
+        "phpunit/phpunit": "^11.0",
+        "doctrine/doctrine-fixtures-bundle": "^4.0",
         "dg/bypass-finals": "^1.9"
     },
 
     "extra": {
         "branch-alias": {
-            "dev-master": "3.0.x-dev"
+            "dev-master": "4.0.x-dev"
         }
     }
 }

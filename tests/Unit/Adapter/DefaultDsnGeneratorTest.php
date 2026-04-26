@@ -20,7 +20,7 @@ class DefaultDsnGeneratorTest extends TestCase
     /**
      * @return array<string, array{0: TenantConnectionConfigDTO, 1: string}>
      */
-    public function provideGenerate(): array
+    public static function provideGenerate(): array
     {
         return [
             'mysql with password' => [
@@ -116,7 +116,7 @@ class DefaultDsnGeneratorTest extends TestCase
     /**
      * @return array<string, array{0: TenantConnectionConfigDTO, 1: string}>
      */
-    public function provideGenerateMaintenance(): array
+    public static function provideGenerateMaintenance(): array
     {
         return [
             'mysql maintenance' => [

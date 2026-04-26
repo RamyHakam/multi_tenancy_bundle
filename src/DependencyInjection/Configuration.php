@@ -31,7 +31,6 @@ class Configuration implements ConfigurationInterface
             ->variableNode('port')->defaultValue('3306')->end()
             ->variableNode('driver')->defaultValue('pdo_mysql')->end()
             ->variableNode('charset')->defaultValue('utf8')->end()
-            ->variableNode('server_version')->defaultValue('5.7')->end()
             ->end()
             ->end()
             ->end()

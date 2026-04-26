@@ -29,7 +29,6 @@ hakam_multi_tenancy:
         port: '3306'
         driver: pdo_mysql          # pdo_mysql | pdo_pgsql | pdo_sqlite
         charset: utf8
-        server_version: '8.0'
 
     # ──────────────────────────────────────────────
     # 3. REQUIRED: Tenant migration configuration

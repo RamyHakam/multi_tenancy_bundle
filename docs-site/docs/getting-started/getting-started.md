@@ -48,7 +48,6 @@ hakam_multi_tenancy:
     port: 3306
     driver: pdo_mysql
     charset: utf8
-    server_version: 5.7
 
   tenant_migration:
     tenant_migration_namespace: DoctrineMigrations\Tenant
