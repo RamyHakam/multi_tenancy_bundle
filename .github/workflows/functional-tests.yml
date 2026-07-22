@@ -19,14 +19,12 @@ jobs:
             db_user: root
             db_password: root
             db_driver: pdo_mysql
-            server_version: '8.0'
           - db: postgres
             db_image: postgres:15
             db_port: 5432
             db_user: postgres
             db_password: postgres
             db_driver: pdo_pgsql
-            server_version: '15'
 
     name: Functional (${{ matrix.db }})
 
@@ -63,5 +61,4 @@ jobs:
           TENANT_DB_PORT: ${{ matrix.db_port }}
           TENANT_DB_USER: ${{ matrix.db_user }}
           TENANT_DB_PASSWORD: ${{ matrix.db_password }}
-          TENANT_DB_SERVER_VERSION: ${{ matrix.server_version }}
         run: vendor/bin/phpunit --testsuite functional --no-coverage

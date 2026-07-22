@@ -94,9 +94,7 @@ class DoctrineTenantDatabaseManager implements TenantDatabaseManagerInterface
     {
         try {
             $tenantConnection = $this->doctrineDBALConnectionGenerator->generateMaintenanceConnection($tenantConnectionConfigDTO);
-            $schemaManager = method_exists($tenantConnection, 'createSchemaManager')
-                ? $tenantConnection->createSchemaManager()
-                : $tenantConnection->getSchemaManager();
+            $schemaManager = $tenantConnection->createSchemaManager();
             $schemaManager->createDatabase($tenantConnectionConfigDTO->dbname);
             $tenantConnection->close();
             return 1;

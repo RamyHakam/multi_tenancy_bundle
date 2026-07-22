@@ -22,7 +22,7 @@ class ConfigManagerOverrideTest extends RealDatabaseTestCase
 
     protected function bootKernel(): void
     {
-        $tenantBootDbName = $this->driver === 'pdo_pgsql' ? 'postgres' : '';
+        $tenantBootDbName = $this->driver === 'pdo_pgsql' ? 'postgres' : $this->ensureBootDatabase();
         $pass = $this->password !== '' ? ':' . $this->password : '';
         $scheme = $this->driver === 'pdo_pgsql' ? 'pgsql' : 'mysql';
         $dsn = sprintf(
@@ -42,7 +42,6 @@ class ConfigManagerOverrideTest extends RealDatabaseTestCase
                 'host' => $this->host,
                 'port' => (string) $this->port,
                 'charset' => 'utf8',
-                'server_version' => $this->serverVersion,
             ],
         ];
 

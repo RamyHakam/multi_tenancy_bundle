@@ -43,23 +43,19 @@ Dispatched when a new tenant database is created.
 
 ```php
 use Hakam\MultiTenancyBundle\Event\TenantCreatedEvent;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-class TenantCreatedSubscriber implements EventSubscriberInterface
+class TenantCreatedListener
 {
-    public static function getSubscribedEvents(): array
-    {
-        return [TenantCreatedEvent::class => 'onTenantCreated'];
-    }
-
+    #[AsEventListener]
     public function onTenantCreated(TenantCreatedEvent $event): void
     {
         $tenantId = $event->getTenantIdentifier();
         $dbName = $event->getDatabaseName();
-        
+
         // Initialize billing for the new tenant
         $this->billingService->createSubscription($tenantId);
-        
+
         // Send welcome email
         $this->mailer->sendWelcomeEmail($tenantId);
     }
@@ -88,21 +84,18 @@ Dispatched when a tenant database is dropped/deleted.
 
 ```php
 use Hakam\MultiTenancyBundle\Event\TenantDeletedEvent;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-class TenantDeletedSubscriber implements EventSubscriberInterface
+class TenantDeletedListener
 {
-    public static function getSubscribedEvents(): array
-    {
-        return [TenantDeletedEvent::class => 'onTenantDeleted'];
-    }
-
+    #[AsEventListener]
     public function onTenantDeleted(TenantDeletedEvent $event): void
     {
         $tenantId = $event->getTenantIdentifier();
-        
+
         // Cancel subscription
         $this->billingService->cancelSubscription($tenantId);
-        
+
         // Clean up external storage
         $this->storageService->deleteTenantFiles($tenantId);
     }
@@ -138,14 +131,11 @@ Dispatched when migrations have been executed on a tenant database.
 
 ```php
 use Hakam\MultiTenancyBundle\Event\TenantMigratedEvent;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-class TenantMigratedSubscriber implements EventSubscriberInterface
+class TenantMigratedListener
 {
-    public static function getSubscribedEvents(): array
-    {
-        return [TenantMigratedEvent::class => 'onTenantMigrated'];
-    }
-
+    #[AsEventListener]
     public function onTenantMigrated(TenantMigratedEvent $event): void
     {
         if ($event->isInitialMigration()) {
@@ -154,7 +144,7 @@ class TenantMigratedSubscriber implements EventSubscriberInterface
                 'version' => $event->getToVersion(),
             ]);
         }
-        
+
         // Clear cached schema information
         $this->cacheService->clearTenantSchemaCache($event->getTenantIdentifier());
     }
@@ -183,24 +173,21 @@ Dispatched when a tenant database has been bootstrapped with initial fixture dat
 
 ```php
 use Hakam\MultiTenancyBundle\Event\TenantBootstrappedEvent;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-class TenantBootstrappedSubscriber implements EventSubscriberInterface
+class TenantBootstrappedListener
 {
-    public static function getSubscribedEvents(): array
-    {
-        return [TenantBootstrappedEvent::class => 'onTenantBootstrapped'];
-    }
-
+    #[AsEventListener]
     public function onTenantBootstrapped(TenantBootstrappedEvent $event): void
     {
         $tenantId = $event->getTenantIdentifier();
         $fixtures = $event->getLoadedFixtures();
-        
+
         $this->logger->info('Tenant environment ready', [
             'tenant' => $tenantId,
             'fixtures_loaded' => count($fixtures),
         ]);
-        
+
         // Send "Your account is ready" notification
         $this->notificationService->sendTenantReadyNotification($tenantId);
     }
@@ -235,19 +222,16 @@ The bundle's `TenantContext` service already listens to this event and tracks th
 
 ```php
 use Hakam\MultiTenancyBundle\Event\TenantSwitchedEvent;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-class TenantSwitchedSubscriber implements EventSubscriberInterface
+class TenantSwitchedListener
 {
-    public static function getSubscribedEvents(): array
-    {
-        return [TenantSwitchedEvent::class => 'onTenantSwitched'];
-    }
-
+    #[AsEventListener]
     public function onTenantSwitched(TenantSwitchedEvent $event): void
     {
         // Log tenant access
         $this->analyticsService->trackTenantAccess($event->getTenantIdentifier());
-        
+
         // Clear previous tenant's cache if switching
         if ($event->hadPreviousTenant()) {
             $this->cacheService->clearTenantCache($event->getPreviousTenantIdentifier());
@@ -258,14 +242,14 @@ class TenantSwitchedSubscriber implements EventSubscriberInterface
 
 ---
 
-## 💡 Complete Example: Multi-Purpose Subscriber
+## 💡 Complete Example: Multi-Purpose Listener
 
-Here's a complete example of a subscriber that handles all tenant lifecycle events:
+Here's a complete example of a listener that handles all tenant lifecycle events:
 
 ```php
 <?php
 
-namespace App\EventSubscriber;
+namespace App\EventListener;
 
 use Hakam\MultiTenancyBundle\Event\AbstractTenantEvent;
 use Hakam\MultiTenancyBundle\Event\TenantBootstrappedEvent;
@@ -274,9 +258,9 @@ use Hakam\MultiTenancyBundle\Event\TenantDeletedEvent;
 use Hakam\MultiTenancyBundle\Event\TenantMigratedEvent;
 use Hakam\MultiTenancyBundle\Event\TenantSwitchedEvent;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 
-class TenantLifecycleSubscriber implements EventSubscriberInterface
+class TenantLifecycleListener
 {
     public function __construct(
         private readonly LoggerInterface $logger,
@@ -285,17 +269,7 @@ class TenantLifecycleSubscriber implements EventSubscriberInterface
     ) {
     }
 
-    public static function getSubscribedEvents(): array
-    {
-        return [
-            TenantCreatedEvent::class => ['onTenantCreated', 0],
-            TenantDeletedEvent::class => ['onTenantDeleted', 0],
-            TenantMigratedEvent::class => ['onTenantMigrated', 0],
-            TenantBootstrappedEvent::class => ['onTenantBootstrapped', 0],
-            TenantSwitchedEvent::class => ['onTenantSwitched', -10],
-        ];
-    }
-
+    #[AsEventListener]
     public function onTenantCreated(TenantCreatedEvent $event): void
     {
         $this->log('tenant.created', $event, [
@@ -308,6 +282,7 @@ class TenantLifecycleSubscriber implements EventSubscriberInterface
         );
     }
 
+    #[AsEventListener]
     public function onTenantDeleted(TenantDeletedEvent $event): void
     {
         $this->log('tenant.deleted', $event, [
@@ -317,6 +292,7 @@ class TenantLifecycleSubscriber implements EventSubscriberInterface
         $this->billingService->cancelSubscription($event->getTenantIdentifier());
     }
 
+    #[AsEventListener]
     public function onTenantMigrated(TenantMigratedEvent $event): void
     {
         $this->log('tenant.migrated', $event, [
@@ -329,6 +305,7 @@ class TenantLifecycleSubscriber implements EventSubscriberInterface
         }
     }
 
+    #[AsEventListener]
     public function onTenantBootstrapped(TenantBootstrappedEvent $event): void
     {
         $this->log('tenant.bootstrapped', $event, [
@@ -336,6 +313,7 @@ class TenantLifecycleSubscriber implements EventSubscriberInterface
         ]);
     }
 
+    #[AsEventListener(priority: -10)]
     public function onTenantSwitched(TenantSwitchedEvent $event): void
     {
         if ($event->hadPreviousTenant()) {
@@ -383,27 +361,21 @@ For teardown:
 
 ---
 
-## ✅ Registering Subscribers
+## ✅ Registering Listeners
 
-Subscribers are automatically registered when using Symfony's autoconfigure:
+Listeners using `#[AsEventListener]` are automatically registered when using Symfony's autoconfigure:
 
 ```yaml
 # config/services.yaml
 services:
     _defaults:
         autoconfigure: true
-    
-    App\EventSubscriber\:
-        resource: '../src/EventSubscriber/'
+
+    App\EventListener\:
+        resource: '../src/EventListener/'
 ```
 
-Or explicitly:
-
-```yaml
-services:
-    App\EventSubscriber\TenantLifecycleSubscriber:
-        tags: ['kernel.event_subscriber']
-```
+No manual tagging is needed — the `#[AsEventListener]` attribute is detected automatically.
 
 ---
 

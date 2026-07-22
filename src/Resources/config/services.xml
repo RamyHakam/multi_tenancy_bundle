@@ -35,9 +35,19 @@
                  alias="Hakam\MultiTenancyBundle\Adapter\Doctrine\DoctrineTenantDatabaseManager"
                  public="false"/>
 
+        <!-- DBAL Middleware for tenant connection switching -->
+        <service id="Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantDriverMiddleware" public="false">
+            <tag name="doctrine.middleware" connection="tenant"/>
+        </service>
+
+        <service id="Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnectionSwitcher" public="false">
+            <argument type="service" id="doctrine.dbal.tenant_connection"/>
+            <argument type="service" id="Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantDriverMiddleware"/>
+        </service>
+
         <service id="Hakam\MultiTenancyBundle\EventListener\DbSwitchEventListener">
             <tag name="kernel.event_listener" event="Hakam\MultiTenancyBundle\Event\SwitchDbEvent" method="onSwitchDb"/>
-            <argument type="service" id="doctrine"/>
+            <argument type="service" id="Hakam\MultiTenancyBundle\Doctrine\DBAL\TenantConnectionSwitcher"/>
             <argument type="service" id="Hakam\MultiTenancyBundle\Port\TenantConfigProviderInterface"/>
             <argument type="service" id="tenant_entity_manager"/>
             <argument type="string">%env(DATABASE_URL)%</argument>
@@ -46,7 +56,7 @@
 
         <service id="Hakam\MultiTenancyBundle\Command\DiffCommand">
             <tag name="console.command"/>
-            <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
+            <argument type="service" id="doctrine"/>
             <argument type="service" id="service_container"/>
             <argument type="service" id="event_dispatcher"/>
             <argument type="service" id="Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface"/>
@@ -60,7 +70,7 @@
         </service>
         <service id="Hakam\MultiTenancyBundle\Command\MigrateCommand">
             <tag name="console.command"/>
-            <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
+            <argument type="service" id="doctrine"/>
             <argument type="service" id="service_container"/>
             <argument type="service" id="event_dispatcher"/>
             <argument type="service" id="Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface"/>
@@ -68,7 +78,7 @@
 
         <service id="Hakam\MultiTenancyBundle\Command\LoadTenantFixtureCommand">
             <tag name="console.command"/>
-            <argument type="service" id="Doctrine\Common\Persistence\ManagerRegistry"/>
+            <argument type="service" id="doctrine"/>
             <argument type="service" id="service_container"/>
             <argument type="service" id="event_dispatcher"/>
             <argument type="service" id="hakam_tenant_fixtures_loader.service"/>

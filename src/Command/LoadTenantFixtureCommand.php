@@ -8,7 +8,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Hakam\MultiTenancyBundle\Event\TenantBootstrappedEvent;
 use Hakam\MultiTenancyBundle\Purger\TenantORMPurgerFactory;
 use Hakam\MultiTenancyBundle\Services\TenantFixtureLoader;
-use Symfony\Bridge\Doctrine\DataFixtures\ContainerAwareLoader;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
@@ -35,11 +34,7 @@ class LoadTenantFixtureCommand  extends TenantCommand
         private readonly TenantFixtureLoader $tenantFixtureLoader,
     ) {
         parent::__construct($registry, $container, $eventDispatcher);
-        if (class_exists(ContainerAwareLoader::class)) {
-            $this->fixturesLoader = new SymfonyFixturesLoader($container);
-        } else {
-            $this->fixturesLoader = new SymfonyFixturesLoader();
-        }
+        $this->fixturesLoader = new SymfonyFixturesLoader();
     }
 
     protected function configure(): void

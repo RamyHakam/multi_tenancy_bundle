@@ -4,7 +4,6 @@ namespace Hakam\MultiTenancyBundle\Tests\Integration\Kernel;
 
 use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
 use Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Hakam\MultiTenancyBundle\HakamMultiTenancyBundle;
 use Hakam\MultiTenancyBundle\Tests\Integration\Fixtures\Entity\TenantDbConfig;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
@@ -38,7 +37,6 @@ class IntegrationTestKernel extends Kernel
     public function registerContainerConfiguration(LoaderInterface $loader): void
     {
         $loader->load(function (ContainerBuilder $container) {
-            $container->register('annotation_reader', AnnotationReader::class);
 
             $container->loadFromExtension('framework', [
                 'secret' => 'test_secret',
@@ -57,9 +55,6 @@ class IntegrationTestKernel extends Kernel
                 ],
                 'orm' => [
                     'default_entity_manager' => 'default',
-                    'auto_generate_proxy_classes' => true,
-                    'enable_lazy_ghost_objects' => true,
-                    'enable_native_lazy_objects' => true,
                     'entity_managers' => [
                         'default' => [
                             'connection' => 'default',
@@ -89,11 +84,8 @@ class IntegrationTestKernel extends Kernel
                 'tenant_database_identifier' => 'id',
                 'tenant_connection' => [
                     'url' => 'sqlite:///:memory:',
-                    'host' => 'localhost',
-                    'port' => '0',
                     'driver' => 'pdo_sqlite',
                     'charset' => 'utf8',
-                    'server_version' => '3.39',
                 ],
                 'tenant_migration' => [
                     'tenant_migration_namespace' => 'DoctrineMigrations\\Tenant',

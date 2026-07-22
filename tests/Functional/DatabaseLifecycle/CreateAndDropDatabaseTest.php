@@ -132,9 +132,7 @@ class CreateAndDropDatabaseTest extends RealDatabaseTestCase
         // Drop the database via maintenance connection
         $connGenerator = $this->getContainer()->get('Hakam\MultiTenancyBundle\Adapter\Doctrine\TenantDBALConnectionGenerator');
         $maintenanceConn = $connGenerator->generateMaintenanceConnection($dto);
-        $schemaManager = method_exists($maintenanceConn, 'createSchemaManager')
-            ? $maintenanceConn->createSchemaManager()
-            : $maintenanceConn->getSchemaManager();
+        $schemaManager = $maintenanceConn->createSchemaManager();
         $schemaManager->dropDatabase($dbName);
         $maintenanceConn->close();
 

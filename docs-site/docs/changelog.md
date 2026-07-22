@@ -2,6 +2,20 @@
 title: Changelog
 ---
 
+## [4.0.0] – 25 Mar 2026
+
+### Breaking Changes
+
+- **Dropped Symfony 6.4/7.0 support** — now requires Symfony ^8.0
+- **Dropped Doctrine ORM 2.x / DBAL 3.x** — now requires ORM ^3.0 / DBAL ^4.0
+- **Dropped DoctrineBundle 2.x** — now requires ^3.0
+- **Replaced `TenantConnection` (`wrapper_class`)** with DBAL Middleware approach (`TenantDriverMiddleware` + `TenantConnectionSwitcher`)
+- **Removed `EventSubscriberInterface` usage** — all listeners now use `#[AsEventListener]` attributes
+- **Removed `server_version` configuration option** — DBAL 4 auto-detects the server version
+- **Updated to PHPUnit 11** and DoctrineFixturesBundle 4.x
+
+---
+
 ## [3.0.0] – 21 Feb 2026
 
 ### Added

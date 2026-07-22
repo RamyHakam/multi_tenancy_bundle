@@ -1,16 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd" backupGlobals="false" colors="true"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.0/phpunit.xsd"
+         colors="true"
          bootstrap="tests/bootstrap.php"
 >
-    <coverage>
-        <include>
-            <directory>./src</directory>
-        </include>
-        <report>
-            <clover outputFile="coverage.xml"/>
-        </report>
-    </coverage>
     <php>
         <ini name="error_reporting" value="-1"/>
         <ini name="intl.default_locale" value="en"/>
@@ -24,7 +17,6 @@
         <env name="TENANT_DB_PORT" value=""/>
         <env name="TENANT_DB_USER" value=""/>
         <env name="TENANT_DB_PASSWORD" value=""/>
-        <env name="TENANT_DB_SERVER_VERSION" value=""/>
     </php>
     <testsuites>
         <testsuite name="unit">
@@ -37,4 +29,9 @@
             <directory>tests/Integration</directory>
         </testsuite>
     </testsuites>
+    <source>
+        <include>
+            <directory>./src</directory>
+        </include>
+    </source>
 </phpunit>
