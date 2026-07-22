@@ -43,7 +43,7 @@ return static function (ContainerConfigurator $container): void {
         ->private();
 
     // Tenant fixture loader (only when doctrine/doctrine-fixtures-bundle is available)
-    if (class_exists(\Doctrine\Bundle\FixturesBundle\Purger\PurgerFactory::class)) {
+    if (interface_exists(\Doctrine\Bundle\FixturesBundle\Purger\PurgerFactory::class)) {
         $services->set('hakam_tenant_fixtures_loader.service', TenantFixtureLoader::class)
             ->private()
             ->args([tagged_iterator('tenant_fixture')]);
@@ -126,7 +126,7 @@ return static function (ContainerConfigurator $container): void {
             service(TenantDatabaseManagerInterface::class),
         ]);
 
-    if (class_exists(\Doctrine\Bundle\FixturesBundle\Purger\PurgerFactory::class)) {
+    if (interface_exists(\Doctrine\Bundle\FixturesBundle\Purger\PurgerFactory::class)) {
         $services->set(LoadTenantFixtureCommand::class)
             ->tag('console.command')
             ->args([
@@ -150,7 +150,7 @@ return static function (ContainerConfigurator $container): void {
     $services->alias(TenantEntityManager::class, 'tenant_entity_manager');
 
     // Purger factory (only when doctrine/doctrine-fixtures-bundle is available)
-    if (class_exists(\Doctrine\Bundle\FixturesBundle\Purger\PurgerFactory::class)) {
+    if (interface_exists(\Doctrine\Bundle\FixturesBundle\Purger\PurgerFactory::class)) {
         $services->set('hakam.tenant_purger_factory', TenantORMPurgerFactory::class)
             ->tag('doctrine.fixtures.purger_factory', ['alias' => 'tenant_default']);
     }

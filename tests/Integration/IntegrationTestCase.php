@@ -15,6 +15,8 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 abstract class IntegrationTestCase extends TestCase
 {
+    use RestoresErrorHandlers;
+
     protected static ?KernelInterface $kernel = null;
     protected static ?ContainerInterface $container = null;
 
@@ -40,6 +42,7 @@ abstract class IntegrationTestCase extends TestCase
 
     protected function setUp(): void
     {
+        $this->snapshotErrorHandlers();
         $this->bootKernel();
         $this->createMainSchema();
     }
@@ -52,8 +55,7 @@ abstract class IntegrationTestCase extends TestCase
             static::$container = null;
         }
 
-        restore_exception_handler();
-        restore_error_handler();
+        $this->restoreErrorHandlers();
     }
 
     protected function createMainSchema(): void

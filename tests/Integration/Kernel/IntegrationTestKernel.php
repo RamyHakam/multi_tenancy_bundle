@@ -9,10 +9,23 @@ use Hakam\MultiTenancyBundle\Tests\Integration\Fixtures\Entity\TenantDbConfig;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Kernel;
 
 class IntegrationTestKernel extends Kernel
 {
+    private static int $instanceCounter = 0;
+
+    /**
+     * A token that is unique per PHP process (PID + a high-resolution start
+     * time). It anchors every kernel's cache dir to *this* run, so a fresh run
+     * can never reuse a directory left on disk by a previous run — which would
+     * otherwise leak persisted filesystem cache (e.g. cache.app pools) between
+     * runs and break tenant cache-isolation assertions.
+     */
+    private static ?string $runToken = null;
+
+    private int $instanceId;
     private array $multiTenancyConfig;
     /** @var callable|null */
     private $serviceRegistrar;
@@ -20,8 +33,32 @@ class IntegrationTestKernel extends Kernel
     public function __construct(array $multiTenancyConfig = [], ?callable $serviceRegistrar = null)
     {
         parent::__construct('test', false);
+        $this->instanceId = ++self::$instanceCounter;
         $this->multiTenancyConfig = $multiTenancyConfig;
         $this->serviceRegistrar = $serviceRegistrar;
+    }
+
+    private static function runToken(): string
+    {
+        if (self::$runToken === null) {
+            self::$runToken = getmypid() . '_' . hrtime(true);
+        }
+
+        return self::$runToken;
+    }
+
+    public function shutdown(): void
+    {
+        $instanceDir = $this->getInstanceDir();
+
+        parent::shutdown();
+
+        // Remove this kernel's whole working dir (cache + log) so persisted
+        // pools (FilesystemAdapter behind cache.app) never leak into a later
+        // kernel or a later run, and temp dirs don't accumulate across runs.
+        if (is_dir($instanceDir)) {
+            (new Filesystem())->remove($instanceDir);
+        }
     }
 
     public function registerBundles(): array
@@ -111,16 +148,26 @@ class IntegrationTestKernel extends Kernel
 
     public function getCacheDir(): string
     {
-        return sys_get_temp_dir() . '/hakam_integration_' . $this->getConfigHash() . '/cache';
+        return $this->getInstanceDir() . '/cache';
     }
 
     public function getLogDir(): string
     {
-        return sys_get_temp_dir() . '/hakam_integration_' . $this->getConfigHash() . '/log';
+        return $this->getInstanceDir() . '/log';
+    }
+
+    private function getInstanceDir(): string
+    {
+        return sys_get_temp_dir() . '/hakam_integration_' . $this->getConfigHash();
     }
 
     private function getConfigHash(): string
     {
-        return spl_object_id($this) . '_' . substr(md5(serialize($this->multiTenancyConfig)), 0, 8);
+        // Anchor to a per-process run token plus a monotonic per-instance id
+        // (not spl_object_id, which PHP reuses after an object is destroyed), so
+        // each booted kernel gets its own cache dir that is never shared with
+        // another kernel in this run nor reused from a previous run.
+        return self::runToken() . '_' . $this->instanceId
+            . '_' . substr(md5(serialize($this->multiTenancyConfig)), 0, 8);
     }
 }

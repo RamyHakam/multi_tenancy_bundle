@@ -5,9 +5,7 @@ namespace Hakam\MultiTenancyBundle\EventListener;
 use Hakam\MultiTenancyBundle\Event\SwitchDbEvent;
 use Hakam\MultiTenancyBundle\Port\TenantResolverInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
-use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
  * Listens to kernel.request events and automatically resolves the tenant.
@@ -15,9 +13,12 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * This listener runs early in the request lifecycle (before controllers)
  * and dispatches SwitchDbEvent to switch the database context.
  *
+ * The kernel.request tag (event/method/priority) is registered dynamically
+ * in HakamMultiTenancyExtension::configureResolver(), since the service
+ * definition is built imperatively there rather than autoconfigured.
+ *
  * @author Ramy Hakam <pencilsoft1@gmail.com>
  */
-#[AsEventListener(event: KernelEvents::REQUEST, method: 'onKernelRequest', priority: 32)]
 class TenantResolutionListener
 {
     public const REQUEST_ATTRIBUTE_TENANT = '_tenant';

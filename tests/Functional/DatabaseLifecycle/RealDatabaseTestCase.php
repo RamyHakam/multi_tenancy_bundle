@@ -13,12 +13,15 @@ use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
 use Hakam\MultiTenancyBundle\Tests\Integration\Fixtures\Entity\TenantDbConfig;
 use Hakam\MultiTenancyBundle\Tests\Integration\Kernel\IntegrationTestKernel;
+use Hakam\MultiTenancyBundle\Tests\Integration\RestoresErrorHandlers;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
 abstract class RealDatabaseTestCase extends TestCase
 {
+    use RestoresErrorHandlers;
+
     protected static ?KernelInterface $kernel = null;
     protected static ?ContainerInterface $container = null;
 
@@ -34,6 +37,8 @@ abstract class RealDatabaseTestCase extends TestCase
 
     protected function setUp(): void
     {
+        $this->snapshotErrorHandlers();
+
         $driver = getenv('TENANT_DB_DRIVER') ?: ($_ENV['TENANT_DB_DRIVER'] ?? '');
         if ($driver === '') {
             $this->markTestSkipped('TENANT_DB_DRIVER not set — skipping real database tests.');
@@ -65,8 +70,7 @@ abstract class RealDatabaseTestCase extends TestCase
             static::$container = null;
         }
 
-        restore_exception_handler();
-        restore_error_handler();
+        $this->restoreErrorHandlers();
     }
 
     protected function bootKernel(): void
