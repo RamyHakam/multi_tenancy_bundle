@@ -86,6 +86,37 @@ class TenantContextIntegrationTest extends IntegrationTestCase
         $this->assertNull($context->getTenantId());
     }
 
+    public function testTenantContextIsRepopulatedWhenTheSameTenantIsSwitchedToAfterAContainerReset(): void
+    {
+        $tenant = $this->insertTenantConfig(
+            dbName: 'context_reset_reswitch_db',
+            status: DatabaseStatusEnum::DATABASE_MIGRATED,
+            driver: DriverTypeEnum::SQLITE,
+        );
+
+        /** @var EventDispatcherInterface $dispatcher */
+        $dispatcher = $this->getContainer()->get('event_dispatcher');
+        $dispatcher->dispatch(new SwitchDbEvent((string) $tenant->getId()));
+
+        /** @var TenantContext $context */
+        $context = $this->getContainer()->get(TenantContextInterface::class);
+        $this->assertSame((string) $tenant->getId(), $context->getTenantId());
+
+        // What a messenger worker does between two messages, and what
+        // FrankenPHP worker mode does between two requests.
+        $this->getContainer()->get('services_resetter')->reset();
+        $this->assertNull($context->getTenantId());
+
+        $dispatcher->dispatch(new SwitchDbEvent((string) $tenant->getId()));
+
+        // DbSwitchEventListener skips the switch when it is already on the
+        // requested tenant, and TenantSwitchedEvent — the only thing that
+        // populates TenantContext — is dispatched from that same path. Unless
+        // the listener's memory is dropped by the reset too, the context stays
+        // null here while the connection is on that tenant.
+        $this->assertSame((string) $tenant->getId(), $context->getTenantId());
+    }
+
     public function testTenantSwitchedEventCarriesPreviousTenantInfo(): void
     {
         $tenantA = $this->insertTenantConfig(
