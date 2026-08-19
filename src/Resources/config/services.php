@@ -89,6 +89,13 @@ return static function (ContainerConfigurator $container): void {
             'event' => 'Hakam\MultiTenancyBundle\Event\SwitchDbEvent',
             'method' => 'onSwitchDb',
         ])
+        // The listener remembers the tenant it last switched to and skips the
+        // work when asked for that same tenant again. That memory has to be
+        // dropped whenever the container is reset (messenger worker between
+        // messages, FrankenPHP worker mode between requests) — otherwise it
+        // keeps short-circuiting for a tenant that TenantContext, which IS
+        // reset, no longer knows about.
+        ->tag('kernel.reset', ['method' => 'reset'])
         ->args([
             service(TenantConnectionSwitcher::class),
             service(TenantConfigProviderInterface::class),
