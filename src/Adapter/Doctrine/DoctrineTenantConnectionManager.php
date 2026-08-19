@@ -38,16 +38,7 @@ class DoctrineTenantConnectionManager implements TenantConnectionManagerInterfac
             throw new \LogicException(sprintf('The tenant db entity  " %s ". Should implement " Hakam\MultiTenancyBundle\TenantDbConfigurationInterface " ', get_class($dbConfigObject)));
         }
 
-        return TenantConnectionConfigDTO::fromArgs(
-                identifier: $tenantDbConfig->getTenantIdentifier(),
-                driver: $tenantDbConfig->getDriverType(),
-                dbStatus: $tenantDbConfig->getDatabaseStatus(),
-                host: $tenantDbConfig->getDbHost(),
-                port: $tenantDbConfig->getDbPort(),
-                dbname : $tenantDbConfig->getDbName(),
-                user: $tenantDbConfig->getDbUserName(),
-                password: $tenantDbConfig->getDbPassword()
-        );
+        return $this->convertToDTO($tenantDbConfig);
     }
 
     public function registerTenantDatabase(TenantDatabaseRegistrationDTO $registrationDTO): TenantConnectionConfigDTO
@@ -79,5 +70,49 @@ class DoctrineTenantConnectionManager implements TenantConnectionManagerInterfac
         $this->entityManager->persist($tenantDbConfig);
         $this->entityManager->flush();
         return true;
+    }
+
+    public function getTenantDbListByDatabaseStatus(DatabaseStatusEnum $status): array
+    {
+        $tenantDbConfigs = $this->entityRepository->findBy(['databaseStatus' => $status]);
+        if ([] === $tenantDbConfigs) {
+            throw new \RuntimeException(sprintf('No tenant database found with status " %s " ', $status->value));
+        }
+
+        return array_map($this->convertToDTO(...), $tenantDbConfigs);
+    }
+
+    public function listDatabases(): array
+    {
+        return $this->getTenantDbListByDatabaseStatus(DatabaseStatusEnum::DATABASE_MIGRATED);
+    }
+
+    public function listMissingDatabases(): array
+    {
+        return $this->getTenantDbListByDatabaseStatus(DatabaseStatusEnum::DATABASE_NOT_CREATED);
+    }
+
+    public function getDefaultTenantIDatabase(): TenantConnectionConfigDTO
+    {
+        $tenantDbConfig = $this->entityRepository->findOneBy(['databaseStatus' => DatabaseStatusEnum::DATABASE_CREATED]);
+        if (null === $tenantDbConfig) {
+            throw new \RuntimeException('No default tenant database found.');
+        }
+
+        return $this->convertToDTO($tenantDbConfig);
+    }
+
+    private function convertToDTO(TenantDbConfigurationInterface $tenantDbConfig): TenantConnectionConfigDTO
+    {
+        return TenantConnectionConfigDTO::fromArgs(
+            identifier: $tenantDbConfig->getTenantIdentifier(),
+            driver: $tenantDbConfig->getDriverType(),
+            dbStatus: $tenantDbConfig->getDatabaseStatus(),
+            host: $tenantDbConfig->getDbHost(),
+            port: $tenantDbConfig->getDbPort(),
+            dbname: $tenantDbConfig->getDbName(),
+            user: $tenantDbConfig->getDbUserName(),
+            password: $tenantDbConfig->getDbPassword()
+        );
     }
 }

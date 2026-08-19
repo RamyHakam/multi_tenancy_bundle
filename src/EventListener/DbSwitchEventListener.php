@@ -33,7 +33,7 @@ class DbSwitchEventListener implements EventSubscriberInterface
 
     public function onHakamMultiTenancyBundleEventSwitchDbEvent(SwitchDbEvent $switchDbEvent): void
     {
-        $tenantDbConfigDTO = $this->tenantConfigProvider->getTenantConnectionConfig($switchDbEvent->getDbIndex());
+        $tenantDbConfigDTO = $this->tenantConfigProvider->getTenantConnectionConfig($switchDbEvent->getIdentifier());
         $tenantConnection = $this->container->get('doctrine')->getConnection('tenant');
 
         $params = [
