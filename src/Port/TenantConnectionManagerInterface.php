@@ -38,4 +38,28 @@ interface TenantConnectionManagerInterface
      * @return bool True if the database was created successfully, false otherwise.
      */
     public function updateTenantDatabaseStatus(TenantDatabaseIdentifier $identifier, DatabaseStatusEnum $status): bool;
+
+    /**
+     * Get a list of tenant databases filtered by their status.
+     *
+     * @return TenantConnectionConfigDTO[]
+     */
+    public function getTenantDbListByDatabaseStatus(DatabaseStatusEnum $status): array;
+
+    /**
+     * @return TenantConnectionConfigDTO[] All databases that exist and are migrated, so they can be
+     *                                     synced with the latest migrations and fixtures at once.
+     */
+    public function listDatabases(): array;
+
+    /**
+     * @return TenantConnectionConfigDTO[] Tenant databases that are registered but not created yet.
+     */
+    public function listMissingDatabases(): array;
+
+    /**
+     * The "default" tenant database configuration for migrations and fixtures management —
+     * used when no specific tenant is provided.
+     */
+    public function getDefaultTenantIDatabase(): TenantConnectionConfigDTO;
 }

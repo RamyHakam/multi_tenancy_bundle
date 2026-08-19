@@ -7,6 +7,7 @@ use PHPUnit\Framework\TestCase;
 use Hakam\MultiTenancyBundle\Adapter\DefaultDsnGenerator;
 use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
+use Hakam\MultiTenancyBundle\ValueObject\TenantDatabaseIdentifier;
 
 class DefaultDsnGeneratorTest extends TestCase
 {
@@ -25,7 +26,7 @@ class DefaultDsnGeneratorTest extends TestCase
         return [
             'mysql with password' => [
                 TenantConnectionConfigDTO::fromArgs(
-                    identifier: 11,
+                    identifier: TenantDatabaseIdentifier::generateWithValue('tenant-11'),
                     driver: DriverTypeEnum::MYSQL,
                     dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
                     host: 'example.com',
@@ -38,7 +39,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'mysql without password' => [
                 TenantConnectionConfigDTO::fromArgs(
-                    identifier: 12,
+                    identifier: TenantDatabaseIdentifier::generateWithValue('tenant-12'),
                     driver: DriverTypeEnum::MYSQL,
                     dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
                     host: 'host',
@@ -51,7 +52,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'postgres with password' => [
                 TenantConnectionConfigDTO::fromArgs(
-                    identifier: 13,
+                    identifier: TenantDatabaseIdentifier::generateWithValue('tenant-13'),
                     driver: DriverTypeEnum::POSTGRES,
                     dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
                     host: 'pg.example.org',
@@ -64,7 +65,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'postgres without password' => [
                 TenantConnectionConfigDTO::fromArgs(
-                    identifier: 14,
+                    identifier: TenantDatabaseIdentifier::generateWithValue('tenant-14'),
                     driver: DriverTypeEnum::POSTGRES,
                     dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
                     host: 'localhost',
@@ -77,7 +78,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'sqlite absolute path' => [
                 TenantConnectionConfigDTO::fromArgs(
-                    identifier: 15,
+                    identifier: TenantDatabaseIdentifier::generateWithValue('tenant-15'),
                     driver: DriverTypeEnum::SQLITE,
                     dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
                     host: '',
@@ -90,7 +91,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'sqlite relative path' => [
                 TenantConnectionConfigDTO::fromArgs(
-                    identifier: 16,
+                    identifier: TenantDatabaseIdentifier::generateWithValue('tenant-16'),
                     driver: DriverTypeEnum::SQLITE,
                     dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
                     host: '',
@@ -121,7 +122,7 @@ class DefaultDsnGeneratorTest extends TestCase
         return [
             'mysql maintenance' => [
                 TenantConnectionConfigDTO::fromArgs(
-                    identifier: 11,
+                    identifier: TenantDatabaseIdentifier::generateWithValue('tenant-11'),
                     driver: DriverTypeEnum::MYSQL,
                     dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
                     host: 'example.com',
@@ -134,7 +135,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'postgres maintenance' => [
                 TenantConnectionConfigDTO::fromArgs(
-                    identifier: 12,
+                    identifier: TenantDatabaseIdentifier::generateWithValue('tenant-12'),
                     driver: DriverTypeEnum::POSTGRES,
                     dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
                     host: 'pg.example.org',
@@ -147,7 +148,7 @@ class DefaultDsnGeneratorTest extends TestCase
             ],
             'sqlite maintenance absolute' => [
                 TenantConnectionConfigDTO::fromArgs(
-                    identifier: 13,
+                    identifier: TenantDatabaseIdentifier::generateWithValue('tenant-13'),
                     driver: DriverTypeEnum::SQLITE,
                     dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
                     host: '',

@@ -5,7 +5,7 @@ namespace Hakam\MultiTenancyBundle\Command;
 use Doctrine\Persistence\ManagerRegistry;
 use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
-use Hakam\MultiTenancyBundle\Port\TenantDatabaseManagerInterface;
+use Hakam\MultiTenancyBundle\Port\TenantConnectionManagerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Exception\ExceptionInterface;
@@ -35,7 +35,7 @@ final class MigrateCommand extends TenantCommand
         private readonly ManagerRegistry                $registry,
         private readonly ContainerInterface             $container,
         private readonly EventDispatcherInterface       $eventDispatcher,
-        private readonly TenantDatabaseManagerInterface $tenantDatabaseManager,
+        private readonly TenantConnectionManagerInterface $tenantConnectionManager,
     )
     {
         parent::__construct($registry, $this->container, $eventDispatcher);
@@ -62,7 +62,7 @@ final class MigrateCommand extends TenantCommand
             case self::MIGRATE_TYPE_INIT:
                 $io->note('Migrating the new databases');
                 $io->newLine();
-                $listOfDbsToMigrate = $this->tenantDatabaseManager->getTenantDbListByDatabaseStatus(DatabaseStatusEnum::DATABASE_CREATED);
+                $listOfDbsToMigrate = $this->tenantConnectionManager->getTenantDbListByDatabaseStatus(DatabaseStatusEnum::DATABASE_CREATED);
                 break;
             case self::MIGRATE_TYPE_UPDATE:
                 $io->note('Migrating the existing databases');
@@ -87,7 +87,7 @@ final class MigrateCommand extends TenantCommand
                 $io->newLine();
                 $this->runMigrateCommand($input, $output);
                 if ($db->dbStatus === DatabaseStatusEnum::DATABASE_CREATED) {
-                    $this->tenantDatabaseManager->updateTenantDatabaseStatus($db->identifier, DatabaseStatusEnum::DATABASE_MIGRATED);
+                    $this->tenantConnectionManager->updateTenantDatabaseStatus($db->identifier, DatabaseStatusEnum::DATABASE_MIGRATED);
                 }
                 $io->success(sprintf('Migrating database #%s, Database_Name: %s, Database_Host: %s ', $kay + 1, $db->dbname, $db->host));
                 $io->newLine();

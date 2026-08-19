@@ -9,6 +9,7 @@ use Hakam\MultiTenancyBundle\Adapter\Doctrine\TenantDBALConnectionGenerator;
 use Hakam\MultiTenancyBundle\Port\DsnGeneratorInterface;
 use Hakam\MultiTenancyBundle\Config\TenantConnectionConfigDTO;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
+use Hakam\MultiTenancyBundle\ValueObject\TenantDatabaseIdentifier;
 
 class TenantDBALConnectionGeneratorTest extends TestCase
 {
@@ -24,7 +25,7 @@ class TenantDBALConnectionGeneratorTest extends TestCase
     public function testGenerateReturnsSqliteMemoryConnection(): void
     {
         $dto = TenantConnectionConfigDTO::fromArgs(
-            identifier: 12,
+            identifier: TenantDatabaseIdentifier::generateWithValue('tenant-12'),
             driver: DriverTypeEnum::SQLITE,
             dbStatus: DatabaseStatusEnum::DATABASE_NOT_CREATED,
             host: '',
@@ -44,15 +45,14 @@ class TenantDBALConnectionGeneratorTest extends TestCase
 
         $this->assertInstanceOf(Connection::class, $connection);
 
-        // Assert that the platform is SQLite
-        $platformName = $connection->getDatabasePlatform()->getName();
-        $this->assertSame('sqlite', $platformName);
+        // Assert that the platform is SQLite (AbstractPlatform::getName() is gone in DBAL 4)
+        $this->assertInstanceOf(\Doctrine\DBAL\Platforms\SQLitePlatform::class, $connection->getDatabasePlatform());
     }
 
     public function testGenerateMaintenanceConnectionReturnsSqliteMemoryConnection(): void
     {
         $dto = TenantConnectionConfigDTO::fromArgs(
-            identifier: 12,
+            identifier: TenantDatabaseIdentifier::generateWithValue('tenant-12'),
             driver: DriverTypeEnum::SQLITE,
             dbStatus: DatabaseStatusEnum::DATABASE_NOT_CREATED,
             host: '',
@@ -72,9 +72,8 @@ class TenantDBALConnectionGeneratorTest extends TestCase
 
         $this->assertInstanceOf(Connection::class, $connection);
 
-        // Assert that the platform is SQLite
-        $platformName = $connection->getDatabasePlatform()->getName();
-        $this->assertSame('sqlite', $platformName);
+        // Assert that the platform is SQLite (AbstractPlatform::getName() is gone in DBAL 4)
+        $this->assertInstanceOf(\Doctrine\DBAL\Platforms\SQLitePlatform::class, $connection->getDatabasePlatform());
     }
 }
 

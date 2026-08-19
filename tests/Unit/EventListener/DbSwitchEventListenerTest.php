@@ -14,6 +14,7 @@ use Hakam\MultiTenancyBundle\Services\TenantDbConfigurationInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Hakam\MultiTenancyBundle\ValueObject\TenantDatabaseIdentifier;
 
 class DbSwitchEventListenerTest extends TestCase
 {
@@ -29,19 +30,19 @@ class DbSwitchEventListenerTest extends TestCase
         $listener = new DbSwitchEventListener($mockContainer, $mockTenantDbConfigProvider, $mockTenantEntityManager, 'test_database_url');
 
         // create a test event
-        $testDbIndex = 1;
-        $testEvent = new SwitchDbEvent($testDbIndex);
+        $testIdentifier = TenantDatabaseIdentifier::generateWithValue('test_db_name');
+        $testEvent = new SwitchDbEvent($testIdentifier);
 
         // mock the expected behavior of the DbConfigService and ContainerInterface
 
 
         $mockDbConfig = TenantConnectionConfigDTO::fromArgs(
 
-            identifier: $testDbIndex,
+            identifier: $testIdentifier,
             driver: DriverTypeEnum::MYSQL,
             dbStatus: DatabaseStatusEnum::DATABASE_CREATED,
             host: ' localhost',
-            port: '3306',
+            port: 3306,
             dbname: 'test_db_name',
             user: 'test_username',
             password: 'test_password'
@@ -49,7 +50,7 @@ class DbSwitchEventListenerTest extends TestCase
 
         $mockTenantDbConfigProvider->expects($this->once())
             ->method('getTenantConnectionConfig')
-            ->with($testDbIndex)
+            ->with($testIdentifier)
             ->willReturn($mockDbConfig);
         $mockTenantConnection = $this->createMock(TenantConnection::class);
         $mockTenantConnection->expects($this->once())
@@ -180,8 +181,8 @@ class DbConfig implements TenantDbConfigurationInterface
         return DriverTypeEnum::MYSQL;
     }
 
-    public function getTenantIdentifier(): string
+    public function getTenantIdentifier(): TenantDatabaseIdentifier
     {
-        return 'test_tenant';
+        return TenantDatabaseIdentifier::generateWithValue('test_tenant');
     }
 }

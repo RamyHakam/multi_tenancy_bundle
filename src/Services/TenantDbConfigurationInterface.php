@@ -4,6 +4,7 @@ namespace Hakam\MultiTenancyBundle\Services;
 
 use Hakam\MultiTenancyBundle\Enum\DatabaseStatusEnum;
 use Hakam\MultiTenancyBundle\Enum\DriverTypeEnum;
+use Hakam\MultiTenancyBundle\ValueObject\TenantDatabaseIdentifier;
 
 /**
  * @author Ramy Hakam <pencilsoft1@gmail.com>
@@ -54,5 +55,5 @@ interface TenantDbConfigurationInterface
     
     public function getDriverType(): DriverTypeEnum;
 
-    public function getTenantIdentifier(): string;
+    public function getTenantIdentifier(): TenantDatabaseIdentifier;
 }

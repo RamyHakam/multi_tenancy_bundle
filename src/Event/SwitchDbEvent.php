@@ -2,6 +2,7 @@
 
 namespace Hakam\MultiTenancyBundle\Event;
 
+use Hakam\MultiTenancyBundle\ValueObject\TenantDatabaseIdentifier;
 use Symfony\Contracts\EventDispatcher\Event;
 
 /**
@@ -9,15 +10,27 @@ use Symfony\Contracts\EventDispatcher\Event;
  */
 class SwitchDbEvent extends Event
 {
-    private ?string $dbIndex;
+    private ?TenantDatabaseIdentifier $identifier;
 
-    public function __construct(?string $tenantDbIndex)
+    /**
+     * Dispatchers may pass the identifier itself or its string form, so call
+     * sites that read a tenant id off a console argument or a request keep
+     * working without knowing about the value object.
+     */
+    public function __construct(TenantDatabaseIdentifier|string|null $tenantIdentifier)
     {
-        $this->dbIndex = $tenantDbIndex;
+        $this->identifier = is_string($tenantIdentifier)
+            ? TenantDatabaseIdentifier::create($tenantIdentifier)
+            : $tenantIdentifier;
+    }
+
+    public function getIdentifier(): ?TenantDatabaseIdentifier
+    {
+        return $this->identifier;
     }
 
     public function getDbIndex(): ?string
     {
-        return $this->dbIndex;
+        return $this->identifier === null ? null : (string) $this->identifier;
     }
 }
